@@ -7,18 +7,21 @@ module.exports = async (req, res) => {
 
   if (req.method === "GET") {
     const { rows } = await pool.query(
-      "SELECT id, nome, dia, pontos FROM escolas ORDER BY criado_em ASC"
+      "SELECT id, nome, dia, pontos, prova FROM escolas ORDER BY criado_em ASC"
     );
     return res.status(200).json(rows);
   }
 
   if (req.method === "POST") {
-    const { nome, dia, pontos } = req.body || {};
+    const { nome, dia, pontos, prova } = req.body || {};
     if (!nome || typeof nome !== "string" || !nome.trim()) {
       return res.status(400).json({ erro: "Nome é obrigatório." });
     }
     if (!DIAS_VALIDOS.has(dia)) {
       return res.status(400).json({ erro: "Dia inválido." });
+    }
+    if (!prova || typeof prova !== "string" || !prova.trim()) {
+      return res.status(400).json({ erro: "Nome da prova é obrigatório." });
     }
     const pontosNum = Number(pontos);
     if (!Number.isFinite(pontosNum)) {
@@ -26,8 +29,8 @@ module.exports = async (req, res) => {
     }
 
     const { rows } = await pool.query(
-      "INSERT INTO escolas (nome, dia, pontos) VALUES ($1, $2, $3) RETURNING id, nome, dia, pontos",
-      [nome.trim(), dia, pontosNum]
+      "INSERT INTO escolas (nome, dia, pontos, prova) VALUES ($1, $2, $3, $4) RETURNING id, nome, dia, pontos, prova",
+      [nome.trim(), dia, pontosNum, prova.trim()]
     );
     return res.status(201).json(rows[0]);
   }

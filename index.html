@@ -180,6 +180,37 @@
     border-color: var(--branco);
   }
 
+  /* ---------- filtro por prova (abaixo da lista) ---------- */
+  .bloco-provas { margin-top: 32px; }
+
+  .bloco-provas h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    color: var(--apagado);
+    margin: 0 0 12px;
+  }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .chips button {
+    padding: 8px 14px;
+    font-size: 13px;
+    background: transparent;
+    color: var(--apagado);
+    border: 1px solid var(--linha);
+    border-radius: 999px;
+  }
+
+  .chips button:hover { color: var(--branco); border-color: var(--branco); }
+
+  .chips button[aria-pressed="true"] {
+    background: var(--branco);
+    color: var(--preto);
+    border-color: var(--branco);
+  }
+
   /* ---------- ranking ---------- */
   .titulo-lista {
     display: flex;
@@ -322,6 +353,12 @@
     <p class="nota" id="nota" hidden></p>
 
     <div class="campo">
+      <label for="prova">Nome da prova</label>
+      <input id="prova" type="text" list="provas-lista" placeholder="Ex: Simulado 1" autocomplete="off">
+      <datalist id="provas-lista"></datalist>
+    </div>
+
+    <div class="campo">
       <label for="pontos">Pontuação</label>
       <input id="pontos" type="number" step="any" placeholder="0">
     </div>
@@ -347,6 +384,11 @@
   </div>
 
   <ol id="lista"></ol>
+
+  <div class="bloco-provas" id="blocoProvas" hidden>
+    <h2>Filtrar por prova</h2>
+    <div class="chips" id="filtrosProvas"></div>
+  </div>
 </div>
 
 <script>
@@ -356,6 +398,7 @@
   let escolas = [];
   let editando = null;
   let filtro = "total";
+  let provaFiltro = "todas";
   let abaAtiva = "11";
   let escolaNovaDia13 = false;
 
@@ -366,6 +409,10 @@
   const $linkNovaEscola = document.getElementById("linkNovaEscola");
   const $linkUsarLista = document.getElementById("linkUsarLista");
   const $nota = document.getElementById("nota");
+  const $prova = document.getElementById("prova");
+  const $provasLista = document.getElementById("provas-lista");
+  const $blocoProvas = document.getElementById("blocoProvas");
+  const $filtrosProvas = document.getElementById("filtrosProvas");
   const $pontos = document.getElementById("pontos");
   const $salvar = document.getElementById("salvar");
   const $cancelar = document.getElementById("cancelar");
@@ -375,7 +422,7 @@
 
   /* ----- persistência (via API / Postgres) ----- */
   function normalizar(row) {
-    return { id: String(row.id), nome: row.nome, dia: row.dia, pontos: Number(row.pontos) };
+    return { id: String(row.id), nome: row.nome, dia: row.dia, pontos: Number(row.pontos), prova: row.prova || "" };
   }
 
   async function carregar() {
@@ -389,7 +436,60 @@
       erro("Não foi possível carregar o ranking. Recarregue a página.");
     }
     montarFormulario();
+    atualizarProvas();
     render();
+  }
+
+  /* ----- provas já lançadas: sugestão no campo e filtro abaixo da lista ----- */
+  function provasExistentes() {
+    const vistas = {};
+    escolas.forEach(e => {
+      if (e.prova) {
+        const chave = e.prova.toLowerCase();
+        if (!vistas[chave]) vistas[chave] = e.prova;
+      }
+    });
+    return Object.values(vistas).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }
+
+  function atualizarProvas() {
+    const provas = provasExistentes();
+
+    $provasLista.innerHTML = "";
+    provas.forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p;
+      $provasLista.appendChild(opt);
+    });
+
+    if (!provas.length) {
+      $blocoProvas.hidden = true;
+      provaFiltro = "todas";
+      return;
+    }
+
+    if (provaFiltro !== "todas" && !provas.includes(provaFiltro)) {
+      provaFiltro = "todas";
+    }
+
+    $blocoProvas.hidden = false;
+    $filtrosProvas.innerHTML = "";
+
+    const criarChip = (valor, rotulo) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = rotulo;
+      b.setAttribute("aria-pressed", provaFiltro === valor ? "true" : "false");
+      b.onclick = () => {
+        provaFiltro = valor;
+        atualizarProvas();
+        render();
+      };
+      return b;
+    };
+
+    $filtrosProvas.appendChild(criarChip("todas", "Todas"));
+    provas.forEach(p => $filtrosProvas.appendChild(criarChip(p, p)));
   }
 
   /* ----- lista de escolas dos dias 11 e 12 ----- */
@@ -472,12 +572,14 @@
 
   /* ----- render do ranking ----- */
   function render() {
-    $rotulo.textContent = filtro === "total"
+    $rotulo.textContent = (filtro === "total"
       ? "Classificação — total"
-      : "Classificação — dia " + DIAS[filtro];
+      : "Classificação — dia " + DIAS[filtro])
+      + (provaFiltro !== "todas" ? "  ·  prova: " + provaFiltro : "");
 
     $lista.innerHTML = "";
-    const linhas = filtro === "total" ? montarTotal() : montarDia(filtro);
+    const base = provaFiltro === "todas" ? escolas : escolas.filter(e => e.prova === provaFiltro);
+    const linhas = filtro === "total" ? montarTotal(base) : montarDia(filtro, base);
 
     if (!linhas.length) {
       const p = document.createElement("li");
@@ -545,16 +647,16 @@
     });
   }
 
-  function montarDia(d) {
-    return escolas
+  function montarDia(d, base) {
+    return base
       .filter(e => e.dia === d)
-      .map(e => ({ id: e.id, nome: e.nome, pontos: e.pontos }))
+      .map(e => ({ id: e.id, nome: e.nome, pontos: e.pontos, detalhe: e.prova }))
       .sort((a, b) => b.pontos - a.pontos);
   }
 
-  function montarTotal() {
+  function montarTotal(base) {
     const mapa = {};
-    escolas.forEach(e => {
+    base.forEach(e => {
       const chave = e.nome.toLowerCase();
       if (!mapa[chave]) mapa[chave] = { nome: e.nome, pontos: 0, dias: {} };
       mapa[chave].pontos += e.pontos;
@@ -582,6 +684,7 @@
     const dia = abaAtiva;
     const usaTexto = dia !== "13" || escolaNovaDia13;
     const nome = usaTexto ? $nome.value.trim() : $escolha.value;
+    const prova = $prova.value.trim();
     const pontos = parseFloat($pontos.value);
 
     if (!nome) {
@@ -589,6 +692,7 @@
         ? "Digite o nome da escola."
         : "Selecione uma escola da lista.");
     }
+    if (!prova) return erro("Digite o nome da prova.");
     if (isNaN(pontos)) return erro("Digite uma pontuação numérica.");
 
     $salvar.disabled = true;
@@ -597,7 +701,7 @@
         const r = await fetch(API + "/" + editando, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nome, dia, pontos }),
+          body: JSON.stringify({ nome, dia, pontos, prova }),
         });
         if (!r.ok) throw new Error();
         const atualizado = normalizar(await r.json());
@@ -608,16 +712,18 @@
         const r = await fetch(API, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nome, dia, pontos }),
+          body: JSON.stringify({ nome, dia, pontos, prova }),
         });
         if (!r.ok) throw new Error();
         escolas.push(normalizar(await r.json()));
       }
 
       $nome.value = "";
+      $prova.value = "";
       $pontos.value = "";
       $aviso.textContent = "";
       montarFormulario();
+      atualizarProvas();
       (usaTexto ? $nome : $pontos).focus();
       render();
     } catch (e) {
@@ -647,6 +753,7 @@
       $nome.value = esc.nome;
     }
 
+    $prova.value = esc.prova || "";
     $pontos.value = esc.pontos;
     $salvar.textContent = "Salvar alteração";
     $salvar.disabled = false;
@@ -663,6 +770,7 @@
 
   function limparCampos() {
     $nome.value = "";
+    $prova.value = "";
     $pontos.value = "";
   }
 
@@ -680,6 +788,7 @@
       limparCampos();
     }
     montarFormulario();
+    atualizarProvas();
     render();
   }
 
@@ -741,10 +850,11 @@
     sairDaEdicao();
     limparCampos();
     montarFormulario();
+    atualizarProvas();
     render();
   };
 
-  [$nome, $pontos].forEach(campo => {
+  [$nome, $prova, $pontos].forEach(campo => {
     campo.addEventListener("keydown", e => {
       if (e.key === "Enter") salvar();
     });

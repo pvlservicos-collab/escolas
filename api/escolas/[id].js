@@ -11,12 +11,15 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === "PUT") {
-    const { nome, dia, pontos } = req.body || {};
+    const { nome, dia, pontos, prova } = req.body || {};
     if (!nome || typeof nome !== "string" || !nome.trim()) {
       return res.status(400).json({ erro: "Nome é obrigatório." });
     }
     if (!DIAS_VALIDOS.has(dia)) {
       return res.status(400).json({ erro: "Dia inválido." });
+    }
+    if (!prova || typeof prova !== "string" || !prova.trim()) {
+      return res.status(400).json({ erro: "Nome da prova é obrigatório." });
     }
     const pontosNum = Number(pontos);
     if (!Number.isFinite(pontosNum)) {
@@ -24,8 +27,8 @@ module.exports = async (req, res) => {
     }
 
     const { rows } = await pool.query(
-      "UPDATE escolas SET nome = $1, dia = $2, pontos = $3 WHERE id = $4 RETURNING id, nome, dia, pontos",
-      [nome.trim(), dia, pontosNum, id]
+      "UPDATE escolas SET nome = $1, dia = $2, pontos = $3, prova = $4 WHERE id = $5 RETURNING id, nome, dia, pontos, prova",
+      [nome.trim(), dia, pontosNum, prova.trim(), id]
     );
     if (!rows.length) return res.status(404).json({ erro: "Não encontrado." });
     return res.status(200).json(rows[0]);
