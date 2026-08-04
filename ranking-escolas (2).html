@@ -1,0 +1,698 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ranking de Escolas</title>
+
+<style>
+  :root {
+    --preto: #000;
+    --branco: #fff;
+    --linha: rgba(255, 255, 255, 0.14);
+    --apagado: rgba(255, 255, 255, 0.55);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 48px 20px 80px;
+    background: var(--preto);
+    color: var(--branco);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 620px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 36px; }
+
+  h1 {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 6px;
+  }
+
+  header p { margin: 0; font-size: 14px; color: var(--apagado); }
+
+  /* ---------- formulário (quadrado branco) ---------- */
+  .card {
+    background: var(--branco);
+    color: var(--preto);
+    border-radius: 10px;
+    padding: 26px;
+    margin-bottom: 44px;
+  }
+
+  /* abas de dia */
+  .abas {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+
+  .abas button {
+    flex: 1;
+    padding: 11px 8px;
+    font-size: 14px;
+    font-weight: 600;
+    background: #f0f0f0;
+    color: #666;
+    border: 1px solid #d5d5d5;
+  }
+
+  .abas button:hover { color: #000; }
+
+  .abas button[aria-selected="true"] {
+    background: var(--preto);
+    color: var(--branco);
+    border-color: var(--preto);
+  }
+
+  .campo { margin-bottom: 16px; }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 7px;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 12px 13px;
+    font-size: 16px;
+    font-family: inherit;
+    color: var(--preto);
+    background: #fff;
+    border: 1px solid #c9c9c9;
+    border-radius: 6px;
+  }
+
+  select { appearance: none; background-image: none; }
+
+  input:focus, select:focus {
+    outline: 2px solid #000;
+    outline-offset: 1px;
+    border-color: #000;
+  }
+
+  input:disabled, select:disabled {
+    background: #f2f2f2;
+    color: #999;
+  }
+
+  .nota {
+    font-size: 13px;
+    color: #555;
+    margin: -6px 0 16px;
+    line-height: 1.45;
+  }
+
+  .botoes { display: flex; gap: 10px; }
+
+  button {
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid var(--preto);
+  }
+
+  .btn-principal { flex: 1; background: var(--preto); color: var(--branco); }
+  .btn-principal:hover { background: #2a2a2a; }
+  .btn-principal:disabled { background: #bbb; border-color: #bbb; cursor: not-allowed; }
+
+  .btn-secundario {
+    background: transparent;
+    color: var(--preto);
+    display: none;
+  }
+  .btn-secundario:hover { background: #eee; }
+
+  .aviso {
+    font-size: 13px;
+    color: #b00020;
+    margin: 12px 0 0;
+    min-height: 18px;
+  }
+
+  /* ---------- filtros ---------- */
+  .filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .filtros button {
+    flex: 1;
+    min-width: 72px;
+    padding: 10px 12px;
+    font-size: 14px;
+    background: transparent;
+    color: var(--apagado);
+    border: 1px solid var(--linha);
+  }
+
+  .filtros button:hover { color: var(--branco); border-color: var(--branco); }
+
+  .filtros button[aria-pressed="true"] {
+    background: var(--branco);
+    color: var(--preto);
+    border-color: var(--branco);
+  }
+
+  /* ---------- ranking ---------- */
+  .titulo-lista {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--linha);
+    padding-bottom: 10px;
+    margin-bottom: 4px;
+  }
+
+  .titulo-lista h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .limpar {
+    background: none;
+    border: none;
+    padding: 4px;
+    font-size: 12px;
+    color: var(--apagado);
+    text-decoration: underline;
+  }
+  .limpar:hover { color: var(--branco); }
+
+  ol { list-style: none; margin: 0; padding: 0; }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 4px;
+    border-bottom: 1px solid var(--linha);
+  }
+
+  .pos {
+    width: 34px;
+    font-size: 20px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--apagado);
+  }
+
+  li.top .pos { color: var(--branco); }
+
+  .info { flex: 1; min-width: 0; }
+
+  .nome { font-size: 17px; word-break: break-word; }
+  li.top .nome { font-weight: 700; }
+
+  .detalhe {
+    display: block;
+    font-size: 12px;
+    color: var(--apagado);
+    margin-top: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pontos {
+    font-size: 20px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .acoes { display: flex; align-items: center; gap: 4px; }
+
+  .acoes button {
+    background: none;
+    border: none;
+    padding: 6px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--apagado);
+    text-decoration: underline;
+  }
+  .acoes button:hover { color: var(--branco); }
+
+  .btn-x {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    line-height: 16px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 50%;
+    text-decoration: none !important;
+    border: 1px solid var(--linha) !important;
+    color: var(--apagado);
+  }
+  .btn-x:hover {
+    color: #fff;
+    background: #b00020;
+    border-color: #b00020 !important;
+  }
+
+  .vazio {
+    padding: 28px 4px;
+    color: var(--apagado);
+    font-size: 15px;
+  }
+
+  @media (max-width: 480px) {
+    .pontos { font-size: 18px; }
+    .nome { font-size: 15px; }
+    .abas button { font-size: 13px; padding: 10px 4px; }
+  }
+</style>
+
+<div class="container">
+  <header>
+    <h1>Ranking de Escolas</h1>
+    <p>Escolha o dia e lance as pontuações</p>
+  </header>
+
+  <div class="card">
+    <div class="abas" id="abas">
+      <button data-aba="11" aria-selected="true">Dia 11/08</button>
+      <button data-aba="12" aria-selected="false">Dia 12/08</button>
+      <button data-aba="13" aria-selected="false">Dia 13/08</button>
+    </div>
+
+    <!-- dias 11 e 12: digita o nome -->
+    <div class="campo" id="campo-nome">
+      <label for="nome">Escola</label>
+      <input id="nome" type="text" placeholder="Nome da escola" autocomplete="off">
+    </div>
+
+    <!-- dia 13: escolhe entre as já cadastradas -->
+    <div class="campo" id="campo-escolha" hidden>
+      <label for="escolha">Escola</label>
+      <select id="escolha"></select>
+    </div>
+
+    <p class="nota" id="nota" hidden></p>
+
+    <div class="campo">
+      <label for="pontos">Pontuação</label>
+      <input id="pontos" type="number" step="any" placeholder="0">
+    </div>
+
+    <div class="botoes">
+      <button class="btn-principal" id="salvar">Adicionar ao ranking</button>
+      <button class="btn-secundario" id="cancelar">Cancelar</button>
+    </div>
+
+    <p class="aviso" id="aviso"></p>
+  </div>
+
+  <div class="filtros" id="filtros">
+    <button data-filtro="11" aria-pressed="false">Dia 11</button>
+    <button data-filtro="12" aria-pressed="false">Dia 12</button>
+    <button data-filtro="13" aria-pressed="false">Dia 13</button>
+    <button data-filtro="total" aria-pressed="true">Total</button>
+  </div>
+
+  <div class="titulo-lista">
+    <h2 id="rotulo">Classificação — total</h2>
+    <button class="limpar" id="limpar">Limpar tudo</button>
+  </div>
+
+  <ol id="lista"></ol>
+</div>
+
+<script>
+  const API = "/api/escolas";
+  const DIAS = { "11": "11/08/2026", "12": "12/08/2026", "13": "13/08/2026" };
+
+  let escolas = [];
+  let editando = null;
+  let filtro = "total";
+  let abaAtiva = "11";
+
+  const $nome = document.getElementById("nome");
+  const $escolha = document.getElementById("escolha");
+  const $campoNome = document.getElementById("campo-nome");
+  const $campoEscolha = document.getElementById("campo-escolha");
+  const $nota = document.getElementById("nota");
+  const $pontos = document.getElementById("pontos");
+  const $salvar = document.getElementById("salvar");
+  const $cancelar = document.getElementById("cancelar");
+  const $aviso = document.getElementById("aviso");
+  const $lista = document.getElementById("lista");
+  const $rotulo = document.getElementById("rotulo");
+
+  /* ----- persistência (via API / Postgres) ----- */
+  function normalizar(row) {
+    return { id: String(row.id), nome: row.nome, dia: row.dia, pontos: Number(row.pontos) };
+  }
+
+  async function carregar() {
+    try {
+      const r = await fetch(API);
+      if (!r.ok) throw new Error();
+      const dados = await r.json();
+      escolas = dados.map(normalizar);
+    } catch (e) {
+      escolas = [];
+      erro("Não foi possível carregar o ranking. Recarregue a página.");
+    }
+    montarFormulario();
+    render();
+  }
+
+  /* ----- lista de escolas dos dias 11 e 12 ----- */
+  function escolasAnteriores() {
+    const vistas = {};
+    escolas.forEach(e => {
+      if (e.dia === "11" || e.dia === "12") {
+        const chave = e.nome.toLowerCase();
+        if (!vistas[chave]) vistas[chave] = e.nome;
+      }
+    });
+    return Object.values(vistas).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }
+
+  /* ----- formulário conforme a aba ----- */
+  function montarFormulario(nomeSelecionado) {
+    const dia3 = abaAtiva === "13";
+
+    $campoNome.hidden = dia3;
+    $campoEscolha.hidden = !dia3;
+
+    if (!dia3) {
+      $nota.hidden = true;
+      $salvar.disabled = false;
+      return;
+    }
+
+    const nomes = escolasAnteriores();
+    $escolha.innerHTML = "";
+
+    if (!nomes.length) {
+      const opt = document.createElement("option");
+      opt.textContent = "Nenhuma escola cadastrada ainda";
+      $escolha.appendChild(opt);
+      $escolha.disabled = true;
+      $salvar.disabled = true;
+      $nota.hidden = false;
+      $nota.textContent = "Cadastre as escolas nos dias 11 e 12 primeiro. Elas aparecem aqui automaticamente.";
+      return;
+    }
+
+    nomes.forEach(n => {
+      const opt = document.createElement("option");
+      opt.value = n;
+      opt.textContent = n;
+      $escolha.appendChild(opt);
+    });
+
+    if (nomeSelecionado) $escolha.value = nomeSelecionado;
+
+    $escolha.disabled = false;
+    $salvar.disabled = false;
+    $nota.hidden = false;
+    $nota.textContent = "A pontuação do dia 13 é somada à dos dias anteriores no ranking total.";
+  }
+
+  function trocarAba(dia) {
+    abaAtiva = dia;
+    document.querySelectorAll("#abas button").forEach(b => {
+      b.setAttribute("aria-selected", b.dataset.aba === dia ? "true" : "false");
+    });
+    montarFormulario();
+  }
+
+  /* ----- render do ranking ----- */
+  function render() {
+    $rotulo.textContent = filtro === "total"
+      ? "Classificação — total"
+      : "Classificação — dia " + DIAS[filtro];
+
+    $lista.innerHTML = "";
+    const linhas = filtro === "total" ? montarTotal() : montarDia(filtro);
+
+    if (!linhas.length) {
+      const p = document.createElement("li");
+      p.className = "vazio";
+      p.textContent = filtro === "total"
+        ? "Nenhuma escola ainda. Comece adicionando uma acima."
+        : "Nenhuma pontuação lançada no dia " + DIAS[filtro] + ".";
+      $lista.appendChild(p);
+      return;
+    }
+
+    linhas.forEach((linha, i) => {
+      const li = document.createElement("li");
+      if (i < 3) li.className = "top";
+
+      const pos = document.createElement("span");
+      pos.className = "pos";
+      pos.textContent = (i + 1) + "º";
+
+      const info = document.createElement("span");
+      info.className = "info";
+
+      const nome = document.createElement("span");
+      nome.className = "nome";
+      nome.textContent = linha.nome;
+      info.appendChild(nome);
+
+      if (linha.detalhe) {
+        const det = document.createElement("span");
+        det.className = "detalhe";
+        det.textContent = linha.detalhe;
+        info.appendChild(det);
+      }
+
+      const pts = document.createElement("span");
+      pts.className = "pontos";
+      pts.textContent = arredondar(linha.pontos);
+
+      li.append(pos, info, pts);
+
+      if (linha.id) {
+        const acoes = document.createElement("span");
+        acoes.className = "acoes";
+
+        const bEditar = document.createElement("button");
+        bEditar.textContent = "editar";
+        bEditar.onclick = () => editar(linha.id);
+
+        const bRemover = document.createElement("button");
+        bRemover.className = "btn-x";
+        bRemover.textContent = "×";
+        bRemover.title = "Apagar pontuação";
+        bRemover.setAttribute("aria-label", "Apagar pontuação de " + linha.nome);
+        bRemover.onclick = () => {
+          if (confirm('Tem certeza que deseja apagar a pontuação de "' + linha.nome + '"?')) {
+            remover(linha.id);
+          }
+        };
+
+        acoes.append(bEditar, bRemover);
+        li.appendChild(acoes);
+      }
+
+      $lista.appendChild(li);
+    });
+  }
+
+  function montarDia(d) {
+    return escolas
+      .filter(e => e.dia === d)
+      .map(e => ({ id: e.id, nome: e.nome, pontos: e.pontos }))
+      .sort((a, b) => b.pontos - a.pontos);
+  }
+
+  function montarTotal() {
+    const mapa = {};
+    escolas.forEach(e => {
+      const chave = e.nome.toLowerCase();
+      if (!mapa[chave]) mapa[chave] = { nome: e.nome, pontos: 0, dias: {} };
+      mapa[chave].pontos += e.pontos;
+      mapa[chave].dias[e.dia] = (mapa[chave].dias[e.dia] || 0) + e.pontos;
+    });
+
+    return Object.values(mapa)
+      .map(item => ({
+        nome: item.nome,
+        pontos: item.pontos,
+        detalhe: Object.keys(DIAS)
+          .filter(d => item.dias[d] !== undefined)
+          .map(d => "dia " + d + ": " + arredondar(item.dias[d]))
+          .join("  ·  ")
+      }))
+      .sort((a, b) => b.pontos - a.pontos);
+  }
+
+  function arredondar(n) {
+    return Math.round(n * 100) / 100;
+  }
+
+  /* ----- ações ----- */
+  async function salvar() {
+    const dia = abaAtiva;
+    const nome = dia === "13" ? $escolha.value : $nome.value.trim();
+    const pontos = parseFloat($pontos.value);
+
+    if (!nome) {
+      return erro(dia === "13"
+        ? "Selecione uma escola da lista."
+        : "Digite o nome da escola.");
+    }
+    if (isNaN(pontos)) return erro("Digite uma pontuação numérica.");
+
+    $salvar.disabled = true;
+    try {
+      if (editando) {
+        const r = await fetch(API + "/" + editando, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nome, dia, pontos }),
+        });
+        if (!r.ok) throw new Error();
+        const atualizado = normalizar(await r.json());
+        const esc = escolas.find(e => e.id === editando);
+        Object.assign(esc, atualizado);
+        sairDaEdicao();
+      } else {
+        const r = await fetch(API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nome, dia, pontos }),
+        });
+        if (!r.ok) throw new Error();
+        escolas.push(normalizar(await r.json()));
+      }
+
+      $nome.value = "";
+      $pontos.value = "";
+      $aviso.textContent = "";
+      montarFormulario();
+      (dia === "13" ? $pontos : $nome).focus();
+      render();
+    } catch (e) {
+      erro("Não foi possível salvar. Tente novamente.");
+    } finally {
+      $salvar.disabled = false;
+    }
+  }
+
+  function editar(id) {
+    const esc = escolas.find(e => e.id === id);
+    if (!esc) return;
+
+    editando = id;
+    trocarAba(esc.dia);
+
+    if (esc.dia === "13") {
+      montarFormulario(esc.nome);
+    } else {
+      $nome.value = esc.nome;
+    }
+
+    $pontos.value = esc.pontos;
+    $salvar.textContent = "Salvar alteração";
+    $salvar.disabled = false;
+    $cancelar.style.display = "block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function sairDaEdicao() {
+    editando = null;
+    $salvar.textContent = "Adicionar ao ranking";
+    $cancelar.style.display = "none";
+    $aviso.textContent = "";
+  }
+
+  function limparCampos() {
+    $nome.value = "";
+    $pontos.value = "";
+  }
+
+  async function remover(id) {
+    try {
+      const r = await fetch(API + "/" + id, { method: "DELETE" });
+      if (!r.ok && r.status !== 204) throw new Error();
+    } catch (e) {
+      erro("Não foi possível apagar. Tente novamente.");
+      return;
+    }
+    escolas = escolas.filter(e => e.id !== id);
+    if (editando === id) {
+      sairDaEdicao();
+      limparCampos();
+    }
+    montarFormulario();
+    render();
+  }
+
+  function erro(msg) { $aviso.textContent = msg; }
+
+  /* ----- eventos ----- */
+  $salvar.onclick = salvar;
+
+  $cancelar.onclick = () => {
+    sairDaEdicao();
+    limparCampos();
+    montarFormulario();
+  };
+
+  document.querySelectorAll("#abas button").forEach(btn => {
+    btn.onclick = () => {
+      if (editando) {
+        sairDaEdicao();
+        limparCampos();
+      }
+      trocarAba(btn.dataset.aba);
+    };
+  });
+
+  document.querySelectorAll("#filtros button").forEach(btn => {
+    btn.onclick = () => {
+      filtro = btn.dataset.filtro;
+      document.querySelectorAll("#filtros button").forEach(b => {
+        b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+      });
+      render();
+    };
+  });
+
+  document.getElementById("limpar").onclick = async () => {
+    if (!escolas.length) return;
+    if (!confirm("Remover todos os lançamentos do ranking?")) return;
+    try {
+      const r = await fetch(API, { method: "DELETE" });
+      if (!r.ok && r.status !== 204) throw new Error();
+    } catch (e) {
+      erro("Não foi possível limpar o ranking. Tente novamente.");
+      return;
+    }
+    escolas = [];
+    sairDaEdicao();
+    limparCampos();
+    montarFormulario();
+    render();
+  };
+
+  [$nome, $pontos].forEach(campo => {
+    campo.addEventListener("keydown", e => {
+      if (e.key === "Enter") salvar();
+    });
+  });
+
+  carregar();
+</script>
