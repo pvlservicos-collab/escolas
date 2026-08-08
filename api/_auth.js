@@ -53,6 +53,17 @@ function newToken() {
   return crypto.randomBytes(24).toString("hex");
 }
 
+// Turns a jurado's name into a short, readable URL token, e.g. "Maria Silva" -> "maria-silva".
+function slugify(nome) {
+  const base = String(nome)
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return base || "jurado";
+}
+
 module.exports = {
   signSession,
   verifySession,
@@ -60,4 +71,5 @@ module.exports = {
   requireAdminSession,
   safeEqual,
   newToken,
+  slugify,
 };

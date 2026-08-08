@@ -5,10 +5,29 @@ const {
   requireAdminSession,
   safeEqual,
   newToken,
+  slugify,
 } = require("./_auth");
 
 function bad(res, code, erro) {
   return res.status(code).json({ erro });
+}
+
+// Token curto e legível a partir do nome do jurado (ex: "Maria Silva" -> "maria-silva"),
+// com sufixo numérico se já existir. `sufixoAleatorio` força um valor novo (usado ao
+// gerar um novo link, para invalidar o anterior mesmo quando o nome não mudou).
+async function tokenParaJurado(pool, nome, excluirId, sufixoAleatorio) {
+  const base = slugify(nome) + (sufixoAleatorio ? "-" + newToken().slice(0, 4) : "");
+  let candidato = base;
+  let n = 2;
+  while (true) {
+    const { rows } = await pool.query(
+      excluirId ? "SELECT id FROM jurados WHERE token = $1 AND id <> $2" : "SELECT id FROM jurados WHERE token = $1",
+      excluirId ? [candidato, excluirId] : [candidato]
+    );
+    if (!rows.length) return candidato;
+    candidato = base + "-" + n;
+    n++;
+  }
 }
 
 module.exports = async (req, res) => {
@@ -146,7 +165,7 @@ module.exports = async (req, res) => {
     if (req.method === "POST") {
       const { nome } = req.body || {};
       if (!nome || !String(nome).trim()) return bad(res, 400, "Nome é obrigatório.");
-      const token = newToken();
+      const token = await tokenParaJurado(pool, String(nome).trim());
       const { rows } = await pool.query(
         "INSERT INTO jurados (nome, token) VALUES ($1, $2) RETURNING id, nome, token, ativo, criado_em",
         [String(nome).trim(), token]
@@ -157,7 +176,7 @@ module.exports = async (req, res) => {
       if (!Number.isInteger(id)) return bad(res, 400, "Id inválido.");
       const { nome, ativo, regenerar_token } = req.body || {};
       if (!nome || !String(nome).trim()) return bad(res, 400, "Nome é obrigatório.");
-      const token = regenerar_token ? newToken() : undefined;
+      const token = regenerar_token ? await tokenParaJurado(pool, String(nome).trim(), id, true) : undefined;
       const { rows } = await pool.query(
         token
           ? `UPDATE jurados SET nome = $1, ativo = $2, token = $3 WHERE id = $4

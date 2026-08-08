@@ -232,7 +232,8 @@
   </header>
 
   <nav class="abas" id="abas">
-    <button data-aba="escolas" aria-selected="true">Escolas</button>
+    <button data-aba="links" aria-selected="true">Links</button>
+    <button data-aba="escolas" aria-selected="false">Escolas</button>
     <button data-aba="provas" aria-selected="false">Provas</button>
     <button data-aba="regras" aria-selected="false">Regras das provas</button>
     <button data-aba="jurados" aria-selected="false">Jurados</button>
@@ -240,8 +241,26 @@
   </nav>
 
   <main>
+    <!-- LINKS -->
+    <section class="painel" id="painel-links">
+      <h2 class="titulo">Links do sistema</h2>
+      <p class="sub">Todos os links em um só lugar, prontos para copiar e enviar.</p>
+
+      <table>
+        <thead><tr><th>Link</th><th>Endereço</th><th>Ações</th></tr></thead>
+        <tbody id="lkTbodyGerais"></tbody>
+      </table>
+
+      <h2 class="titulo" style="margin-top:28px;">Links dos jurados</h2>
+      <p class="sub">Cada jurado só enxerga e edita as próprias notas por este link.</p>
+      <table>
+        <thead><tr><th>Jurado</th><th>Link individual</th><th>Ações</th></tr></thead>
+        <tbody id="lkTbodyJurados"></tbody>
+      </table>
+    </section>
+
     <!-- ESCOLAS -->
-    <section class="painel" id="painel-escolas">
+    <section class="painel" id="painel-escolas" hidden>
       <h2 class="titulo">Escolas participantes</h2>
       <p class="sub">Cadastre as escolas para que apareçam nas caixas de seleção dos jurados.</p>
 
@@ -440,7 +459,60 @@
       sessionStorage.removeItem(SS_TOKEN);
       mostrarLogin();
     };
+    renderLinksGerais();
     await Promise.all([carregarEscolas(), carregarProvas(), carregarJurados(), carregarAuditoria()]);
+  }
+
+  /* ----- links (visão geral) ----- */
+  function linhaLink(nome, url) {
+    const tr = document.createElement("tr");
+    const tdNome = document.createElement("td");
+    tdNome.textContent = nome;
+
+    const tdLink = document.createElement("td");
+    const div = document.createElement("div");
+    div.className = "link-jurado";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.readOnly = true;
+    input.value = url;
+    div.appendChild(input);
+    tdLink.appendChild(div);
+
+    const tdAcoes = document.createElement("td");
+    tdAcoes.className = "acoes-cel";
+    const bCopiar = botao("copiar", () => {
+      navigator.clipboard.writeText(url).then(() => {
+        bCopiar.textContent = "copiado!";
+        setTimeout(() => (bCopiar.textContent = "copiar"), 1500);
+      });
+    });
+    const bAbrir = botao("abrir", () => window.open(url, "_blank"));
+    tdAcoes.append(bCopiar, bAbrir);
+
+    tr.append(tdNome, tdLink, tdAcoes);
+    return tr;
+  }
+
+  function renderLinksGerais() {
+    const tbody = document.getElementById("lkTbodyGerais");
+    tbody.innerHTML = "";
+    tbody.appendChild(linhaLink("Ranking público", location.origin + "/"));
+    tbody.appendChild(linhaLink("Painel administrativo (este link)", location.origin + "/admin.html?key=" + KEY));
+  }
+
+  function renderLinksJurados() {
+    const tbody = document.getElementById("lkTbodyJurados");
+    tbody.innerHTML = "";
+    if (!jurados.length) {
+      tbody.innerHTML = '<tr><td colspan="3" class="vazio">Nenhum jurado cadastrado ainda. Cadastre na aba Jurados.</td></tr>';
+      return;
+    }
+    jurados.forEach((j) => {
+      const tr = linhaLink(j.nome + (j.ativo ? "" : " (inativo)"), location.origin + "/jurado.html?token=" + j.token);
+      if (!j.ativo) tr.className = "inativo";
+      tbody.appendChild(tr);
+    });
   }
 
   function trocarAba(aba) {
@@ -656,6 +728,7 @@
     const r = await adminFetch("/api/admin?resource=jurados");
     jurados = await r.json();
     renderJurados();
+    renderLinksJurados();
   }
 
   function renderJurados() {

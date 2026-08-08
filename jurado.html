@@ -66,10 +66,16 @@
     line-height: 1.1;
     color: #fff;
     text-shadow: 3px 3px 0 var(--azul-2);
-    margin: 0 0 8px;
+    margin: 0 0 10px;
   }
 
-  header p { margin: 0; font-size: 14px; font-weight: 700; color: var(--apagado-claro); }
+  header p {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.28), 0 4px 8px rgba(0, 0, 0, 0.28);
+  }
 
   .sticker {
     position: absolute;
@@ -125,11 +131,19 @@
     border-color: var(--azul);
   }
 
-  .nota {
-    font-size: 13px;
-    font-weight: 600;
-    color: #555;
-    margin: -6px 0 16px;
+  .faixa-pontos {
+    display: inline-block;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 12.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--azul);
+    background: #eef1fb;
+    border: 1.5px solid #d7ddf5;
+    border-radius: 999px;
+    padding: 6px 13px;
+    margin: -4px 0 14px;
   }
 
   button.principal {
@@ -200,6 +214,106 @@
     font-weight: 700;
   }
 
+  /* ---------- tela de seleção de jurado ---------- */
+  .titulo-selecao {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0 0 6px;
+  }
+
+  .nota-selecao { font-size: 13px; font-weight: 600; color: #555; margin: 0 0 18px; line-height: 1.5; }
+
+  .lista-selecao { display: flex; flex-direction: column; gap: 9px; }
+
+  .opcao-jurado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 16px;
+    border: 2px solid #dcdcdc;
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--texto);
+    text-align: left;
+  }
+  .opcao-jurado:hover { border-color: var(--azul); }
+  .opcao-jurado.selecionada {
+    border-color: var(--azul);
+    background: #eef1fb;
+  }
+
+  .opcao-jurado .marca {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--azul);
+    background: #dfe6fa;
+    border-radius: 999px;
+    padding: 4px 9px;
+    white-space: nowrap;
+  }
+
+  /* ---------- barra "jurado selecionado" ---------- */
+  .barra-jurado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    background: var(--azul);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 10px 0 rgba(0, 0, 0, 0.16), 0 14px 30px rgba(0, 0, 0, 0.22);
+  }
+
+  .barra-jurado-texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+  .rotulo-jurado {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .nome-jurado {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.15;
+    text-shadow: 2px 2px 0 var(--laranja), 4px 4px 0 rgba(0, 0, 0, 0.22);
+    word-break: break-word;
+  }
+
+  .btn-trocar {
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1.5px solid rgba(255, 255, 255, 0.55);
+    border-radius: 999px;
+    padding: 9px 15px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-trocar:hover { background: rgba(255, 255, 255, 0.28); }
+
+  @media (max-width: 480px) {
+    .nome-jurado { font-size: 21px; }
+  }
+
   footer.creditos {
     text-align: center;
     margin-top: 6px;
@@ -220,7 +334,22 @@
 
   <div id="estado" class="card estado" hidden></div>
 
+  <div id="selecao" class="card" hidden>
+    <h2 class="titulo-selecao">Selecione o jurado</h2>
+    <p class="nota-selecao">Confirme quem está usando este aparelho. Você só precisa fazer isso uma vez neste navegador — depois é só usar "trocar jurado" quando precisar.</p>
+    <div id="selecaoLista" class="lista-selecao"></div>
+    <button class="principal" id="selecaoContinuar" style="margin-top:18px;">Continuar</button>
+  </div>
+
   <div id="conteudo" hidden>
+    <div class="barra-jurado" id="barraJurado">
+      <div class="barra-jurado-texto">
+        <span class="rotulo-jurado">Jurado selecionado</span>
+        <span class="nome-jurado" id="nomeJuradoDestaque"></span>
+      </div>
+      <button type="button" class="btn-trocar" id="trocarJurado">Trocar jurado</button>
+    </div>
+
     <div class="card">
       <div class="campo">
         <label for="prova">Prova</label>
@@ -232,7 +361,7 @@
         <select id="escola"></select>
       </div>
 
-      <p class="nota" id="notaMax"></p>
+      <p class="faixa-pontos" id="notaMax"></p>
 
       <div class="campo">
         <label for="pontos">Pontuação</label>
@@ -254,17 +383,27 @@
 </div>
 
 <script>
+  const STORAGE_KEY = "gincana_jurado_ativo";
   const params = new URLSearchParams(location.search);
-  const token = params.get("token") || "";
+  const urlToken = params.get("token") || "";
 
+  let tokenAtivo = "";
+  let jurados = [];
   let provas = [];
   let schools = [];
   let minhas = [];
   let juradoNome = "";
+  let selecionadoTemp = "";
+  let dadosCacheToken = "";
+  let dadosCache = null;
 
   const $estado = document.getElementById("estado");
+  const $selecao = document.getElementById("selecao");
+  const $selecaoLista = document.getElementById("selecaoLista");
+  const $selecaoContinuar = document.getElementById("selecaoContinuar");
   const $conteudo = document.getElementById("conteudo");
-  const $subtitulo = document.getElementById("subtitulo");
+  const $nomeJuradoDestaque = document.getElementById("nomeJuradoDestaque");
+  const $trocarJurado = document.getElementById("trocarJurado");
   const $prova = document.getElementById("prova");
   const $escola = document.getElementById("escola");
   const $pontos = document.getElementById("pontos");
@@ -274,32 +413,121 @@
   const $sucesso = document.getElementById("sucesso");
   const $minhas = document.getElementById("minhas");
 
+  function arredondar(n) {
+    return Math.round(n * 100) / 100;
+  }
+
   function mostrarEstado(msg) {
     $estado.hidden = false;
     $estado.textContent = msg;
+    $selecao.hidden = true;
     $conteudo.hidden = true;
   }
 
+  async function buscarDados(tok) {
+    const r = await fetch("/api/scores?resource=mine&token=" + encodeURIComponent(tok));
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      throw new Error(d.erro || "Não foi possível abrir este link.");
+    }
+    return r.json();
+  }
+
   async function carregar() {
-    if (!token) return mostrarEstado("Link inválido: falta o código do jurado.");
+    if (!urlToken) return mostrarEstado("Link inválido: falta o código do jurado.");
+
+    let dadosIniciais;
     try {
-      const r = await fetch("/api/scores?resource=mine&token=" + encodeURIComponent(token));
-      if (!r.ok) {
-        const d = await r.json().catch(() => ({}));
-        return mostrarEstado(d.erro || "Não foi possível abrir este link.");
-      }
-      const dados = await r.json();
-      provas = dados.provas;
-      schools = dados.schools;
-      minhas = dados.minhas;
-      juradoNome = dados.jurado.nome;
+      dadosIniciais = await buscarDados(urlToken);
     } catch (e) {
-      return mostrarEstado("Não foi possível carregar. Verifique sua conexão e recarregue a página.");
+      return mostrarEstado(e.message || "Não foi possível carregar. Verifique sua conexão e recarregue a página.");
     }
 
-    $subtitulo.textContent = "Jurado(a): " + juradoNome;
+    jurados = dadosIniciais.jurados || [];
+    dadosCacheToken = urlToken;
+    dadosCache = dadosIniciais;
+
+    const salvo = localStorage.getItem(STORAGE_KEY);
+    const salvoValido = salvo && jurados.some((j) => j.token === salvo);
+
+    if (salvoValido) {
+      try {
+        const dados = salvo === urlToken ? dadosIniciais : await buscarDados(salvo);
+        aplicarDados(dados, salvo);
+        mostrarConteudo();
+      } catch (e) {
+        localStorage.removeItem(STORAGE_KEY);
+        mostrarSelecao(urlToken);
+      }
+    } else {
+      mostrarSelecao(urlToken);
+    }
+  }
+
+  function aplicarDados(dados, tok) {
+    tokenAtivo = tok;
+    provas = dados.provas;
+    schools = dados.schools;
+    minhas = dados.minhas;
+    juradoNome = dados.jurado.nome;
+    if (dados.jurados) jurados = dados.jurados;
+  }
+
+  function mostrarSelecao(preSelecionar) {
     $estado.hidden = true;
+    $conteudo.hidden = true;
+    $selecao.hidden = false;
+    selecionadoTemp = preSelecionar || tokenAtivo || urlToken;
+    renderSelecaoLista();
+  }
+
+  function renderSelecaoLista() {
+    $selecaoLista.innerHTML = "";
+    jurados.forEach((j) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "opcao-jurado" + (j.token === selecionadoTemp ? " selecionada" : "");
+
+      const nomeSpan = document.createElement("span");
+      nomeSpan.textContent = j.nome;
+      btn.appendChild(nomeSpan);
+
+      if (j.token === urlToken) {
+        const marca = document.createElement("span");
+        marca.className = "marca";
+        marca.textContent = "é você";
+        btn.appendChild(marca);
+      }
+
+      btn.onclick = () => {
+        selecionadoTemp = j.token;
+        renderSelecaoLista();
+      };
+      $selecaoLista.appendChild(btn);
+    });
+  }
+
+  $selecaoContinuar.onclick = async () => {
+    $selecaoContinuar.disabled = true;
+    try {
+      const dados = selecionadoTemp === dadosCacheToken ? dadosCache : await buscarDados(selecionadoTemp);
+      localStorage.setItem(STORAGE_KEY, selecionadoTemp);
+      aplicarDados(dados, selecionadoTemp);
+      mostrarConteudo();
+    } catch (e) {
+      alert(e.message || "Não foi possível confirmar. Tente novamente.");
+    } finally {
+      $selecaoContinuar.disabled = false;
+    }
+  };
+
+  $trocarJurado.onclick = () => mostrarSelecao(tokenAtivo);
+
+  function mostrarConteudo() {
+    $estado.hidden = true;
+    $selecao.hidden = true;
     $conteudo.hidden = false;
+    $nomeJuradoDestaque.textContent = juradoNome;
     montarSelects();
     montarMinhas();
     atualizarNotaMax();
@@ -311,7 +539,7 @@
     provas.forEach((p) => {
       const opt = document.createElement("option");
       opt.value = p.id;
-      opt.textContent = p.numero + " · " + p.nome + " (máx. " + arredondar(p.pontuacao_maxima) + ")";
+      opt.textContent = p.numero + " · " + p.nome;
       $prova.appendChild(opt);
     });
 
@@ -324,10 +552,6 @@
     });
   }
 
-  function arredondar(n) {
-    return Math.round(n * 100) / 100;
-  }
-
   function provaAtual() {
     return provas.find((p) => String(p.id) === String($prova.value));
   }
@@ -336,7 +560,7 @@
     const p = provaAtual();
     if (!p) return;
     $pontos.max = p.pontuacao_maxima;
-    $notaMax.textContent = "Pontuação máxima desta prova: " + arredondar(p.pontuacao_maxima) + " pontos.";
+    $notaMax.textContent = "De 0 a " + arredondar(p.pontuacao_maxima) + " pontos";
   }
 
   function achaMinha(provaId, escolaId) {
@@ -436,7 +660,7 @@
       const r = await fetch("/api/scores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, escola_id: escolaId, prova_id: prova.id, pontos: pontosNum }),
+        body: JSON.stringify({ token: tokenAtivo, escola_id: escolaId, prova_id: prova.id, pontos: pontosNum }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.erro || "Erro ao salvar.");
@@ -457,7 +681,7 @@
   async function remover(id) {
     if (!confirm("Apagar esta nota lançada?")) return;
     try {
-      const r = await fetch("/api/scores?token=" + encodeURIComponent(token) + "&id=" + id, {
+      const r = await fetch("/api/scores?token=" + encodeURIComponent(tokenAtivo) + "&id=" + id, {
         method: "DELETE",
       });
       if (!r.ok && r.status !== 204) throw new Error();
