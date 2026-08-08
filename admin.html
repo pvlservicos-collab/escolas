@@ -498,7 +498,7 @@
     const tbody = document.getElementById("lkTbodyGerais");
     tbody.innerHTML = "";
     tbody.appendChild(linhaLink("Ranking público", location.origin + "/"));
-    tbody.appendChild(linhaLink("Painel administrativo (este link)", location.origin + "/admin.html?key=" + KEY));
+    tbody.appendChild(linhaLink("Painel administrativo (este link)", location.origin + "/admin?key=" + KEY));
   }
 
   function renderLinksJurados() {
@@ -509,7 +509,7 @@
       return;
     }
     jurados.forEach((j) => {
-      const tr = linhaLink(j.nome + (j.ativo ? "" : " (inativo)"), location.origin + "/jurado.html?token=" + j.token);
+      const tr = linhaLink(j.nome + (j.ativo ? "" : " (inativo)"), location.origin + "/jurado?token=" + j.token);
       if (!j.ativo) tr.className = "inativo";
       tbody.appendChild(tr);
     });
@@ -747,7 +747,7 @@
       const tdLink = document.createElement("td");
       const linkDiv = document.createElement("div");
       linkDiv.className = "link-jurado";
-      const link = location.origin + "/jurado.html?token=" + j.token;
+      const link = location.origin + "/jurado?token=" + j.token;
       const inputLink = document.createElement("input");
       inputLink.type = "text";
       inputLink.readOnly = true;
