@@ -470,18 +470,13 @@
     dadosCacheToken = urlToken;
     dadosCache = dadosIniciais;
 
+    // Só pula a tela de seleção se este exato link já foi confirmado antes neste
+    // navegador. Abrir o link de outro jurado (token diferente) sempre pede
+    // confirmação de novo, mesmo que já tenha uma sessão ativa de outra pessoa.
     const salvo = localStorage.getItem(STORAGE_KEY);
-    const salvoValido = salvo && jurados.some((j) => j.token === salvo);
-
-    if (salvoValido) {
-      try {
-        const dados = salvo === urlToken ? dadosIniciais : await buscarDados(salvo);
-        aplicarDados(dados, salvo);
-        mostrarConteudo();
-      } catch (e) {
-        localStorage.removeItem(STORAGE_KEY);
-        mostrarSelecao(urlToken);
-      }
+    if (salvo === urlToken) {
+      aplicarDados(dadosIniciais, urlToken);
+      mostrarConteudo();
     } else {
       mostrarSelecao(urlToken);
     }

@@ -221,6 +221,42 @@
 
   .checkbox-linha { display: flex; align-items: center; gap: 8px; }
   .checkbox-linha input { width: auto; }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 20, 25, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 2000;
+  }
+  .modal-overlay[hidden] { display: none; }
+
+  .modal-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 26px;
+    max-width: 380px;
+    width: 100%;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    animation: modal-pop 0.15s ease-out;
+  }
+  @keyframes modal-pop {
+    from { transform: scale(0.96); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .modal-card h3 { margin: 0 0 6px; font-size: 17px; }
+  .modal-card .sub { margin: 0 0 18px; }
+
+  .modal-acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+  }
 </style>
 
 <div id="raizEstado"></div>
@@ -361,6 +397,22 @@
       </table>
     </section>
   </main>
+
+  <div id="modalOverlay" class="modal-overlay" hidden>
+    <div class="modal-card">
+      <h3 id="modalTitulo">Corrigir pontuação</h3>
+      <p class="sub" id="modalSub"></p>
+      <div class="campo">
+        <label for="modalInput">Nova pontuação</label>
+        <input id="modalInput" type="number" step="any" min="0">
+      </div>
+      <p class="aviso" id="modalAviso"></p>
+      <div class="modal-acoes">
+        <button class="secundario" id="modalCancelar">Cancelar</button>
+        <button class="primario" id="modalSalvar">Salvar</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -860,23 +912,23 @@
     });
   }
 
-  async function corrigirPontuacao(p) {
-    const novo = prompt(`Nova pontuação para ${p.jurado_nome} · ${p.escola_nome} · ${p.prova_nome} (máx. ${arredondar(p.pontuacao_maxima)}):`, p.pontos);
-    if (novo === null) return;
-    const numero = parseFloat(novo);
-    if (isNaN(numero) || numero < 0) return alert("Pontuação inválida.");
-    try {
-      const r = await adminFetch("/api/admin?resource=pontuacoes&id=" + p.id, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pontos: numero }),
-      });
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(d.erro || "Erro ao corrigir.");
-      await carregarAuditoria();
-    } catch (e) {
-      alert(e.message);
-    }
+  function corrigirPontuacao(p) {
+    abrirModalNumero({
+      titulo: "Corrigir pontuação",
+      sub: p.jurado_nome + " · " + p.escola_nome + " · " + p.prova_nome + " (máx. " + arredondar(p.pontuacao_maxima) + ")",
+      valor: p.pontos,
+      max: p.pontuacao_maxima,
+      onConfirmar: async (numero) => {
+        const r = await adminFetch("/api/admin?resource=pontuacoes&id=" + p.id, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pontos: numero }),
+        });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.erro || "Erro ao corrigir.");
+        await carregarAuditoria();
+      },
+    });
   }
 
   async function excluirPontuacao(id) {
@@ -897,6 +949,56 @@
   function escapeHtml(s) {
     return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
+
+  /* ----- modal (substitui prompt()/alert() nativos) ----- */
+  const $modalOverlay = document.getElementById("modalOverlay");
+  const $modalTitulo = document.getElementById("modalTitulo");
+  const $modalSub = document.getElementById("modalSub");
+  const $modalInput = document.getElementById("modalInput");
+  const $modalAviso = document.getElementById("modalAviso");
+  const $modalSalvar = document.getElementById("modalSalvar");
+  const $modalCancelar = document.getElementById("modalCancelar");
+
+  function fecharModal() {
+    $modalOverlay.hidden = true;
+    $modalSalvar.onclick = null;
+  }
+
+  function abrirModalNumero(opts) {
+    $modalTitulo.textContent = opts.titulo;
+    $modalSub.textContent = opts.sub || "";
+    $modalInput.value = opts.valor;
+    $modalInput.max = opts.max ?? "";
+    $modalAviso.textContent = "";
+    $modalOverlay.hidden = false;
+    $modalInput.focus();
+    $modalInput.select();
+
+    $modalSalvar.onclick = async () => {
+      const numero = parseFloat($modalInput.value);
+      if (isNaN(numero) || numero < 0) { $modalAviso.textContent = "Digite uma pontuação válida."; return; }
+      if (opts.max != null && numero > Number(opts.max)) {
+        $modalAviso.textContent = "A pontuação não pode passar de " + arredondar(opts.max) + ".";
+        return;
+      }
+      $modalSalvar.disabled = true;
+      try {
+        await opts.onConfirmar(numero);
+        fecharModal();
+      } catch (e) {
+        $modalAviso.textContent = e.message || "Não foi possível salvar.";
+      } finally {
+        $modalSalvar.disabled = false;
+      }
+    };
+  }
+
+  $modalCancelar.onclick = fecharModal;
+  $modalOverlay.onclick = (e) => { if (e.target === $modalOverlay) fecharModal(); };
+  $modalInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") $modalSalvar.click();
+    if (e.key === "Escape") fecharModal();
+  });
 
   /* ---------------- boot ---------------- */
   (async function boot() {
