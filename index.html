@@ -199,7 +199,20 @@
     cursor: pointer;
   }
 
-  li.top { background: linear-gradient(90deg, rgba(255, 201, 60, 0.16), transparent 70%); border-radius: 8px; }
+  li.top { border-radius: 10px; padding-left: 10px; padding-right: 10px; margin: 6px 0; }
+
+  li.pos-1 {
+    background: linear-gradient(90deg, rgba(255, 200, 0, 0.14), transparent 75%);
+    box-shadow: 0 0 0 1.5px rgba(255, 200, 0, 0.5), 0 6px 16px rgba(255, 200, 0, 0.32);
+  }
+  li.pos-2 {
+    background: linear-gradient(90deg, rgba(180, 180, 190, 0.16), transparent 75%);
+    box-shadow: 0 0 0 1.5px rgba(180, 180, 190, 0.55), 0 6px 16px rgba(150, 150, 160, 0.3);
+  }
+  li.pos-3 {
+    background: linear-gradient(90deg, rgba(205, 127, 50, 0.16), transparent 75%);
+    box-shadow: 0 0 0 1.5px rgba(205, 127, 50, 0.5), 0 6px 16px rgba(205, 127, 50, 0.3);
+  }
 
   .linha {
     display: flex;
@@ -216,7 +229,9 @@
     color: var(--apagado);
   }
 
-  li.top .pos { color: var(--laranja); }
+  li.pos-1 .pos { color: #c99700; }
+  li.pos-2 .pos { color: #8c8c96; }
+  li.pos-3 .pos { color: #a85d23; }
 
   .info { flex: 1; min-width: 0; }
 
@@ -332,6 +347,10 @@
     return Math.round(n * 100) / 100;
   }
 
+  function classePosicao(i) {
+    return i === 0 ? "top pos-1" : i === 1 ? "top pos-2" : i === 2 ? "top pos-3" : "";
+  }
+
   async function carregar() {
     try {
       const r = await fetch(API);
@@ -388,7 +407,7 @@
 
     linhas.forEach((escola, i) => {
       const li = document.createElement("li");
-      if (i < 3) li.className = "top";
+      li.className = classePosicao(i);
       if (abertas.has(escola.id)) li.className = (li.className + " aberta").trim();
 
       const detalheProvas = provas
@@ -433,7 +452,7 @@
 
     linhas.forEach((escola, i) => {
       const li = document.createElement("li");
-      if (i < 3 && escola.pontos > 0) li.className = "top";
+      if (escola.pontos > 0) li.className = classePosicao(i);
       li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.pontos));
       $lista.appendChild(li);
     });
