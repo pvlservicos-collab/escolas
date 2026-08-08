@@ -143,7 +143,7 @@
     border: 1.5px solid #d7ddf5;
     border-radius: 999px;
     padding: 6px 13px;
-    margin: -4px 0 14px;
+    margin: 0 0 9px;
   }
 
   button.principal {
@@ -261,18 +261,26 @@
     white-space: nowrap;
   }
 
-  /* ---------- barra "jurado selecionado" ---------- */
+  /* ---------- barra "jurado selecionado" (fixa no topo da tela) ---------- */
   .barra-jurado {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: var(--azul);
+    padding: 14px 18px;
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.16), 0 10px 24px rgba(0, 0, 0, 0.28);
+  }
+
+  .barra-jurado-inner {
+    max-width: 560px;
+    margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 14px;
     flex-wrap: wrap;
-    background: var(--azul);
-    border-radius: 16px;
-    padding: 16px 20px;
-    margin-bottom: 22px;
-    box-shadow: 0 10px 0 rgba(0, 0, 0, 0.16), 0 14px 30px rgba(0, 0, 0, 0.22);
   }
 
   .barra-jurado-texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -323,6 +331,16 @@
   }
 </style>
 
+<div class="barra-jurado" id="barraJurado" hidden>
+  <div class="barra-jurado-inner">
+    <div class="barra-jurado-texto">
+      <span class="rotulo-jurado">Jurado selecionado</span>
+      <span class="nome-jurado" id="nomeJuradoDestaque"></span>
+    </div>
+    <button type="button" class="btn-trocar" id="trocarJurado">Trocar jurado</button>
+  </div>
+</div>
+
 <div class="container">
   <header>
     <span class="sticker s1" aria-hidden="true">⭐</span>
@@ -342,14 +360,6 @@
   </div>
 
   <div id="conteudo" hidden>
-    <div class="barra-jurado" id="barraJurado">
-      <div class="barra-jurado-texto">
-        <span class="rotulo-jurado">Jurado selecionado</span>
-        <span class="nome-jurado" id="nomeJuradoDestaque"></span>
-      </div>
-      <button type="button" class="btn-trocar" id="trocarJurado">Trocar jurado</button>
-    </div>
-
     <div class="card">
       <div class="campo">
         <label for="prova">Prova</label>
@@ -361,10 +371,9 @@
         <select id="escola"></select>
       </div>
 
-      <p class="faixa-pontos" id="notaMax"></p>
-
       <div class="campo">
         <label for="pontos">Pontuação</label>
+        <p class="faixa-pontos" id="notaMax"></p>
         <input id="pontos" type="number" step="any" min="0" placeholder="0">
       </div>
 
@@ -402,6 +411,7 @@
   const $selecaoLista = document.getElementById("selecaoLista");
   const $selecaoContinuar = document.getElementById("selecaoContinuar");
   const $conteudo = document.getElementById("conteudo");
+  const $barraJurado = document.getElementById("barraJurado");
   const $nomeJuradoDestaque = document.getElementById("nomeJuradoDestaque");
   const $trocarJurado = document.getElementById("trocarJurado");
   const $prova = document.getElementById("prova");
@@ -417,11 +427,22 @@
     return Math.round(n * 100) / 100;
   }
 
+  function ajustarEspacoBarra() {
+    if (!$barraJurado.hidden) {
+      document.body.style.paddingTop = $barraJurado.offsetHeight + 24 + "px";
+    } else {
+      document.body.style.paddingTop = "";
+    }
+  }
+  window.addEventListener("resize", ajustarEspacoBarra);
+
   function mostrarEstado(msg) {
     $estado.hidden = false;
     $estado.textContent = msg;
     $selecao.hidden = true;
     $conteudo.hidden = true;
+    $barraJurado.hidden = true;
+    ajustarEspacoBarra();
   }
 
   async function buscarDados(tok) {
@@ -477,6 +498,8 @@
     $estado.hidden = true;
     $conteudo.hidden = true;
     $selecao.hidden = false;
+    $barraJurado.hidden = true;
+    ajustarEspacoBarra();
     selecionadoTemp = preSelecionar || tokenAtivo || urlToken;
     renderSelecaoLista();
   }
@@ -528,6 +551,8 @@
     $selecao.hidden = true;
     $conteudo.hidden = false;
     $nomeJuradoDestaque.textContent = juradoNome;
+    $barraJurado.hidden = false;
+    ajustarEspacoBarra();
     montarSelects();
     montarMinhas();
     atualizarNotaMax();
