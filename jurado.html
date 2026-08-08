@@ -163,7 +163,34 @@
   button.principal:disabled { background: #c6c6c6; cursor: not-allowed; }
 
   .aviso { font-size: 13px; font-weight: 700; color: #c4133b; margin: 12px 0 0; min-height: 18px; }
-  .sucesso { font-size: 13px; font-weight: 700; color: #0a7d2c; margin: 12px 0 0; min-height: 18px; }
+
+  .sucesso-card {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(10, 125, 44, 0.10);
+    border: 1.5px solid rgba(10, 125, 44, 0.4);
+    border-radius: 10px;
+    color: #0a7d2c;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .sucesso-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 19px;
+    height: 19px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #0a7d2c;
+    color: #fff;
+    font-size: 12px;
+    line-height: 1;
+  }
 
   .bloco h2 {
     font-family: "Baloo 2", sans-serif;
@@ -381,7 +408,10 @@
 
       <button class="principal" id="salvar">Salvar nota</button>
       <p class="aviso" id="aviso"></p>
-      <p class="sucesso" id="sucesso"></p>
+      <div class="sucesso-card" id="sucesso" hidden>
+        <span class="sucesso-icone">✓</span>
+        <span>Nota enviada</span>
+      </div>
     </div>
 
     <div class="card bloco">
@@ -405,6 +435,7 @@
   let minhas = [];
   let juradoNome = "";
   let selecionadoTemp = "";
+  let sucessoTimeout = null;
   let dadosCacheToken = "";
   let dadosCache = null;
 
@@ -667,7 +698,8 @@
     const pontosNum = parseFloat($pontos.value);
 
     $aviso.textContent = "";
-    $sucesso.textContent = "";
+    $sucesso.hidden = true;
+    clearTimeout(sucessoTimeout);
 
     if (!prova) { $aviso.textContent = "Selecione uma prova."; return; }
     if (!escolaId) { $aviso.textContent = "Selecione uma escola."; return; }
@@ -692,7 +724,8 @@
       else minhas.push(d);
 
       montarMinhas();
-      $sucesso.textContent = "Nota salva.";
+      $sucesso.hidden = false;
+      sucessoTimeout = setTimeout(() => { $sucesso.hidden = true; }, 3000);
     } catch (e) {
       $aviso.textContent = e.message || "Não foi possível salvar. Tente novamente.";
     } finally {
