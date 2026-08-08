@@ -1,0 +1,484 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Área do Jurado — Gincana 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --rosa: #df1889;
+    --azul: #24409c;
+    --azul-2: #16277a;
+    --amarelo: #ffc93c;
+    --laranja: #f7941d;
+    --verde: #4caf50;
+    --gelo: #fafafa;
+    --texto: #1a1a1a;
+    --apagado-claro: rgba(255, 255, 255, 0.85);
+    --linha: #e7e7e7;
+    --apagado: #8a8a8a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 40px 18px 80px;
+    background-color: var(--rosa);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cpath d='M-20 40 Q 30 15 80 40 T 180 40 T 280 40' stroke='rgba(255,255,255,0.10)' stroke-width='9' fill='none'/%3E%3Cpath d='M-20 115 Q 30 90 80 115 T 180 115 T 280 115' stroke='rgba(255,255,255,0.09)' stroke-width='9' fill='none'/%3E%3Cpath d='M-20 185 Q 30 160 80 185 T 180 185 T 280 185' stroke='rgba(255,255,255,0.07)' stroke-width='7' fill='none'/%3E%3C/svg%3E");
+    background-size: 220px 220px;
+    color: var(--texto);
+    font-family: "Nunito", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 560px; margin: 0 auto; }
+
+  header {
+    position: relative;
+    text-align: center;
+    margin-bottom: 28px;
+    padding: 6px 10px 0;
+  }
+
+  .faixa {
+    display: inline-block;
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #fff;
+    background: var(--azul);
+    padding: 8px 18px;
+    border-radius: 7px;
+    transform: rotate(-2deg);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.18);
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    line-height: 1.1;
+    color: #fff;
+    text-shadow: 3px 3px 0 var(--azul-2);
+    margin: 0 0 8px;
+  }
+
+  header p { margin: 0; font-size: 14px; font-weight: 700; color: var(--apagado-claro); }
+
+  .sticker {
+    position: absolute;
+    font-size: 28px;
+    filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.18));
+    pointer-events: none;
+    user-select: none;
+  }
+  .s1 { top: -6px; left: 3%; transform: rotate(-16deg); }
+  .s2 { top: 4px; right: 4%; transform: rotate(14deg); font-size: 24px; }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 23px; }
+    .sticker { display: none; }
+  }
+
+  /* ---------- cartões (área de interação, branco-gelo) ---------- */
+  .card {
+    background: var(--gelo);
+    color: var(--texto);
+    border-radius: 16px;
+    padding: 26px;
+    margin-bottom: 22px;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+  }
+
+  .campo { margin-bottom: 16px; }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 7px;
+    color: #444;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 12px 13px;
+    font-size: 16px;
+    font-family: inherit;
+    color: var(--texto);
+    background: #fff;
+    border: 1.5px solid #cfcfcf;
+    border-radius: 8px;
+  }
+
+  input:focus, select:focus {
+    outline: 2px solid var(--azul);
+    outline-offset: 1px;
+    border-color: var(--azul);
+  }
+
+  .nota {
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin: -6px 0 16px;
+  }
+
+  button.principal {
+    width: 100%;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 13px 18px;
+    border-radius: 9px;
+    cursor: pointer;
+    border: none;
+    background: var(--azul);
+    color: #fff;
+    letter-spacing: 0.01em;
+  }
+  button.principal:hover { background: var(--azul-2); }
+  button.principal:disabled { background: #c6c6c6; cursor: not-allowed; }
+
+  .aviso { font-size: 13px; font-weight: 700; color: #c4133b; margin: 12px 0 0; min-height: 18px; }
+  .sucesso { font-size: 13px; font-weight: 700; color: #0a7d2c; margin: 12px 0 0; min-height: 18px; }
+
+  .bloco h2 {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--texto);
+    border-bottom: 2px solid var(--linha);
+    padding-bottom: 10px;
+    margin: 0 0 4px;
+  }
+
+  ul.minhas { list-style: none; margin: 0; padding: 0; }
+
+  ul.minhas li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 2px;
+    border-bottom: 1px solid var(--linha);
+  }
+
+  ul.minhas .info { flex: 1; min-width: 0; }
+  ul.minhas .prova { display: block; font-size: 12px; font-weight: 700; color: var(--apagado); }
+  ul.minhas .escola { font-size: 15px; font-weight: 700; word-break: break-word; color: var(--texto); }
+  ul.minhas .pontos { font-family: "Baloo 2", sans-serif; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--azul); }
+
+  ul.minhas button {
+    background: none;
+    border: none;
+    padding: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--apagado);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  ul.minhas button:hover { color: var(--texto); }
+
+  .vazio { padding: 20px 2px; color: var(--apagado); font-size: 14px; font-weight: 600; }
+
+  .estado {
+    text-align: center;
+    padding: 44px 26px;
+    color: var(--texto);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  footer.creditos {
+    text-align: center;
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--apagado-claro);
+  }
+</style>
+
+<div class="container">
+  <header>
+    <span class="sticker s1" aria-hidden="true">⭐</span>
+    <span class="sticker s2" aria-hidden="true">⚡</span>
+    <div class="faixa">Comissão Julgadora</div>
+    <h1>Área do Jurado</h1>
+    <p id="subtitulo">Gincana Estadual da Juventude 2026</p>
+  </header>
+
+  <div id="estado" class="card estado" hidden></div>
+
+  <div id="conteudo" hidden>
+    <div class="card">
+      <div class="campo">
+        <label for="prova">Prova</label>
+        <select id="prova"></select>
+      </div>
+
+      <div class="campo">
+        <label for="escola">Escola</label>
+        <select id="escola"></select>
+      </div>
+
+      <p class="nota" id="notaMax"></p>
+
+      <div class="campo">
+        <label for="pontos">Pontuação</label>
+        <input id="pontos" type="number" step="any" min="0" placeholder="0">
+      </div>
+
+      <button class="principal" id="salvar">Salvar nota</button>
+      <p class="aviso" id="aviso"></p>
+      <p class="sucesso" id="sucesso"></p>
+    </div>
+
+    <div class="card bloco">
+      <h2>Minhas notas lançadas</h2>
+      <ul class="minhas" id="minhas"></ul>
+    </div>
+
+    <footer class="creditos">Gincana Estadual da Juventude 2026 · SEJUV/AP</footer>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const token = params.get("token") || "";
+
+  let provas = [];
+  let schools = [];
+  let minhas = [];
+  let juradoNome = "";
+
+  const $estado = document.getElementById("estado");
+  const $conteudo = document.getElementById("conteudo");
+  const $subtitulo = document.getElementById("subtitulo");
+  const $prova = document.getElementById("prova");
+  const $escola = document.getElementById("escola");
+  const $pontos = document.getElementById("pontos");
+  const $notaMax = document.getElementById("notaMax");
+  const $salvar = document.getElementById("salvar");
+  const $aviso = document.getElementById("aviso");
+  const $sucesso = document.getElementById("sucesso");
+  const $minhas = document.getElementById("minhas");
+
+  function mostrarEstado(msg) {
+    $estado.hidden = false;
+    $estado.textContent = msg;
+    $conteudo.hidden = true;
+  }
+
+  async function carregar() {
+    if (!token) return mostrarEstado("Link inválido: falta o código do jurado.");
+    try {
+      const r = await fetch("/api/scores?resource=mine&token=" + encodeURIComponent(token));
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        return mostrarEstado(d.erro || "Não foi possível abrir este link.");
+      }
+      const dados = await r.json();
+      provas = dados.provas;
+      schools = dados.schools;
+      minhas = dados.minhas;
+      juradoNome = dados.jurado.nome;
+    } catch (e) {
+      return mostrarEstado("Não foi possível carregar. Verifique sua conexão e recarregue a página.");
+    }
+
+    $subtitulo.textContent = "Jurado(a): " + juradoNome;
+    $estado.hidden = true;
+    $conteudo.hidden = false;
+    montarSelects();
+    montarMinhas();
+    atualizarNotaMax();
+    preencherExistente();
+  }
+
+  function montarSelects() {
+    $prova.innerHTML = "";
+    provas.forEach((p) => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = p.numero + " · " + p.nome + " (máx. " + arredondar(p.pontuacao_maxima) + ")";
+      $prova.appendChild(opt);
+    });
+
+    $escola.innerHTML = "";
+    schools.forEach((e) => {
+      const opt = document.createElement("option");
+      opt.value = e.id;
+      opt.textContent = e.nome + (e.municipio ? " — " + e.municipio : "");
+      $escola.appendChild(opt);
+    });
+  }
+
+  function arredondar(n) {
+    return Math.round(n * 100) / 100;
+  }
+
+  function provaAtual() {
+    return provas.find((p) => String(p.id) === String($prova.value));
+  }
+
+  function atualizarNotaMax() {
+    const p = provaAtual();
+    if (!p) return;
+    $pontos.max = p.pontuacao_maxima;
+    $notaMax.textContent = "Pontuação máxima desta prova: " + arredondar(p.pontuacao_maxima) + " pontos.";
+  }
+
+  function achaMinha(provaId, escolaId) {
+    return minhas.find(
+      (m) => String(m.prova_id) === String(provaId) && String(m.escola_id) === String(escolaId)
+    );
+  }
+
+  function preencherExistente() {
+    const existente = achaMinha($prova.value, $escola.value);
+    $pontos.value = existente ? existente.pontos : "";
+  }
+
+  function montarMinhas() {
+    $minhas.innerHTML = "";
+    if (!minhas.length) {
+      const li = document.createElement("li");
+      li.className = "vazio";
+      li.textContent = "Você ainda não lançou nenhuma nota.";
+      $minhas.appendChild(li);
+      return;
+    }
+
+    const porProva = {};
+    provas.forEach((p) => (porProva[p.id] = p));
+    const porEscola = {};
+    schools.forEach((e) => (porEscola[e.id] = e));
+
+    const ordenadas = [...minhas].sort((a, b) => {
+      const pa = porProva[a.prova_id]?.ordem ?? 999;
+      const pb = porProva[b.prova_id]?.ordem ?? 999;
+      if (pa !== pb) return pa - pb;
+      const ea = porEscola[a.escola_id]?.nome || "";
+      const eb = porEscola[b.escola_id]?.nome || "";
+      return ea.localeCompare(eb, "pt-BR");
+    });
+
+    ordenadas.forEach((m) => {
+      const prova = porProva[m.prova_id];
+      const escola = porEscola[m.escola_id];
+      if (!prova || !escola) return;
+
+      const li = document.createElement("li");
+
+      const info = document.createElement("span");
+      info.className = "info";
+      const provaSpan = document.createElement("span");
+      provaSpan.className = "prova";
+      provaSpan.textContent = prova.numero + " · " + prova.nome;
+      const escolaSpan = document.createElement("span");
+      escolaSpan.className = "escola";
+      escolaSpan.textContent = escola.nome;
+      info.append(provaSpan, escolaSpan);
+
+      const pts = document.createElement("span");
+      pts.className = "pontos";
+      pts.textContent = arredondar(m.pontos);
+
+      const bEditar = document.createElement("button");
+      bEditar.textContent = "editar";
+      bEditar.onclick = () => {
+        $prova.value = m.prova_id;
+        $escola.value = m.escola_id;
+        atualizarNotaMax();
+        $pontos.value = m.pontos;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        $pontos.focus();
+      };
+
+      const bRemover = document.createElement("button");
+      bRemover.textContent = "apagar";
+      bRemover.onclick = () => remover(m.id);
+
+      li.append(info, pts, bEditar, bRemover);
+      $minhas.appendChild(li);
+    });
+  }
+
+  async function salvar() {
+    const prova = provaAtual();
+    const escolaId = Number($escola.value);
+    const pontosNum = parseFloat($pontos.value);
+
+    $aviso.textContent = "";
+    $sucesso.textContent = "";
+
+    if (!prova) { $aviso.textContent = "Selecione uma prova."; return; }
+    if (!escolaId) { $aviso.textContent = "Selecione uma escola."; return; }
+    if (isNaN(pontosNum) || pontosNum < 0) { $aviso.textContent = "Digite uma pontuação válida."; return; }
+    if (pontosNum > Number(prova.pontuacao_maxima)) {
+      $aviso.textContent = "A pontuação máxima desta prova é " + arredondar(prova.pontuacao_maxima) + ".";
+      return;
+    }
+
+    $salvar.disabled = true;
+    try {
+      const r = await fetch("/api/scores", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, escola_id: escolaId, prova_id: prova.id, pontos: pontosNum }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.erro || "Erro ao salvar.");
+
+      const existente = achaMinha(prova.id, escolaId);
+      if (existente) Object.assign(existente, d);
+      else minhas.push(d);
+
+      montarMinhas();
+      $sucesso.textContent = "Nota salva.";
+    } catch (e) {
+      $aviso.textContent = e.message || "Não foi possível salvar. Tente novamente.";
+    } finally {
+      $salvar.disabled = false;
+    }
+  }
+
+  async function remover(id) {
+    if (!confirm("Apagar esta nota lançada?")) return;
+    try {
+      const r = await fetch("/api/scores?token=" + encodeURIComponent(token) + "&id=" + id, {
+        method: "DELETE",
+      });
+      if (!r.ok && r.status !== 204) throw new Error();
+    } catch (e) {
+      $aviso.textContent = "Não foi possível apagar. Tente novamente.";
+      return;
+    }
+    minhas = minhas.filter((m) => m.id !== id);
+    montarMinhas();
+    preencherExistente();
+  }
+
+  $prova.addEventListener("change", () => {
+    atualizarNotaMax();
+    preencherExistente();
+  });
+  $escola.addEventListener("change", preencherExistente);
+  $salvar.addEventListener("click", salvar);
+  $pontos.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") salvar();
+  });
+
+  carregar();
+</script>

@@ -1,0 +1,849 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel Administrativo — Gincana 2026</title>
+
+<style>
+  :root {
+    --preto: #111;
+    --linha: #e2e2e2;
+    --fundo: #f5f5f5;
+    --apagado: #767676;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0 0 80px;
+    background: var(--fundo);
+    color: var(--preto);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .estado {
+    max-width: 420px;
+    margin: 90px auto;
+    text-align: center;
+    color: var(--apagado);
+    font-size: 15px;
+    padding: 0 20px;
+  }
+
+  /* ---------- login ---------- */
+  .login-card {
+    max-width: 360px;
+    margin: 90px auto;
+    background: #fff;
+    border: 1px solid var(--linha);
+    border-radius: 10px;
+    padding: 30px;
+  }
+  .login-card h1 { font-size: 19px; margin: 0 0 20px; text-align: center; }
+
+  /* ---------- shell ---------- */
+  header.topo {
+    background: #fff;
+    border-bottom: 1px solid var(--linha);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  header.topo h1 { font-size: 17px; margin: 0; }
+  header.topo button {
+    background: none;
+    border: 1px solid var(--linha);
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--apagado);
+  }
+  header.topo button:hover { color: var(--preto); border-color: var(--preto); }
+
+  nav.abas {
+    display: flex;
+    gap: 4px;
+    max-width: 980px;
+    margin: 20px auto 0;
+    padding: 0 20px;
+    flex-wrap: wrap;
+  }
+  nav.abas button {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid var(--linha);
+    border-bottom: none;
+    background: #ececec;
+    color: var(--apagado);
+    cursor: pointer;
+  }
+  nav.abas button[aria-selected="true"] {
+    background: #fff;
+    color: var(--preto);
+  }
+
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 24px 20px 0;
+  }
+
+  .painel {
+    background: #fff;
+    border: 1px solid var(--linha);
+    border-radius: 0 8px 8px 8px;
+    padding: 24px;
+  }
+  .painel[hidden] { display: none; }
+
+  h2.titulo { font-size: 16px; margin: 0 0 4px; }
+  p.sub { font-size: 13px; color: var(--apagado); margin: 0 0 20px; }
+
+  .form-linha {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--linha);
+  }
+
+  .form-linha .campo { flex: 1; min-width: 140px; }
+  .form-linha .campo.pequeno { flex: 0 0 100px; min-width: 90px; }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+    color: var(--apagado);
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 10px 11px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--preto);
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  textarea { resize: vertical; min-height: 140px; line-height: 1.5; }
+
+  input:focus, select:focus, textarea:focus {
+    outline: 2px solid #000;
+    outline-offset: 1px;
+    border-color: #000;
+  }
+
+  button.primario {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid var(--preto);
+    background: var(--preto);
+    color: #fff;
+    white-space: nowrap;
+  }
+  button.primario:hover { background: #333; }
+  button.primario:disabled { background: #bbb; border-color: #bbb; cursor: not-allowed; }
+
+  button.secundario {
+    font-family: inherit;
+    font-size: 13px;
+    padding: 9px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: var(--preto);
+  }
+  button.secundario:hover { border-color: var(--preto); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--linha); font-size: 13px; vertical-align: middle; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--apagado); font-weight: 700; }
+  td.num { font-variant-numeric: tabular-nums; }
+  tr.inativo td { color: #aaa; }
+
+  .acoes-cel { display: flex; gap: 6px; flex-wrap: wrap; }
+  .acoes-cel button {
+    background: none;
+    border: none;
+    padding: 3px;
+    font-size: 12px;
+    color: var(--apagado);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .acoes-cel button:hover { color: var(--preto); }
+  .acoes-cel button.perigo:hover { color: #b00020; }
+
+  .link-jurado {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .link-jurado input {
+    font-size: 12px;
+    padding: 6px 8px;
+    background: #f7f7f7;
+  }
+
+  .aviso { font-size: 13px; color: #b00020; margin: 10px 0 0; min-height: 18px; }
+  .sucesso { font-size: 13px; color: #0a7d2c; margin: 10px 0 0; min-height: 18px; }
+  .vazio { padding: 20px 4px; color: var(--apagado); font-size: 13px; }
+
+  .regra-card { border: 1px solid var(--linha); border-radius: 8px; padding: 18px 20px; margin-bottom: 16px; }
+  .regra-card h3 { font-size: 15px; margin: 0 0 2px; }
+  .regra-card .max { font-size: 12px; color: var(--apagado); margin: 0 0 12px; }
+  .regra-card pre {
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .checkbox-linha { display: flex; align-items: center; gap: 8px; }
+  .checkbox-linha input { width: auto; }
+</style>
+
+<div id="raizEstado"></div>
+
+<div id="app" hidden>
+  <header class="topo">
+    <h1>Painel Administrativo — Gincana Estadual da Juventude 2026</h1>
+    <button id="sair">Sair</button>
+  </header>
+
+  <nav class="abas" id="abas">
+    <button data-aba="escolas" aria-selected="true">Escolas</button>
+    <button data-aba="provas" aria-selected="false">Provas</button>
+    <button data-aba="regras" aria-selected="false">Regras das provas</button>
+    <button data-aba="jurados" aria-selected="false">Jurados</button>
+    <button data-aba="auditoria" aria-selected="false">Auditoria de notas</button>
+  </nav>
+
+  <main>
+    <!-- ESCOLAS -->
+    <section class="painel" id="painel-escolas">
+      <h2 class="titulo">Escolas participantes</h2>
+      <p class="sub">Cadastre as escolas para que apareçam nas caixas de seleção dos jurados.</p>
+
+      <div class="form-linha">
+        <div class="campo">
+          <label for="escNome">Nome da escola</label>
+          <input id="escNome" type="text" placeholder="Ex: E.E. Casa Familiar Rural">
+        </div>
+        <div class="campo pequeno">
+          <label for="escMunicipio">Município</label>
+          <select id="escMunicipio">
+            <option value="">—</option>
+            <option>Macapá</option>
+            <option>Santana</option>
+            <option>Mazagão</option>
+          </select>
+        </div>
+        <button class="primario" id="escAdicionar">Adicionar</button>
+      </div>
+      <p class="aviso" id="escAviso"></p>
+
+      <table>
+        <thead><tr><th>Nome</th><th>Município</th><th>Ativa</th><th>Ações</th></tr></thead>
+        <tbody id="escTbody"></tbody>
+      </table>
+    </section>
+
+    <!-- PROVAS -->
+    <section class="painel" id="painel-provas" hidden>
+      <h2 class="titulo">Provas da gincana</h2>
+      <p class="sub">Tabela técnica de pontuação (Art. 36 do Edital). Adicione, edite ou desative provas.</p>
+
+      <div class="form-linha" id="provaForm">
+        <div class="campo pequeno">
+          <label for="pvNumero">Nº</label>
+          <input id="pvNumero" type="text" placeholder="1">
+        </div>
+        <div class="campo pequeno">
+          <label for="pvOrdem">Ordem</label>
+          <input id="pvOrdem" type="number" placeholder="1">
+        </div>
+        <div class="campo">
+          <label for="pvNome">Modalidade</label>
+          <input id="pvNome" type="text" placeholder="Ex: Arrecadação Solidária">
+        </div>
+        <div class="campo pequeno">
+          <label for="pvMax">Pontuação máx.</label>
+          <input id="pvMax" type="number" step="any" placeholder="20">
+        </div>
+        <button class="primario" id="pvSalvar">Adicionar prova</button>
+        <button class="secundario" id="pvCancelar" hidden>Cancelar edição</button>
+      </div>
+      <p class="aviso" id="pvAviso"></p>
+
+      <table>
+        <thead><tr><th>Nº</th><th>Modalidade</th><th>Pontuação máxima</th><th>Ativa</th><th>Ações</th></tr></thead>
+        <tbody id="pvTbody"></tbody>
+        <tfoot>
+          <tr><td colspan="2"><strong>Total</strong></td><td class="num" id="pvTotal"><strong></strong></td><td colspan="2"></td></tr>
+        </tfoot>
+      </table>
+    </section>
+
+    <!-- REGRAS -->
+    <section class="painel" id="painel-regras" hidden>
+      <h2 class="titulo">Características e regras das provas</h2>
+      <p class="sub">Referência rápida da comissão organizadora e julgadora, extraída do Edital 005/2026 (Art. 37 a 45). Para editar, use a aba "Provas".</p>
+      <div id="regrasLista"></div>
+    </section>
+
+    <!-- JURADOS -->
+    <section class="painel" id="painel-jurados" hidden>
+      <h2 class="titulo">Jurados</h2>
+      <p class="sub">Cada jurado recebe um link único. Um jurado não enxerga as notas lançadas pelos outros.</p>
+
+      <div class="form-linha">
+        <div class="campo">
+          <label for="jrNome">Nome do jurado</label>
+          <input id="jrNome" type="text" placeholder="Ex: Maria Silva">
+        </div>
+        <button class="primario" id="jrAdicionar">Gerar link do jurado</button>
+      </div>
+      <p class="aviso" id="jrAviso"></p>
+
+      <table>
+        <thead><tr><th>Nome</th><th>Link individual</th><th>Ativo</th><th>Ações</th></tr></thead>
+        <tbody id="jrTbody"></tbody>
+      </table>
+    </section>
+
+    <!-- AUDITORIA -->
+    <section class="painel" id="painel-auditoria" hidden>
+      <h2 class="titulo">Auditoria de notas lançadas</h2>
+      <p class="sub">Todos os lançamentos individuais dos jurados. A nota final de cada escola/prova é a soma dos jurados, limitada ao máximo da prova. Use aqui apenas para corrigir erro material (Art. 12, § único do Edital).</p>
+      <table>
+        <thead><tr><th>Prova</th><th>Escola</th><th>Jurado</th><th>Pontos</th><th>Ações</th></tr></thead>
+        <tbody id="auTbody"></tbody>
+      </table>
+    </section>
+  </main>
+</div>
+
+<script>
+  const KEY = new URLSearchParams(location.search).get("key") || "";
+  const SS_TOKEN = "gincana_admin_token";
+
+  const $raizEstado = document.getElementById("raizEstado");
+  const $app = document.getElementById("app");
+
+  function estado(html) {
+    $raizEstado.innerHTML = html;
+    $raizEstado.hidden = false;
+    $app.hidden = true;
+  }
+
+  function estadoTexto(msg) {
+    estado('<div class="estado">' + msg + "</div>");
+  }
+
+  async function adminFetch(url, options = {}) {
+    const headers = Object.assign({}, options.headers, { "x-admin-key": KEY });
+    const token = sessionStorage.getItem(SS_TOKEN);
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const r = await fetch(url, Object.assign({}, options, { headers }));
+    if (r.status === 401) {
+      sessionStorage.removeItem(SS_TOKEN);
+      mostrarLogin();
+      throw new Error("Sessão expirada. Faça login novamente.");
+    }
+    return r;
+  }
+
+  function mostrarLogin() {
+    estado(`
+      <div class="login-card">
+        <h1>Painel Administrativo</h1>
+        <div class="campo" style="margin-bottom:14px;">
+          <label for="login-usuario">Usuário</label>
+          <input id="login-usuario" type="text" autocomplete="username">
+        </div>
+        <div class="campo" style="margin-bottom:14px;">
+          <label for="login-senha">Senha</label>
+          <input id="login-senha" type="password" autocomplete="current-password">
+        </div>
+        <button class="primario" id="login-entrar" style="width:100%;">Entrar</button>
+        <p class="aviso" id="login-aviso"></p>
+      </div>
+    `);
+
+    const $u = document.getElementById("login-usuario");
+    const $s = document.getElementById("login-senha");
+    const $b = document.getElementById("login-entrar");
+    const $av = document.getElementById("login-aviso");
+
+    async function entrar() {
+      $av.textContent = "";
+      $b.disabled = true;
+      try {
+        const r = await fetch("/api/admin?resource=login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-admin-key": KEY },
+          body: JSON.stringify({ usuario: $u.value.trim(), senha: $s.value }),
+        });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.erro || "Não foi possível entrar.");
+        sessionStorage.setItem(SS_TOKEN, d.token);
+        iniciarPainel();
+      } catch (e) {
+        $av.textContent = e.message;
+      } finally {
+        $b.disabled = false;
+      }
+    }
+
+    $b.onclick = entrar;
+    [$u, $s].forEach((el) => el.addEventListener("keydown", (e) => { if (e.key === "Enter") entrar(); }));
+    $u.focus();
+  }
+
+  /* ---------------- painel ---------------- */
+  let provas = [];
+  let schools = [];
+  let jurados = [];
+  let pontuacoes = [];
+  let editandoProva = null;
+
+  function arredondar(n) { return Math.round(Number(n) * 100) / 100; }
+
+  async function iniciarPainel() {
+    $raizEstado.hidden = true;
+    $app.hidden = false;
+    document.querySelectorAll("#abas button").forEach((btn) => {
+      btn.onclick = () => trocarAba(btn.dataset.aba);
+    });
+    document.getElementById("sair").onclick = () => {
+      sessionStorage.removeItem(SS_TOKEN);
+      mostrarLogin();
+    };
+    await Promise.all([carregarEscolas(), carregarProvas(), carregarJurados(), carregarAuditoria()]);
+  }
+
+  function trocarAba(aba) {
+    document.querySelectorAll("#abas button").forEach((b) => b.setAttribute("aria-selected", b.dataset.aba === aba ? "true" : "false"));
+    document.querySelectorAll("main .painel").forEach((p) => (p.hidden = p.id !== "painel-" + aba));
+  }
+
+  /* ----- escolas ----- */
+  async function carregarEscolas() {
+    const r = await adminFetch("/api/admin?resource=schools");
+    schools = await r.json();
+    renderEscolas();
+  }
+
+  function renderEscolas() {
+    const tbody = document.getElementById("escTbody");
+    tbody.innerHTML = "";
+    if (!schools.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="vazio">Nenhuma escola cadastrada.</td></tr>';
+      return;
+    }
+    schools.forEach((e) => {
+      const tr = document.createElement("tr");
+      if (!e.ativo) tr.className = "inativo";
+      tr.innerHTML = `<td>${escapeHtml(e.nome)}</td><td>${escapeHtml(e.municipio || "—")}</td><td>${e.ativo ? "Sim" : "Não"}</td>`;
+      const tdAcoes = document.createElement("td");
+      tdAcoes.className = "acoes-cel";
+      const bEditar = botao("editar", () => editarEscola(e));
+      const bToggle = botao(e.ativo ? "desativar" : "ativar", () => salvarEscola(e.id, e.nome, e.municipio, !e.ativo));
+      const bExcluir = botao("excluir", () => excluirEscola(e.id), true);
+      tdAcoes.append(bEditar, bToggle, bExcluir);
+      tr.appendChild(tdAcoes);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function editarEscola(e) {
+    const nome = prompt("Nome da escola:", e.nome);
+    if (nome === null) return;
+    const municipio = prompt("Município (Macapá, Santana, Mazagão ou vazio):", e.municipio || "");
+    if (municipio === null) return;
+    salvarEscola(e.id, nome.trim(), municipio.trim(), e.ativo);
+  }
+
+  async function salvarEscola(id, nome, municipio, ativo) {
+    const av = document.getElementById("escAviso");
+    av.textContent = "";
+    try {
+      const r = await adminFetch("/api/admin?resource=schools&id=" + id, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, municipio: municipio || null, ativo }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.erro || "Erro ao salvar.");
+      await carregarEscolas();
+    } catch (e) {
+      av.textContent = e.message;
+    }
+  }
+
+  async function excluirEscola(id) {
+    if (!confirm("Excluir esta escola? As notas lançadas para ela também serão apagadas.")) return;
+    await adminFetch("/api/admin?resource=schools&id=" + id, { method: "DELETE" });
+    await carregarEscolas();
+    await carregarAuditoria();
+  }
+
+  document.getElementById("escAdicionar").onclick = async () => {
+    const nomeEl = document.getElementById("escNome");
+    const municipioEl = document.getElementById("escMunicipio");
+    const av = document.getElementById("escAviso");
+    av.textContent = "";
+    if (!nomeEl.value.trim()) { av.textContent = "Digite o nome da escola."; return; }
+    try {
+      const r = await adminFetch("/api/admin?resource=schools", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome: nomeEl.value.trim(), municipio: municipioEl.value || null }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.erro || "Erro ao adicionar.");
+      nomeEl.value = "";
+      municipioEl.value = "";
+      await carregarEscolas();
+    } catch (e) {
+      av.textContent = e.message;
+    }
+  };
+
+  /* ----- provas ----- */
+  async function carregarProvas() {
+    const r = await adminFetch("/api/admin?resource=provas");
+    provas = await r.json();
+    renderProvas();
+    renderRegras();
+  }
+
+  function renderProvas() {
+    const tbody = document.getElementById("pvTbody");
+    tbody.innerHTML = "";
+    let total = 0;
+    provas.forEach((p) => {
+      if (p.ativo) total += Number(p.pontuacao_maxima);
+      const tr = document.createElement("tr");
+      if (!p.ativo) tr.className = "inativo";
+      tr.innerHTML = `<td>${escapeHtml(p.numero)}</td><td>${escapeHtml(p.nome)}</td><td class="num">${arredondar(p.pontuacao_maxima)}</td><td>${p.ativo ? "Sim" : "Não"}</td>`;
+      const tdAcoes = document.createElement("td");
+      tdAcoes.className = "acoes-cel";
+      tdAcoes.append(
+        botao("editar", () => carregarProvaNoForm(p)),
+        botao(p.ativo ? "desativar" : "ativar", () => salvarProva(Object.assign({}, p, { ativo: !p.ativo }))),
+        botao("excluir", () => excluirProva(p.id), true)
+      );
+      tr.appendChild(tdAcoes);
+      tbody.appendChild(tr);
+    });
+    document.getElementById("pvTotal").textContent = arredondar(total);
+    if (!provas.length) tbody.innerHTML = '<tr><td colspan="5" class="vazio">Nenhuma prova cadastrada.</td></tr>';
+  }
+
+  function carregarProvaNoForm(p) {
+    editandoProva = p;
+    document.getElementById("pvNumero").value = p.numero;
+    document.getElementById("pvOrdem").value = p.ordem;
+    document.getElementById("pvNome").value = p.nome;
+    document.getElementById("pvMax").value = p.pontuacao_maxima;
+    document.getElementById("pvSalvar").textContent = "Salvar alteração";
+    document.getElementById("pvCancelar").hidden = false;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  document.getElementById("pvCancelar").onclick = () => {
+    editandoProva = null;
+    ["pvNumero", "pvOrdem", "pvNome", "pvMax"].forEach((id) => (document.getElementById(id).value = ""));
+    document.getElementById("pvSalvar").textContent = "Adicionar prova";
+    document.getElementById("pvCancelar").hidden = true;
+  };
+
+  document.getElementById("pvSalvar").onclick = async () => {
+    const numero = document.getElementById("pvNumero").value.trim();
+    const ordem = document.getElementById("pvOrdem").value;
+    const nome = document.getElementById("pvNome").value.trim();
+    const max = document.getElementById("pvMax").value;
+    const av = document.getElementById("pvAviso");
+    av.textContent = "";
+    if (!nome) { av.textContent = "Digite o nome da prova."; return; }
+    if (!max || Number(max) <= 0) { av.textContent = "Digite a pontuação máxima."; return; }
+
+    const payload = {
+      numero: numero || ordem,
+      ordem: Number(ordem) || 999,
+      nome,
+      pontuacao_maxima: Number(max),
+      regras: editandoProva ? editandoProva.regras : "",
+      ativo: editandoProva ? editandoProva.ativo : true,
+    };
+
+    await salvarProva(Object.assign({ id: editandoProva ? editandoProva.id : undefined }, payload));
+  };
+
+  async function salvarProva(p) {
+    const av = document.getElementById("pvAviso");
+    av.textContent = "";
+    try {
+      const url = p.id ? "/api/admin?resource=provas&id=" + p.id : "/api/admin?resource=provas";
+      const r = await adminFetch(url, {
+        method: p.id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(p),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.erro || "Erro ao salvar prova.");
+      document.getElementById("pvCancelar").onclick();
+      await carregarProvas();
+    } catch (e) {
+      av.textContent = e.message;
+    }
+  }
+
+  async function excluirProva(id) {
+    if (!confirm("Excluir esta prova? As notas lançadas para ela também serão apagadas.")) return;
+    await adminFetch("/api/admin?resource=provas&id=" + id, { method: "DELETE" });
+    await carregarProvas();
+    await carregarAuditoria();
+  }
+
+  /* ----- regras (somente leitura, edição de texto fica na aba Provas) ----- */
+  function renderRegras() {
+    const div = document.getElementById("regrasLista");
+    div.innerHTML = "";
+    if (!provas.length) {
+      div.innerHTML = '<p class="vazio">Nenhuma prova cadastrada.</p>';
+      return;
+    }
+    provas.forEach((p) => {
+      const card = document.createElement("div");
+      card.className = "regra-card";
+      const h3 = document.createElement("h3");
+      h3.textContent = p.numero + " · " + p.nome;
+      const max = document.createElement("p");
+      max.className = "max";
+      max.textContent = "Pontuação máxima: " + arredondar(p.pontuacao_maxima) + " pontos" + (p.ativo ? "" : "  ·  (inativa)");
+      const pre = document.createElement("pre");
+      pre.textContent = p.regras || "Sem regras cadastradas ainda. Edite na aba Provas.";
+      card.append(h3, max, pre);
+      div.appendChild(card);
+    });
+  }
+
+  /* ----- jurados ----- */
+  async function carregarJurados() {
+    const r = await adminFetch("/api/admin?resource=jurados");
+    jurados = await r.json();
+    renderJurados();
+  }
+
+  function renderJurados() {
+    const tbody = document.getElementById("jrTbody");
+    tbody.innerHTML = "";
+    if (!jurados.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="vazio">Nenhum jurado cadastrado.</td></tr>';
+      return;
+    }
+    jurados.forEach((j) => {
+      const tr = document.createElement("tr");
+      if (!j.ativo) tr.className = "inativo";
+      const tdNome = document.createElement("td");
+      tdNome.textContent = j.nome;
+
+      const tdLink = document.createElement("td");
+      const linkDiv = document.createElement("div");
+      linkDiv.className = "link-jurado";
+      const link = location.origin + "/jurado.html?token=" + j.token;
+      const inputLink = document.createElement("input");
+      inputLink.type = "text";
+      inputLink.readOnly = true;
+      inputLink.value = link;
+      const bCopiar = botao("copiar", () => {
+        navigator.clipboard.writeText(link).then(() => {
+          bCopiar.textContent = "copiado!";
+          setTimeout(() => (bCopiar.textContent = "copiar"), 1500);
+        });
+      });
+      linkDiv.append(inputLink, bCopiar);
+      tdLink.appendChild(linkDiv);
+
+      const tdAtivo = document.createElement("td");
+      tdAtivo.textContent = j.ativo ? "Sim" : "Não";
+
+      const tdAcoes = document.createElement("td");
+      tdAcoes.className = "acoes-cel";
+      tdAcoes.append(
+        botao("renomear", () => renomearJurado(j)),
+        botao(j.ativo ? "desativar" : "ativar", () => salvarJurado(j, { ativo: !j.ativo })),
+        botao("novo link", () => {
+          if (confirm("Gerar um novo link para este jurado? O link antigo deixará de funcionar.")) {
+            salvarJurado(j, { regenerar_token: true });
+          }
+        }),
+        botao("excluir", () => excluirJurado(j.id), true)
+      );
+
+      tr.append(tdNome, tdLink, tdAtivo, tdAcoes);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renomearJurado(j) {
+    const nome = prompt("Nome do jurado:", j.nome);
+    if (nome === null || !nome.trim()) return;
+    salvarJurado(j, { nome: nome.trim() });
+  }
+
+  async function salvarJurado(j, mudancas) {
+    const av = document.getElementById("jrAviso");
+    av.textContent = "";
+    try {
+      const r = await adminFetch("/api/admin?resource=jurados&id=" + j.id, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ nome: j.nome, ativo: j.ativo }, mudancas)),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.erro || "Erro ao salvar jurado.");
+      await carregarJurados();
+    } catch (e) {
+      av.textContent = e.message;
+    }
+  }
+
+  async function excluirJurado(id) {
+    if (!confirm("Excluir este jurado? Todas as notas lançadas por ele também serão apagadas.")) return;
+    await adminFetch("/api/admin?resource=jurados&id=" + id, { method: "DELETE" });
+    await carregarJurados();
+    await carregarAuditoria();
+  }
+
+  document.getElementById("jrAdicionar").onclick = async () => {
+    const nomeEl = document.getElementById("jrNome");
+    const av = document.getElementById("jrAviso");
+    av.textContent = "";
+    if (!nomeEl.value.trim()) { av.textContent = "Digite o nome do jurado."; return; }
+    try {
+      const r = await adminFetch("/api/admin?resource=jurados", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome: nomeEl.value.trim() }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.erro || "Erro ao adicionar.");
+      nomeEl.value = "";
+      await carregarJurados();
+    } catch (e) {
+      av.textContent = e.message;
+    }
+  };
+
+  /* ----- auditoria ----- */
+  async function carregarAuditoria() {
+    const r = await adminFetch("/api/admin?resource=pontuacoes");
+    pontuacoes = await r.json();
+    renderAuditoria();
+  }
+
+  function renderAuditoria() {
+    const tbody = document.getElementById("auTbody");
+    tbody.innerHTML = "";
+    if (!pontuacoes.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="vazio">Nenhuma nota lançada ainda.</td></tr>';
+      return;
+    }
+    pontuacoes.forEach((p) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${escapeHtml(p.prova_nome)}</td><td>${escapeHtml(p.escola_nome)}</td><td>${escapeHtml(p.jurado_nome)}</td><td class="num">${arredondar(p.pontos)}</td>`;
+      const tdAcoes = document.createElement("td");
+      tdAcoes.className = "acoes-cel";
+      tdAcoes.append(
+        botao("corrigir", () => corrigirPontuacao(p)),
+        botao("excluir", () => excluirPontuacao(p.id), true)
+      );
+      tr.appendChild(tdAcoes);
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function corrigirPontuacao(p) {
+    const novo = prompt(`Nova pontuação para ${p.jurado_nome} · ${p.escola_nome} · ${p.prova_nome} (máx. ${arredondar(p.pontuacao_maxima)}):`, p.pontos);
+    if (novo === null) return;
+    const numero = parseFloat(novo);
+    if (isNaN(numero) || numero < 0) return alert("Pontuação inválida.");
+    try {
+      const r = await adminFetch("/api/admin?resource=pontuacoes&id=" + p.id, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pontos: numero }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.erro || "Erro ao corrigir.");
+      await carregarAuditoria();
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  async function excluirPontuacao(id) {
+    if (!confirm("Excluir este lançamento?")) return;
+    await adminFetch("/api/admin?resource=pontuacoes&id=" + id, { method: "DELETE" });
+    await carregarAuditoria();
+  }
+
+  /* ----- utilitários ----- */
+  function botao(texto, onclick, perigo) {
+    const b = document.createElement("button");
+    b.textContent = texto;
+    if (perigo) b.className = "perigo";
+    b.onclick = onclick;
+    return b;
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  /* ---------------- boot ---------------- */
+  (async function boot() {
+    if (!KEY) return estadoTexto("Página não encontrada.");
+    try {
+      const r = await fetch("/api/admin?resource=check-key", { headers: { "x-admin-key": KEY } });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.ok) return estadoTexto("Página não encontrada.");
+    } catch (e) {
+      return estadoTexto("Não foi possível verificar o acesso. Recarregue a página.");
+    }
+
+    if (sessionStorage.getItem(SS_TOKEN)) {
+      try {
+        const r = await adminFetch("/api/admin?resource=schools");
+        if (r.ok) return iniciarPainel();
+      } catch (e) {
+        /* sessão expirada — cai para o login abaixo */
+      }
+    }
+    mostrarLogin();
+  })();
+</script>

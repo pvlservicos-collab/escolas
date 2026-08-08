@@ -1,214 +1,167 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ranking de Escolas</title>
+<title>Ranking — Gincana Estadual da Juventude 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
   :root {
-    --preto: #000;
-    --branco: #fff;
-    --linha: rgba(255, 255, 255, 0.14);
-    --apagado: rgba(255, 255, 255, 0.55);
+    --rosa: #df1889;
+    --rosa-2: #c81478;
+    --azul: #24409c;
+    --azul-2: #16277a;
+    --amarelo: #ffc93c;
+    --laranja: #f7941d;
+    --verde: #4caf50;
+    --gelo: #fafafa;
+    --texto: #1a1a1a;
+    --apagado-claro: rgba(255, 255, 255, 0.85);
+    --linha: #e7e7e7;
+    --apagado: #8a8a8a;
   }
 
   * { box-sizing: border-box; }
 
   body {
     margin: 0;
-    padding: 48px 20px 80px;
-    background: var(--preto);
-    color: var(--branco);
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    padding: 40px 18px 80px;
+    background-color: var(--rosa);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cpath d='M-20 40 Q 30 15 80 40 T 180 40 T 280 40' stroke='rgba(255,255,255,0.10)' stroke-width='9' fill='none'/%3E%3Cpath d='M-20 115 Q 30 90 80 115 T 180 115 T 280 115' stroke='rgba(255,255,255,0.09)' stroke-width='9' fill='none'/%3E%3Cpath d='M-20 185 Q 30 160 80 185 T 180 185 T 280 185' stroke='rgba(255,255,255,0.07)' stroke-width='7' fill='none'/%3E%3C/svg%3E");
+    background-size: 220px 220px;
+    color: var(--texto);
+    font-family: "Nunito", "Helvetica Neue", Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
-  .container { max-width: 620px; margin: 0 auto; }
+  .container { max-width: 640px; margin: 0 auto; }
 
-  header { text-align: center; margin-bottom: 36px; }
+  header {
+    position: relative;
+    text-align: center;
+    margin-bottom: 28px;
+    padding: 6px 10px 0;
+  }
+
+  .faixa {
+    display: inline-block;
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #fff;
+    background: var(--azul);
+    padding: 8px 18px;
+    border-radius: 7px;
+    transform: rotate(-2deg);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.18);
+    margin-bottom: 16px;
+  }
 
   h1 {
-    font-size: 30px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin: 0 0 6px;
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    font-size: 34px;
+    line-height: 1.08;
+    color: #fff;
+    text-shadow: 3px 3px 0 var(--azul-2);
+    margin: 0 0 10px;
   }
 
-  header p { margin: 0; font-size: 14px; color: var(--apagado); }
-
-  /* ---------- formulário (quadrado branco) ---------- */
-  .card {
-    background: var(--branco);
-    color: var(--preto);
-    border-radius: 10px;
-    padding: 26px;
-    margin-bottom: 44px;
-  }
-
-  /* abas de dia */
-  .abas {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 22px;
-  }
-
-  .abas button {
-    flex: 1;
-    padding: 11px 8px;
+  header p.sub {
+    margin: 0;
     font-size: 14px;
-    font-weight: 600;
-    background: #f0f0f0;
-    color: #666;
-    border: 1px solid #d5d5d5;
+    font-weight: 700;
+    color: var(--apagado-claro);
   }
 
-  .abas button:hover { color: #000; }
+  .sticker {
+    position: absolute;
+    font-size: 30px;
+    filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.18));
+    pointer-events: none;
+    user-select: none;
+  }
+  .s1 { top: -6px; left: 4%; transform: rotate(-16deg); }
+  .s2 { top: 6px; right: 5%; transform: rotate(14deg); font-size: 26px; }
+  .s3 { bottom: -10px; left: 12%; transform: rotate(10deg); font-size: 22px; }
 
-  .abas button[aria-selected="true"] {
-    background: var(--preto);
-    color: var(--branco);
-    border-color: var(--preto);
+  @media (max-width: 480px) {
+    h1 { font-size: 27px; }
+    .sticker { display: none; }
   }
 
-  .campo { margin-bottom: 16px; }
-
-  label {
-    display: block;
+  .atualizado {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
     font-size: 12px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 7px;
+    color: var(--apagado-claro);
   }
 
-  input, select {
-    width: 100%;
-    padding: 12px 13px;
-    font-size: 16px;
+  .atualizado button {
     font-family: inherit;
-    color: var(--preto);
-    background: #fff;
-    border: 1px solid #c9c9c9;
-    border-radius: 6px;
-  }
-
-  select { appearance: none; background-image: none; }
-
-  input:focus, select:focus {
-    outline: 2px solid #000;
-    outline-offset: 1px;
-    border-color: #000;
-  }
-
-  input:disabled, select:disabled {
-    background: #f2f2f2;
-    color: #999;
-  }
-
-  .nota {
-    font-size: 13px;
-    color: #555;
-    margin: -6px 0 16px;
-    line-height: 1.45;
-  }
-
-  .link-texto {
-    display: block;
-    background: none;
-    border: none;
-    padding: 8px 0 0;
-    margin: 0;
-    font-size: 13px;
-    font-weight: 600;
-    color: #555;
-    text-decoration: underline;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: #fff;
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 700;
     cursor: pointer;
   }
-  .link-texto:hover { color: #000; }
-
-  .botoes { display: flex; gap: 10px; }
-
-  button {
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 600;
-    padding: 12px 18px;
-    border-radius: 6px;
-    cursor: pointer;
-    border: 1px solid var(--preto);
-  }
-
-  .btn-principal { flex: 1; background: var(--preto); color: var(--branco); }
-  .btn-principal:hover { background: #2a2a2a; }
-  .btn-principal:disabled { background: #bbb; border-color: #bbb; cursor: not-allowed; }
-
-  .btn-secundario {
-    background: transparent;
-    color: var(--preto);
-    display: none;
-  }
-  .btn-secundario:hover { background: #eee; }
+  .atualizado button:hover { background: rgba(255, 255, 255, 0.26); }
 
   .aviso {
     font-size: 13px;
-    color: #b00020;
-    margin: 12px 0 0;
-    min-height: 18px;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.22);
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+    margin: 0 0 16px;
   }
 
-  /* ---------- filtros ---------- */
-  .filtros {
+  /* ---------- quadro (área de leitura, branco-gelo) ---------- */
+  .board {
+    background: var(--gelo);
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+  }
+
+  /* ---------- filtros por prova ---------- */
+  .chips {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
-
-  .filtros button {
-    flex: 1;
-    min-width: 72px;
-    padding: 10px 12px;
-    font-size: 14px;
-    background: transparent;
-    color: var(--apagado);
-    border: 1px solid var(--linha);
-  }
-
-  .filtros button:hover { color: var(--branco); border-color: var(--branco); }
-
-  .filtros button[aria-pressed="true"] {
-    background: var(--branco);
-    color: var(--preto);
-    border-color: var(--branco);
-  }
-
-  /* ---------- filtro por prova (abaixo da lista) ---------- */
-  .bloco-provas { margin-top: 32px; }
-
-  .bloco-provas h2 {
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-weight: 700;
-    color: var(--apagado);
-    margin: 0 0 12px;
-  }
-
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 
   .chips button {
     padding: 8px 14px;
-    font-size: 13px;
-    background: transparent;
+    font-size: 12.5px;
+    font-weight: 700;
+    font-family: inherit;
+    background: #fff;
     color: var(--apagado);
-    border: 1px solid var(--linha);
+    border: 1.5px solid var(--linha);
     border-radius: 999px;
+    cursor: pointer;
   }
 
-  .chips button:hover { color: var(--branco); border-color: var(--branco); }
+  .chips button:hover { color: var(--texto); border-color: var(--texto); }
 
   .chips button[aria-pressed="true"] {
-    background: var(--branco);
-    color: var(--preto);
-    border-color: var(--branco);
+    background: var(--azul);
+    color: #fff;
+    border-color: var(--azul);
   }
 
   /* ---------- ranking ---------- */
@@ -216,213 +169,166 @@
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    border-bottom: 1px solid var(--linha);
+    border-bottom: 2px solid var(--linha);
     padding-bottom: 10px;
     margin-bottom: 4px;
   }
 
   .titulo-lista h2 {
-    font-size: 13px;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 15px;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
     font-weight: 700;
     margin: 0;
+    color: var(--texto);
   }
 
-  .limpar {
-    background: none;
-    border: none;
-    padding: 4px;
+  .titulo-lista span {
     font-size: 12px;
+    font-weight: 700;
     color: var(--apagado);
-    text-decoration: underline;
   }
-  .limpar:hover { color: var(--branco); }
 
   ol { list-style: none; margin: 0; padding: 0; }
 
   li {
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--linha);
+    cursor: pointer;
+  }
+
+  li.top { background: linear-gradient(90deg, rgba(255, 201, 60, 0.16), transparent 70%); border-radius: 8px; }
+
+  .linha {
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 16px 4px;
-    border-bottom: 1px solid var(--linha);
   }
 
   .pos {
     width: 34px;
+    font-family: "Baloo 2", sans-serif;
     font-size: 20px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--apagado);
   }
 
-  li.top .pos { color: var(--branco); }
+  li.top .pos { color: var(--laranja); }
 
   .info { flex: 1; min-width: 0; }
 
-  .nome { font-size: 17px; word-break: break-word; }
-  li.top .nome { font-weight: 700; }
+  .nome { font-size: 16px; font-weight: 700; word-break: break-word; color: var(--texto); }
 
-  .detalhe {
+  .municipio {
     display: block;
     font-size: 12px;
+    font-weight: 700;
     color: var(--apagado);
-    margin-top: 3px;
-    font-variant-numeric: tabular-nums;
+    margin-top: 2px;
   }
 
   .pontos {
-    font-size: 20px;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 21px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
+    color: var(--azul);
   }
 
-  .acoes { display: flex; align-items: center; gap: 4px; }
-
-  .acoes button {
-    background: none;
-    border: none;
-    padding: 6px;
-    font-size: 12px;
-    font-weight: 400;
-    color: var(--apagado);
-    text-decoration: underline;
-  }
-  .acoes button:hover { color: var(--branco); }
-
-  .btn-x {
-    width: 18px;
-    height: 18px;
+  .detalhe {
+    display: none;
+    margin: 10px 0 0 50px;
     padding: 0;
-    line-height: 16px;
-    text-align: center;
+    list-style: none;
+  }
+
+  li.aberta .detalhe { display: block; }
+
+  .detalhe li {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border: none;
+    cursor: default;
     font-size: 13px;
-    font-weight: 700;
-    border-radius: 50%;
-    text-decoration: none !important;
-    border: 1px solid var(--linha) !important;
+    font-weight: 600;
     color: var(--apagado);
   }
-  .btn-x:hover {
-    color: #fff;
-    background: #b00020;
-    border-color: #b00020 !important;
-  }
+
+  .detalhe li span:last-child { font-variant-numeric: tabular-nums; }
 
   .vazio {
     padding: 28px 4px;
     color: var(--apagado);
     font-size: 15px;
+    font-weight: 600;
+    cursor: default;
+  }
+
+  footer.creditos {
+    text-align: center;
+    margin-top: 26px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--apagado-claro);
   }
 
   @media (max-width: 480px) {
     .pontos { font-size: 18px; }
     .nome { font-size: 15px; }
-    .abas button { font-size: 13px; padding: 10px 4px; }
+    .board { padding: 16px; border-radius: 14px; }
   }
 </style>
 
 <div class="container">
   <header>
-    <h1>Ranking de Escolas</h1>
-    <p>Escolha o dia e lance as pontuações</p>
+    <span class="sticker s1" aria-hidden="true">⭐</span>
+    <span class="sticker s2" aria-hidden="true">⚡</span>
+    <span class="sticker s3" aria-hidden="true">🏆</span>
+    <div class="faixa">Juventudes que Transformam</div>
+    <h1>Gincana da Juventude</h1>
+    <p class="sub">Ranking geral das escolas — 11, 12 e 13 de agosto</p>
+    <div class="atualizado">
+      <span id="hora">—</span>
+      <button id="atualizar" type="button">Atualizar</button>
+    </div>
   </header>
 
-  <div class="card">
-    <div class="abas" id="abas">
-      <button data-aba="11" aria-selected="true">Dia 11/08</button>
-      <button data-aba="12" aria-selected="false">Dia 12/08</button>
-      <button data-aba="13" aria-selected="false">Dia 13/08</button>
+  <p class="aviso" id="aviso" hidden></p>
+
+  <div class="board">
+    <div class="chips" id="chips"></div>
+
+    <div class="titulo-lista">
+      <h2 id="rotulo">Classificação geral</h2>
+      <span id="contagem"></span>
     </div>
 
-    <!-- dias 11 e 12: digita o nome (e dia 13 no modo "escola nova") -->
-    <div class="campo" id="campo-nome">
-      <label for="nome">Escola</label>
-      <input id="nome" type="text" placeholder="Nome da escola" autocomplete="off">
-      <button type="button" class="link-texto" id="linkUsarLista" hidden>Usar lista existente</button>
-    </div>
-
-    <!-- dia 13: escolhe entre as já cadastradas -->
-    <div class="campo" id="campo-escolha" hidden>
-      <label for="escolha">Escola</label>
-      <select id="escolha"></select>
-      <button type="button" class="link-texto" id="linkNovaEscola">+ Adicionar escola que não estava</button>
-    </div>
-
-    <p class="nota" id="nota" hidden></p>
-
-    <div class="campo">
-      <label for="prova">Nome da prova</label>
-      <input id="prova" type="text" list="provas-lista" placeholder="Ex: Simulado 1" autocomplete="off">
-      <datalist id="provas-lista"></datalist>
-    </div>
-
-    <div class="campo">
-      <label for="pontos">Pontuação</label>
-      <input id="pontos" type="number" step="any" placeholder="0">
-    </div>
-
-    <div class="botoes">
-      <button class="btn-principal" id="salvar">Adicionar ao ranking</button>
-      <button class="btn-secundario" id="cancelar">Cancelar</button>
-    </div>
-
-    <p class="aviso" id="aviso"></p>
+    <ol id="lista"></ol>
   </div>
 
-  <div class="filtros" id="filtros">
-    <button data-filtro="11" aria-pressed="false">Dia 11</button>
-    <button data-filtro="12" aria-pressed="false">Dia 12</button>
-    <button data-filtro="13" aria-pressed="false">Dia 13</button>
-    <button data-filtro="total" aria-pressed="true">Total</button>
-  </div>
-
-  <div class="titulo-lista">
-    <h2 id="rotulo">Classificação — total</h2>
-    <button class="limpar" id="limpar">Limpar tudo</button>
-  </div>
-
-  <ol id="lista"></ol>
-
-  <div class="bloco-provas" id="blocoProvas" hidden>
-    <h2>Filtrar por prova</h2>
-    <div class="chips" id="filtrosProvas"></div>
-  </div>
+  <footer class="creditos">Gincana Estadual da Juventude 2026 · SEJUV/AP</footer>
 </div>
 
 <script>
-  const API = "/api/escolas";
-  const DIAS = { "11": "11/08/2026", "12": "12/08/2026", "13": "13/08/2026" };
+  const API = "/api/scores?resource=ranking";
 
-  let escolas = [];
-  let editando = null;
-  let filtro = "total";
-  let provaFiltro = "todas";
-  let abaAtiva = "11";
-  let escolaNovaDia13 = false;
+  let provas = [];
+  let schools = [];
+  let filtroProva = "total";
+  let abertas = new Set();
 
-  const $nome = document.getElementById("nome");
-  const $escolha = document.getElementById("escolha");
-  const $campoNome = document.getElementById("campo-nome");
-  const $campoEscolha = document.getElementById("campo-escolha");
-  const $linkNovaEscola = document.getElementById("linkNovaEscola");
-  const $linkUsarLista = document.getElementById("linkUsarLista");
-  const $nota = document.getElementById("nota");
-  const $prova = document.getElementById("prova");
-  const $provasLista = document.getElementById("provas-lista");
-  const $blocoProvas = document.getElementById("blocoProvas");
-  const $filtrosProvas = document.getElementById("filtrosProvas");
-  const $pontos = document.getElementById("pontos");
-  const $salvar = document.getElementById("salvar");
-  const $cancelar = document.getElementById("cancelar");
-  const $aviso = document.getElementById("aviso");
+  const $chips = document.getElementById("chips");
   const $lista = document.getElementById("lista");
   const $rotulo = document.getElementById("rotulo");
+  const $contagem = document.getElementById("contagem");
+  const $hora = document.getElementById("hora");
+  const $aviso = document.getElementById("aviso");
 
-  /* ----- persistência (via API / Postgres) ----- */
-  function normalizar(row) {
-    return { id: String(row.id), nome: row.nome, dia: row.dia, pontos: Number(row.pontos), prova: row.prova || "" };
+  function arredondar(n) {
+    return Math.round(n * 100) / 100;
   }
 
   async function carregar() {
@@ -430,435 +336,147 @@
       const r = await fetch(API);
       if (!r.ok) throw new Error();
       const dados = await r.json();
-      escolas = dados.map(normalizar);
+      provas = dados.provas;
+      schools = dados.schools;
+      $aviso.hidden = true;
+      $hora.textContent = "Atualizado às " + new Date().toLocaleTimeString("pt-BR");
     } catch (e) {
-      escolas = [];
-      erro("Não foi possível carregar o ranking. Recarregue a página.");
+      $aviso.hidden = false;
+      $aviso.textContent = "Não foi possível carregar o ranking agora.";
     }
-    montarFormulario();
-    atualizarProvas();
+    montarChips();
     render();
   }
 
-  /* ----- provas já lançadas: sugestão no campo e filtro abaixo da lista ----- */
-  function provasExistentes() {
-    const vistas = {};
-    escolas.forEach(e => {
-      if (e.prova) {
-        const chave = e.prova.toLowerCase();
-        if (!vistas[chave]) vistas[chave] = e.prova;
-      }
-    });
-    return Object.values(vistas).sort((a, b) => a.localeCompare(b, "pt-BR"));
-  }
-
-  function atualizarProvas() {
-    const provas = provasExistentes();
-
-    $provasLista.innerHTML = "";
-    provas.forEach(p => {
-      const opt = document.createElement("option");
-      opt.value = p;
-      $provasLista.appendChild(opt);
-    });
-
-    if (!provas.length) {
-      $blocoProvas.hidden = true;
-      provaFiltro = "todas";
-      return;
-    }
-
-    if (provaFiltro !== "todas" && !provas.includes(provaFiltro)) {
-      provaFiltro = "todas";
-    }
-
-    $blocoProvas.hidden = false;
-    $filtrosProvas.innerHTML = "";
-
-    const criarChip = (valor, rotulo) => {
+  function montarChips() {
+    $chips.innerHTML = "";
+    const criar = (valor, rotulo) => {
       const b = document.createElement("button");
       b.type = "button";
       b.textContent = rotulo;
-      b.setAttribute("aria-pressed", provaFiltro === valor ? "true" : "false");
+      b.setAttribute("aria-pressed", filtroProva === valor ? "true" : "false");
       b.onclick = () => {
-        provaFiltro = valor;
-        atualizarProvas();
+        filtroProva = valor;
+        montarChips();
         render();
       };
       return b;
     };
-
-    $filtrosProvas.appendChild(criarChip("todas", "Todas"));
-    provas.forEach(p => $filtrosProvas.appendChild(criarChip(p, p)));
+    $chips.appendChild(criar("total", "Geral"));
+    provas.forEach((p) => $chips.appendChild(criar(String(p.id), p.numero + " · " + p.nome)));
   }
 
-  /* ----- lista de escolas dos dias 11 e 12 ----- */
-  function escolasAnteriores() {
-    const vistas = {};
-    escolas.forEach(e => {
-      if (e.dia === "11" || e.dia === "12") {
-        const chave = e.nome.toLowerCase();
-        if (!vistas[chave]) vistas[chave] = e.nome;
-      }
-    });
-    return Object.values(vistas).sort((a, b) => a.localeCompare(b, "pt-BR"));
-  }
-
-  /* ----- formulário conforme a aba ----- */
-  function montarFormulario(nomeSelecionado) {
-    const dia3 = abaAtiva === "13";
-
-    if (!dia3) {
-      $campoNome.hidden = false;
-      $campoEscolha.hidden = true;
-      $linkUsarLista.hidden = true;
-      $nota.hidden = true;
-      $salvar.disabled = false;
-      return;
-    }
-
-    if (escolaNovaDia13) {
-      $campoNome.hidden = false;
-      $campoEscolha.hidden = true;
-      $linkUsarLista.hidden = false;
-      $nota.hidden = false;
-      $nota.textContent = "Essa escola ainda não estava na lista. Ela entra pro ranking normalmente.";
-      $salvar.disabled = false;
-      return;
-    }
-
-    $campoNome.hidden = true;
-    $campoEscolha.hidden = false;
-
-    const nomes = escolasAnteriores();
-    $escolha.innerHTML = "";
-
-    if (!nomes.length) {
-      const opt = document.createElement("option");
-      opt.textContent = "Nenhuma escola cadastrada ainda";
-      $escolha.appendChild(opt);
-      $escolha.disabled = true;
-      $salvar.disabled = true;
-      $linkNovaEscola.hidden = false;
-      $nota.hidden = false;
-      $nota.textContent = "Cadastre as escolas nos dias 11 e 12, ou adicione uma escola nova abaixo.";
-      return;
-    }
-
-    nomes.forEach(n => {
-      const opt = document.createElement("option");
-      opt.value = n;
-      opt.textContent = n;
-      $escolha.appendChild(opt);
-    });
-
-    if (nomeSelecionado) $escolha.value = nomeSelecionado;
-
-    $escolha.disabled = false;
-    $salvar.disabled = false;
-    $linkNovaEscola.hidden = false;
-    $nota.hidden = false;
-    $nota.textContent = "A pontuação do dia 13 é somada à dos dias anteriores no ranking total.";
-  }
-
-  function trocarAba(dia) {
-    abaAtiva = dia;
-    escolaNovaDia13 = false;
-    document.querySelectorAll("#abas button").forEach(b => {
-      b.setAttribute("aria-selected", b.dataset.aba === dia ? "true" : "false");
-    });
-    montarFormulario();
-  }
-
-  /* ----- render do ranking ----- */
   function render() {
-    $rotulo.textContent = (filtro === "total"
-      ? "Classificação — total"
-      : "Classificação — dia " + DIAS[filtro])
-      + (provaFiltro !== "todas" ? "  ·  prova: " + provaFiltro : "");
-
     $lista.innerHTML = "";
-    const base = provaFiltro === "todas" ? escolas : escolas.filter(e => e.prova === provaFiltro);
-    const linhas = filtro === "total" ? montarTotal(base) : montarDia(filtro, base);
 
-    if (!linhas.length) {
-      const p = document.createElement("li");
-      p.className = "vazio";
-      p.textContent = filtro === "total"
-        ? "Nenhuma escola ainda. Comece adicionando uma acima."
-        : "Nenhuma pontuação lançada no dia " + DIAS[filtro] + ".";
-      $lista.appendChild(p);
-      return;
+    if (filtroProva === "total") {
+      $rotulo.textContent = "Classificação geral";
+      renderTotal();
+    } else {
+      const prova = provas.find((p) => String(p.id) === filtroProva);
+      $rotulo.textContent = prova ? prova.numero + " · " + prova.nome : "Prova";
+      renderProva(prova);
     }
+  }
 
-    linhas.forEach((linha, i) => {
+  function renderTotal() {
+    const linhas = [...schools].sort((a, b) => b.total - a.total);
+    $contagem.textContent = linhas.length + (linhas.length === 1 ? " escola" : " escolas");
+
+    if (!linhas.length) return vazio("Nenhuma escola cadastrada ainda.");
+
+    linhas.forEach((escola, i) => {
       const li = document.createElement("li");
       if (i < 3) li.className = "top";
+      if (abertas.has(escola.id)) li.className = (li.className + " aberta").trim();
 
-      const pos = document.createElement("span");
-      pos.className = "pos";
-      pos.textContent = (i + 1) + "º";
+      const detalheProvas = provas
+        .map((p) => ({ nome: p.numero + " · " + p.nome, pontos: escola.porProva[p.id] || 0 }))
+        .filter((d) => d.pontos > 0);
 
-      const info = document.createElement("span");
-      info.className = "info";
+      li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.total));
 
-      const nome = document.createElement("span");
-      nome.className = "nome";
-      nome.textContent = linha.nome;
-      info.appendChild(nome);
-
-      if (linha.detalhe) {
-        const det = document.createElement("span");
-        det.className = "detalhe";
-        det.textContent = linha.detalhe;
-        info.appendChild(det);
-      }
-
-      const pts = document.createElement("span");
-      pts.className = "pontos";
-      pts.textContent = arredondar(linha.pontos);
-
-      li.append(pos, info, pts);
-
-      if (linha.id) {
-        const acoes = document.createElement("span");
-        acoes.className = "acoes";
-
-        const bEditar = document.createElement("button");
-        bEditar.textContent = "editar";
-        bEditar.onclick = () => editar(linha.id);
-
-        const bRemover = document.createElement("button");
-        bRemover.className = "btn-x";
-        bRemover.textContent = "×";
-        bRemover.title = "Apagar pontuação";
-        bRemover.setAttribute("aria-label", "Apagar pontuação de " + linha.nome);
-        bRemover.onclick = () => {
-          if (confirm('Tem certeza que deseja apagar a pontuação de "' + linha.nome + '"?')) {
-            remover(linha.id);
-          }
+      if (detalheProvas.length) {
+        const ul = document.createElement("ul");
+        ul.className = "detalhe";
+        detalheProvas.forEach((d) => {
+          const item = document.createElement("li");
+          const nome = document.createElement("span");
+          nome.textContent = d.nome;
+          const pts = document.createElement("span");
+          pts.textContent = arredondar(d.pontos);
+          item.append(nome, pts);
+          ul.appendChild(item);
+        });
+        li.appendChild(ul);
+        li.onclick = () => {
+          if (abertas.has(escola.id)) abertas.delete(escola.id);
+          else abertas.add(escola.id);
+          render();
         };
-
-        acoes.append(bEditar, bRemover);
-        li.appendChild(acoes);
       }
 
       $lista.appendChild(li);
     });
   }
 
-  function montarDia(d, base) {
-    return base
-      .filter(e => e.dia === d)
-      .map(e => ({ id: e.id, nome: e.nome, pontos: e.pontos, detalhe: e.prova }))
+  function renderProva(prova) {
+    if (!prova) return vazio("Prova não encontrada.");
+    const linhas = [...schools]
+      .map((e) => ({ nome: e.nome, municipio: e.municipio, pontos: e.porProva[prova.id] || 0 }))
       .sort((a, b) => b.pontos - a.pontos);
-  }
 
-  function montarTotal(base) {
-    const mapa = {};
-    base.forEach(e => {
-      const chave = e.nome.toLowerCase();
-      if (!mapa[chave]) mapa[chave] = { nome: e.nome, pontos: 0, dias: {} };
-      mapa[chave].pontos += e.pontos;
-      mapa[chave].dias[e.dia] = (mapa[chave].dias[e.dia] || 0) + e.pontos;
+    $contagem.textContent = "máximo " + arredondar(prova.pontuacao_maxima) + " pontos";
+
+    if (!linhas.length) return vazio("Nenhuma escola cadastrada ainda.");
+
+    linhas.forEach((escola, i) => {
+      const li = document.createElement("li");
+      if (i < 3 && escola.pontos > 0) li.className = "top";
+      li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.pontos));
+      $lista.appendChild(li);
     });
-
-    return Object.values(mapa)
-      .map(item => ({
-        nome: item.nome,
-        pontos: item.pontos,
-        detalhe: Object.keys(DIAS)
-          .filter(d => item.dias[d] !== undefined)
-          .map(d => "dia " + d + ": " + arredondar(item.dias[d]))
-          .join("  ·  ")
-      }))
-      .sort((a, b) => b.pontos - a.pontos);
   }
 
-  function arredondar(n) {
-    return Math.round(n * 100) / 100;
-  }
+  function linhaPrincipal(i, nome, municipio, pontos) {
+    const div = document.createElement("div");
+    div.className = "linha";
 
-  /* ----- ações ----- */
-  async function salvar() {
-    const dia = abaAtiva;
-    const usaTexto = dia !== "13" || escolaNovaDia13;
-    const nome = usaTexto ? $nome.value.trim() : $escolha.value;
-    const prova = $prova.value.trim();
-    const pontos = parseFloat($pontos.value);
+    const pos = document.createElement("span");
+    pos.className = "pos";
+    pos.textContent = (i + 1) + "º";
 
-    if (!nome) {
-      return erro(usaTexto
-        ? "Digite o nome da escola."
-        : "Selecione uma escola da lista.");
-    }
-    if (!prova) return erro("Digite o nome da prova.");
-    if (isNaN(pontos)) return erro("Digite uma pontuação numérica.");
-
-    $salvar.disabled = true;
-    try {
-      if (editando) {
-        const r = await fetch(API + "/" + editando, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nome, dia, pontos, prova }),
-        });
-        if (!r.ok) throw new Error();
-        const atualizado = normalizar(await r.json());
-        const esc = escolas.find(e => e.id === editando);
-        Object.assign(esc, atualizado);
-        sairDaEdicao();
-      } else {
-        const r = await fetch(API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nome, dia, pontos, prova }),
-        });
-        if (!r.ok) throw new Error();
-        escolas.push(normalizar(await r.json()));
-      }
-
-      $nome.value = "";
-      $prova.value = "";
-      $pontos.value = "";
-      $aviso.textContent = "";
-      montarFormulario();
-      atualizarProvas();
-      (usaTexto ? $nome : $pontos).focus();
-      render();
-    } catch (e) {
-      erro("Não foi possível salvar. Tente novamente.");
-    } finally {
-      $salvar.disabled = false;
-    }
-  }
-
-  function editar(id) {
-    const esc = escolas.find(e => e.id === id);
-    if (!esc) return;
-
-    editando = id;
-    trocarAba(esc.dia);
-
-    if (esc.dia === "13") {
-      const naLista = escolasAnteriores().some(n => n.toLowerCase() === esc.nome.toLowerCase());
-      if (naLista) {
-        montarFormulario(esc.nome);
-      } else {
-        escolaNovaDia13 = true;
-        montarFormulario();
-        $nome.value = esc.nome;
-      }
-    } else {
-      $nome.value = esc.nome;
+    const info = document.createElement("span");
+    info.className = "info";
+    const nomeSpan = document.createElement("span");
+    nomeSpan.className = "nome";
+    nomeSpan.textContent = nome;
+    info.appendChild(nomeSpan);
+    if (municipio) {
+      const m = document.createElement("span");
+      m.className = "municipio";
+      m.textContent = municipio;
+      info.appendChild(m);
     }
 
-    $prova.value = esc.prova || "";
-    $pontos.value = esc.pontos;
-    $salvar.textContent = "Salvar alteração";
-    $salvar.disabled = false;
-    $cancelar.style.display = "block";
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const pts = document.createElement("span");
+    pts.className = "pontos";
+    pts.textContent = arredondar(pontos);
+
+    div.append(pos, info, pts);
+    return div;
   }
 
-  function sairDaEdicao() {
-    editando = null;
-    $salvar.textContent = "Adicionar ao ranking";
-    $cancelar.style.display = "none";
-    $aviso.textContent = "";
+  function vazio(msg) {
+    const li = document.createElement("li");
+    li.className = "vazio";
+    li.textContent = msg;
+    $lista.appendChild(li);
+    $contagem.textContent = "";
   }
 
-  function limparCampos() {
-    $nome.value = "";
-    $prova.value = "";
-    $pontos.value = "";
-  }
-
-  async function remover(id) {
-    try {
-      const r = await fetch(API + "/" + id, { method: "DELETE" });
-      if (!r.ok && r.status !== 204) throw new Error();
-    } catch (e) {
-      erro("Não foi possível apagar. Tente novamente.");
-      return;
-    }
-    escolas = escolas.filter(e => e.id !== id);
-    if (editando === id) {
-      sairDaEdicao();
-      limparCampos();
-    }
-    montarFormulario();
-    atualizarProvas();
-    render();
-  }
-
-  function erro(msg) { $aviso.textContent = msg; }
-
-  /* ----- eventos ----- */
-  $salvar.onclick = salvar;
-
-  $cancelar.onclick = () => {
-    sairDaEdicao();
-    limparCampos();
-    montarFormulario();
-  };
-
-  $linkNovaEscola.onclick = () => {
-    escolaNovaDia13 = true;
-    limparCampos();
-    montarFormulario();
-    $nome.focus();
-  };
-
-  $linkUsarLista.onclick = () => {
-    escolaNovaDia13 = false;
-    limparCampos();
-    montarFormulario();
-  };
-
-  document.querySelectorAll("#abas button").forEach(btn => {
-    btn.onclick = () => {
-      if (editando) {
-        sairDaEdicao();
-        limparCampos();
-      }
-      trocarAba(btn.dataset.aba);
-    };
-  });
-
-  document.querySelectorAll("#filtros button").forEach(btn => {
-    btn.onclick = () => {
-      filtro = btn.dataset.filtro;
-      document.querySelectorAll("#filtros button").forEach(b => {
-        b.setAttribute("aria-pressed", b === btn ? "true" : "false");
-      });
-      render();
-    };
-  });
-
-  document.getElementById("limpar").onclick = async () => {
-    if (!escolas.length) return;
-    if (!confirm("Remover todos os lançamentos do ranking?")) return;
-    try {
-      const r = await fetch(API, { method: "DELETE" });
-      if (!r.ok && r.status !== 204) throw new Error();
-    } catch (e) {
-      erro("Não foi possível limpar o ranking. Tente novamente.");
-      return;
-    }
-    escolas = [];
-    sairDaEdicao();
-    limparCampos();
-    montarFormulario();
-    atualizarProvas();
-    render();
-  };
-
-  [$nome, $prova, $pontos].forEach(campo => {
-    campo.addEventListener("keydown", e => {
-      if (e.key === "Enter") salvar();
-    });
-  });
+  document.getElementById("atualizar").onclick = carregar;
 
   carregar();
+  setInterval(carregar, 20000);
 </script>
