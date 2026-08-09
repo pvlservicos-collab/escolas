@@ -53,6 +53,16 @@ function newToken() {
   return crypto.randomBytes(24).toString("hex");
 }
 
+// If any of these are unset, every helper above quietly falls back to "" (empty
+// secret): hmac() signs sessions with a public, guessable key, and safeEqual("", "")
+// makes blank username/password pass login. Missing config must fail closed (500),
+// never silently open the admin panel to blank credentials.
+const REQUIRED_ENV = ["SESSION_SECRET", "ADMIN_USERNAME", "ADMIN_PASSWORD", "ADMIN_LINK_SECRET"];
+
+function secretsConfigured() {
+  return REQUIRED_ENV.every((k) => typeof process.env[k] === "string" && process.env[k].length > 0);
+}
+
 // Turns a jurado's name into a short, readable URL token, e.g. "Maria Silva" -> "maria-silva".
 function slugify(nome) {
   const base = String(nome)
@@ -72,4 +82,5 @@ module.exports = {
   safeEqual,
   newToken,
   slugify,
+  secretsConfigured,
 };

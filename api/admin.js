@@ -6,6 +6,7 @@ const {
   safeEqual,
   newToken,
   slugify,
+  secretsConfigured,
 } = require("./_auth");
 
 function bad(res, code, erro) {
@@ -31,6 +32,13 @@ async function tokenParaJurado(pool, nome, excluirId, sufixoAleatorio) {
 }
 
 module.exports = async (req, res) => {
+  // Fail closed: if any auth secret is unset, every check below would silently fall
+  // back to an empty/guessable value (see _auth.js). Refuse to serve anything rather
+  // than risk a blank-credential login bypass.
+  if (!secretsConfigured()) {
+    return bad(res, 500, "Configuração do servidor incompleta. Contate o administrador do sistema.");
+  }
+
   const pool = getPool();
   const { resource } = req.query;
   const id = req.query.id !== undefined ? Number(req.query.id) : undefined;
