@@ -117,6 +117,7 @@
   .card-deco span {
     position: absolute;
     line-height: 1;
+    font-size: var(--tam);
     filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.16));
   }
 
@@ -379,6 +380,7 @@
 
   @media (max-width: 480px) {
     .nome-jurado { font-size: 21px; }
+    .card-deco span { font-size: calc(var(--tam) * 0.45); }
   }
 
   footer.creditos {
@@ -413,10 +415,10 @@
 
   <div id="selecao" class="card" hidden>
     <div class="card-deco" aria-hidden="true">
-      <span style="top:12px; left:-26px; font-size:58px; transform:rotate(-15deg);">⭐</span>
-      <span style="top:12px; right:-24px; font-size:56px; transform:rotate(13deg);">🏆</span>
-      <span style="bottom:12px; left:-22px; font-size:52px; transform:rotate(11deg);">✨</span>
-      <span style="bottom:12px; right:-24px; font-size:54px; transform:rotate(-13deg);">🎉</span>
+      <span style="top:12px; left:-26px; --tam:58px; transform:rotate(-15deg);">⭐</span>
+      <span style="top:12px; right:-24px; --tam:56px; transform:rotate(13deg);">🏆</span>
+      <span style="bottom:12px; left:-22px; --tam:52px; transform:rotate(11deg);">✨</span>
+      <span style="bottom:12px; right:-24px; --tam:54px; transform:rotate(-13deg);">🎉</span>
     </div>
     <h2 class="titulo-selecao">Selecione o jurado</h2>
     <p class="nota-selecao">Confirme quem está usando este aparelho. Você só precisa fazer isso uma vez neste navegador — depois é só usar "trocar jurado" quando precisar.</p>
@@ -427,10 +429,10 @@
   <div id="conteudo" hidden>
     <div class="card">
       <div class="card-deco" aria-hidden="true">
-        <span style="top:12px; left:-26px; font-size:58px; transform:rotate(-14deg);">⚡</span>
-        <span style="top:12px; right:-24px; font-size:56px; transform:rotate(15deg);">⭐</span>
-        <span style="bottom:12px; left:-22px; font-size:52px; transform:rotate(16deg);">🥇</span>
-        <span style="bottom:12px; right:-24px; font-size:54px; transform:rotate(-12deg);">🎯</span>
+        <span style="top:12px; left:-26px; --tam:58px; transform:rotate(-14deg);">⚡</span>
+        <span style="top:12px; right:-24px; --tam:56px; transform:rotate(15deg);">⭐</span>
+        <span style="bottom:12px; left:-22px; --tam:52px; transform:rotate(16deg);">🥇</span>
+        <span style="bottom:12px; right:-24px; --tam:54px; transform:rotate(-12deg);">🎯</span>
       </div>
       <p class="aviso-encerrado" id="avisoEncerrado" hidden>🔒 Lançamentos encerrados — a competição já foi homologada. Suas notas continuam listadas abaixo, mas não podem mais ser alteradas por aqui.</p>
       <div class="campo">

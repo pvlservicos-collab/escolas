@@ -152,6 +152,7 @@
   .board-deco span {
     position: absolute;
     line-height: 1;
+    font-size: var(--tam);
     filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.16));
   }
 
@@ -327,6 +328,7 @@
     .pontos { font-size: 18px; }
     .nome { font-size: 15px; }
     .board { padding: 16px; border-radius: 14px; }
+    .board-deco span { font-size: calc(var(--tam) * 0.45); }
   }
 </style>
 
@@ -348,10 +350,10 @@
 
   <div class="board">
     <div class="board-deco" aria-hidden="true">
-      <span style="top:12px; left:-28px; font-size:64px; transform:rotate(-16deg);">⭐</span>
-      <span style="top:12px; right:-26px; font-size:58px; transform:rotate(14deg);">🏆</span>
-      <span style="bottom:12px; left:-24px; font-size:56px; transform:rotate(12deg);">🎈</span>
-      <span style="bottom:12px; right:-26px; font-size:58px; transform:rotate(-14deg);">⚡</span>
+      <span style="top:12px; left:-28px; --tam:64px; transform:rotate(-16deg);">⭐</span>
+      <span style="top:12px; right:-26px; --tam:58px; transform:rotate(14deg);">🏆</span>
+      <span style="bottom:12px; left:-24px; --tam:56px; transform:rotate(12deg);">🎈</span>
+      <span style="bottom:12px; right:-26px; --tam:58px; transform:rotate(-14deg);">⚡</span>
     </div>
 
     <div class="chips" id="chips"></div>
