@@ -301,6 +301,20 @@
     cursor: default;
   }
 
+  .vazio.oculto {
+    padding: 52px 4px;
+    text-align: center;
+    font-size: 17px;
+    color: var(--texto);
+  }
+
+  .aviso-empate {
+    margin: 8px 0 0 50px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #b45500;
+  }
+
   footer.creditos {
     text-align: center;
     margin-top: 26px;
@@ -360,6 +374,17 @@
   let schools = [];
   let filtroProva = "total";
   let abertas = new Set();
+  let oculto = false;
+
+  // Espelha a cascata do backend (Art. 53): Arrecadação → Desfile → Torta na Cara →
+  // Circuito → sorteio público. Usado só para exibir a régua na aba "Desempate"; quem
+  // decide a ordem de verdade é sempre o servidor.
+  const CASCATA_DESEMPATE = [
+    { numero: "1", rotulo: "Arrecadação" },
+    { numero: "2", rotulo: "Desfile" },
+    { numero: "7", rotulo: "Torta na Cara" },
+    { numero: "4", rotulo: "Circuito" },
+  ];
 
   const $chips = document.getElementById("chips");
   const $lista = document.getElementById("lista");
@@ -381,8 +406,11 @@
       const r = await fetch(API);
       if (!r.ok) throw new Error();
       const dados = await r.json();
-      provas = dados.provas;
-      schools = dados.schools;
+      oculto = Boolean(dados.oculto);
+      if (!oculto) {
+        provas = dados.provas;
+        schools = dados.schools;
+      }
       $aviso.hidden = true;
       $hora.textContent = "Atualizado às " + new Date().toLocaleTimeString("pt-BR");
     } catch (e) {
@@ -395,6 +423,8 @@
 
   function montarChips() {
     $chips.innerHTML = "";
+    if (oculto) return;
+
     const criar = (valor, rotulo) => {
       const b = document.createElement("button");
       b.type = "button";
@@ -409,14 +439,25 @@
     };
     $chips.appendChild(criar("total", "Geral"));
     provas.forEach((p) => $chips.appendChild(criar(String(p.id), p.numero + " · " + p.nome)));
+    $chips.appendChild(criar("desempate", "Desempate"));
   }
 
   function render() {
     $lista.innerHTML = "";
 
+    if (oculto) {
+      $rotulo.textContent = "Resultado";
+      $contagem.textContent = "";
+      vazio("🏆 O resultado será revelado na Grande Final! Volte em breve. 🏆", true);
+      return;
+    }
+
     if (filtroProva === "total") {
       $rotulo.textContent = "Classificação geral";
       renderTotal();
+    } else if (filtroProva === "desempate") {
+      $rotulo.textContent = "Critérios de desempate";
+      renderDesempate();
     } else {
       const prova = provas.find((p) => String(p.id) === filtroProva);
       $rotulo.textContent = prova ? prova.numero + " · " + prova.nome : "Prova";
@@ -512,12 +553,61 @@
     return div;
   }
 
-  function vazio(msg) {
+  function vazio(msg, grande) {
     const li = document.createElement("li");
-    li.className = "vazio";
+    li.className = grande ? "vazio oculto" : "vazio";
     li.textContent = msg;
     $lista.appendChild(li);
     $contagem.textContent = "";
+  }
+
+  function renderDesempate() {
+    const linhas = [...schools].sort((a, b) => b.total - a.total);
+    $contagem.textContent = "Arrecadação → Desfile → Torta na Cara → Circuito → sorteio";
+
+    if (!linhas.length) return vazio("Nenhuma escola cadastrada ainda.");
+
+    const provaPorNumero = {};
+    provas.forEach((p) => (provaPorNumero[p.numero] = p));
+
+    linhas.forEach((escola, i) => {
+      const li = document.createElement("li");
+      li.className = classePosicao(i);
+
+      li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.total));
+
+      const ul = document.createElement("ul");
+      ul.className = "detalhe";
+      ul.style.display = "block";
+      CASCATA_DESEMPATE.forEach((c) => {
+        const prova = provaPorNumero[c.numero];
+        const item = document.createElement("li");
+        const nome = document.createElement("span");
+        nome.textContent = c.rotulo;
+        const pts = document.createElement("span");
+        pts.textContent = prova ? arredondar(escola.porProva[prova.id] || 0) : "—";
+        item.append(nome, pts);
+        ul.appendChild(item);
+      });
+      const sorteioItem = document.createElement("li");
+      const sorteioNome = document.createElement("span");
+      sorteioNome.textContent = "Sorteio público";
+      const sorteioVal = document.createElement("span");
+      sorteioVal.textContent = escola.ordem_sorteio != null ? escola.ordem_sorteio : "—";
+      sorteioItem.append(sorteioNome, sorteioVal);
+      ul.appendChild(sorteioItem);
+      li.appendChild(ul);
+      li.style.cursor = "default";
+
+      if (escola.empatada) {
+        const aviso = document.createElement("div");
+        aviso.className = "aviso-empate";
+        aviso.textContent = "Empate não resolvido — aguardando sorteio público.";
+        li.appendChild(aviso);
+      }
+
+      $lista.appendChild(li);
+    });
   }
 
   document.getElementById("atualizar").onclick = carregar;
