@@ -40,7 +40,7 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 async function main() {
   const schema = fs.readFileSync(path.join(__dirname, "schema.sql"), "utf8");
   await pool.query(schema);
-  console.log("Schema aplicado (schools, provas, jurados, pontuacoes).");
+  console.log("Schema aplicado (schools, provas, jurados, pontuacoes, pontuacoes_log, configuracao).");
 
   const { rows } = await pool.query("SELECT COUNT(*)::int AS n FROM provas");
   if (rows[0].n === 0) {

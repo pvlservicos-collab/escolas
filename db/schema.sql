@@ -10,6 +10,10 @@ CREATE TABLE IF NOT EXISTS schools (
   criado_em  TIMESTAMP NOT NULL DEFAULT now()
 );
 
+-- Posição da escola no sorteio público de desempate (Art. 53). Nula até o sorteio
+-- acontecer; menor número vence quando os critérios de prova terminam empatados.
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS ordem_sorteio INTEGER;
+
 CREATE TABLE IF NOT EXISTS provas (
   id                SERIAL PRIMARY KEY,
   numero            TEXT NOT NULL,
@@ -39,3 +43,31 @@ CREATE TABLE IF NOT EXISTS pontuacoes (
   atualizado_em  TIMESTAMP NOT NULL DEFAULT now(),
   UNIQUE (jurado_id, escola_id, prova_id)
 );
+
+-- Trilha de auditoria de lançamentos (Art. 12, § único do Edital): toda criação, edição
+-- ou exclusão de nota vira uma linha aqui, mesmo depois que a linha em `pontuacoes` some
+-- (jurado_id/escola_id/prova_id não têm FK — precisam sobreviver à exclusão do registro
+-- original, do jurado ou da escola/prova).
+CREATE TABLE IF NOT EXISTS pontuacoes_log (
+  id             SERIAL PRIMARY KEY,
+  pontuacao_id   INTEGER,
+  jurado_id      INTEGER,
+  escola_id      INTEGER NOT NULL,
+  prova_id       INTEGER NOT NULL,
+  acao           TEXT NOT NULL,
+  valor_antigo   NUMERIC,
+  valor_novo     NUMERIC,
+  autor          TEXT NOT NULL,
+  motivo         TEXT,
+  criado_em      TIMESTAMP NOT NULL DEFAULT now()
+);
+
+-- Estado global da competição: linha única (id fixo em 1).
+CREATE TABLE IF NOT EXISTS configuracao (
+  id              SMALLINT PRIMARY KEY DEFAULT 1,
+  encerrada       BOOLEAN NOT NULL DEFAULT false,
+  ranking_oculto  BOOLEAN NOT NULL DEFAULT false,
+  atualizado_em   TIMESTAMP NOT NULL DEFAULT now(),
+  CONSTRAINT configuracao_singleton CHECK (id = 1)
+);
+INSERT INTO configuracao (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
