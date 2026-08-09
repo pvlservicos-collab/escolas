@@ -455,11 +455,29 @@
 
 <script>
   const STORAGE_KEY = "gincana_jurado_ativo";
+  // Tokens de outros jurados nunca vêm do servidor (um link vazado não pode virar chave
+  // mestra do sistema). "Conhecidos" guarda só os links que ESTE dispositivo já abriu de
+  // fato, para permitir trocar de jurado num tablet compartilhado sem re-digitar o link.
+  const CONHECIDOS_KEY = "gincana_jurados_conhecidos";
   const params = new URLSearchParams(location.search);
   const urlToken = params.get("token") || "";
 
+  function carregarConhecidos() {
+    try {
+      const obj = JSON.parse(localStorage.getItem(CONHECIDOS_KEY));
+      return obj && typeof obj === "object" ? obj : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function lembrarConhecido(token, nome) {
+    const c = carregarConhecidos();
+    c[token] = nome;
+    localStorage.setItem(CONHECIDOS_KEY, JSON.stringify(c));
+  }
+
   let tokenAtivo = "";
-  let jurados = [];
   let provas = [];
   let schools = [];
   let minhas = [];
@@ -527,7 +545,7 @@
       return mostrarEstado(e.message || "Não foi possível carregar. Verifique sua conexão e recarregue a página.");
     }
 
-    jurados = dadosIniciais.jurados || [];
+    lembrarConhecido(urlToken, dadosIniciais.jurado.nome);
     dadosCacheToken = urlToken;
     dadosCache = dadosIniciais;
 
@@ -549,7 +567,6 @@
     schools = dados.schools;
     minhas = dados.minhas;
     juradoNome = dados.jurado.nome;
-    if (dados.jurados) jurados = dados.jurados;
   }
 
   function mostrarSelecao(preSelecionar) {
@@ -564,16 +581,17 @@
 
   function renderSelecaoLista() {
     $selecaoLista.innerHTML = "";
-    jurados.forEach((j) => {
+    const conhecidos = carregarConhecidos();
+    Object.keys(conhecidos).forEach((token) => {
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "opcao-jurado" + (j.token === selecionadoTemp ? " selecionada" : "");
+      btn.className = "opcao-jurado" + (token === selecionadoTemp ? " selecionada" : "");
 
       const nomeSpan = document.createElement("span");
-      nomeSpan.textContent = j.nome;
+      nomeSpan.textContent = conhecidos[token];
       btn.appendChild(nomeSpan);
 
-      if (j.token === urlToken) {
+      if (token === urlToken) {
         const marca = document.createElement("span");
         marca.className = "marca";
         marca.textContent = "é você";
@@ -581,7 +599,7 @@
       }
 
       btn.onclick = () => {
-        selecionadoTemp = j.token;
+        selecionadoTemp = token;
         renderSelecaoLista();
       };
       $selecaoLista.appendChild(btn);
@@ -592,6 +610,7 @@
     $selecaoContinuar.disabled = true;
     try {
       const dados = selecionadoTemp === dadosCacheToken ? dadosCache : await buscarDados(selecionadoTemp);
+      lembrarConhecido(selecionadoTemp, dados.jurado.nome);
       localStorage.setItem(STORAGE_KEY, selecionadoTemp);
       aplicarDados(dados, selecionadoTemp);
       mostrarConteudo();

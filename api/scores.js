@@ -79,13 +79,12 @@ module.exports = async (req, res) => {
       "SELECT id, escola_id, prova_id, pontos, atualizado_em FROM pontuacoes WHERE jurado_id = $1",
       [jurado.id]
     );
-    // Roster de jurados ativos, para a tela "trocar jurado" (dispositivo compartilhado
-    // entre a comissão julgadora). Só é alcançável por quem já possui um link válido.
-    const { rows: jurados } = await pool.query(
-      "SELECT id, nome, token FROM jurados WHERE ativo = true ORDER BY nome ASC"
-    );
 
-    return res.status(200).json({ jurado: { id: jurado.id, nome: jurado.nome }, jurados, provas, schools, minhas });
+    // Nenhum outro jurado (nem seus tokens) é devolvido aqui: um link vazado só pode
+    // agir como o próprio dono do link. A troca de jurado num tablet compartilhado é
+    // resolvida inteiramente no cliente, a partir dos links que o próprio dispositivo
+    // já abriu — ver jurado.html.
+    return res.status(200).json({ jurado: { id: jurado.id, nome: jurado.nome }, provas, schools, minhas });
   }
 
   if (req.method === "POST") {
