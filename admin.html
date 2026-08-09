@@ -274,6 +274,8 @@
     <button data-aba="regras" aria-selected="false">Regras das provas</button>
     <button data-aba="jurados" aria-selected="false">Jurados</button>
     <button data-aba="auditoria" aria-selected="false">Auditoria de notas</button>
+    <button data-aba="historico" aria-selected="false">Histórico</button>
+    <button data-aba="config" aria-selected="false">Configurações</button>
   </nav>
 
   <main>
@@ -319,9 +321,14 @@
       <p class="aviso" id="escAviso"></p>
 
       <table>
-        <thead><tr><th>Nome</th><th>Município</th><th>Ativa</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Município</th><th>Ativa</th><th>Ordem de sorteio</th><th>Ações</th></tr></thead>
         <tbody id="escTbody"></tbody>
       </table>
+      <p class="sub" style="margin-top:14px;">
+        A "ordem de sorteio" só é usada como último critério de desempate (Art. 53), quando duas ou mais
+        escolas terminam empatadas mesmo após Arrecadação, Desfile, Torta na Cara e Circuito. Preencha com
+        o resultado do sorteio público — menor número vence.
+      </p>
     </section>
 
     <!-- PROVAS -->
@@ -390,11 +397,47 @@
     <!-- AUDITORIA -->
     <section class="painel" id="painel-auditoria" hidden>
       <h2 class="titulo">Auditoria de notas lançadas</h2>
-      <p class="sub">Todos os lançamentos individuais dos jurados. A nota final de cada escola/prova é a soma dos jurados, limitada ao máximo da prova. Use aqui apenas para corrigir erro material (Art. 12, § único do Edital).</p>
+      <p class="sub">Todos os lançamentos individuais dos jurados. A nota final de cada escola/prova é a soma dos jurados, limitada ao máximo da prova. Use aqui apenas para corrigir erro material (Art. 12, § único do Edital) — toda correção ou exclusão feita aqui pede um motivo e fica registrada na aba Histórico.</p>
       <table>
         <thead><tr><th>Prova</th><th>Escola</th><th>Jurado</th><th>Pontos</th><th>Ações</th></tr></thead>
         <tbody id="auTbody"></tbody>
       </table>
+    </section>
+
+    <!-- HISTÓRICO -->
+    <section class="painel" id="painel-historico" hidden>
+      <h2 class="titulo">Histórico de lançamentos</h2>
+      <p class="sub">Toda criação, edição ou exclusão de nota, por quem e quando — inclusive o que existia antes. Se uma escola contestar uma pontuação, a resposta está aqui.</p>
+      <table>
+        <thead><tr><th>Quando</th><th>Ação</th><th>Prova</th><th>Escola</th><th>Autor</th><th>De</th><th>Para</th><th>Motivo</th></tr></thead>
+        <tbody id="hiTbody"></tbody>
+      </table>
+    </section>
+
+    <!-- CONFIGURAÇÕES -->
+    <section class="painel" id="painel-config" hidden>
+      <h2 class="titulo">Estado da competição</h2>
+      <p class="sub">Esses dois interruptores afetam o sistema inteiro imediatamente — o painel público é em tempo real.</p>
+
+      <div class="regra-card">
+        <div class="checkbox-linha">
+          <input type="checkbox" id="cfEncerrada">
+          <label for="cfEncerrada" style="margin:0;">Competição encerrada / homologada</label>
+        </div>
+        <p class="max" style="margin-top:8px;">Bloqueia jurados de lançar, editar ou apagar notas (o link deles passa a ser só leitura). O painel administrativo continua liberado para correções com motivo registrado.</p>
+      </div>
+
+      <div class="regra-card">
+        <div class="checkbox-linha">
+          <input type="checkbox" id="cfOculto">
+          <label for="cfOculto" style="margin:0;">Ocultar classificação no ranking público</label>
+        </div>
+        <p class="max" style="margin-top:8px;">Esconde a classificação da página pública (que atualiza sozinha a cada 20s) até a Grande Final revelar o resultado no palco. Os jurados continuam lançando notas normalmente.</p>
+      </div>
+
+      <button class="primario" id="cfSalvar">Salvar</button>
+      <p class="aviso" id="cfAviso"></p>
+      <p class="sucesso" id="cfSucesso" hidden>Configuração salva.</p>
     </section>
   </main>
 
@@ -405,6 +448,10 @@
       <div class="campo">
         <label for="modalInput">Nova pontuação</label>
         <input id="modalInput" type="number" step="any" min="0">
+      </div>
+      <div class="campo" id="modalCampoMotivo">
+        <label for="modalMotivo">Motivo da correção</label>
+        <input id="modalMotivo" type="text" placeholder="Ex: erro de digitação do jurado">
       </div>
       <p class="aviso" id="modalAviso"></p>
       <div class="modal-acoes">
@@ -512,7 +559,14 @@
       mostrarLogin();
     };
     renderLinksGerais();
-    await Promise.all([carregarEscolas(), carregarProvas(), carregarJurados(), carregarAuditoria()]);
+    await Promise.all([
+      carregarEscolas(),
+      carregarProvas(),
+      carregarJurados(),
+      carregarAuditoria(),
+      carregarHistorico(),
+      carregarConfiguracao(),
+    ]);
   }
 
   /* ----- links (visão geral) ----- */
@@ -589,13 +643,14 @@
     schools.forEach((e) => {
       const tr = document.createElement("tr");
       if (!e.ativo) tr.className = "inativo";
-      tr.innerHTML = `<td>${escapeHtml(e.nome)}</td><td>${escapeHtml(e.municipio || "—")}</td><td>${e.ativo ? "Sim" : "Não"}</td>`;
+      tr.innerHTML = `<td>${escapeHtml(e.nome)}</td><td>${escapeHtml(e.municipio || "—")}</td><td>${e.ativo ? "Sim" : "Não"}</td><td class="num">${e.ordem_sorteio ?? "—"}</td>`;
       const tdAcoes = document.createElement("td");
       tdAcoes.className = "acoes-cel";
       const bEditar = botao("editar", () => editarEscola(e));
-      const bToggle = botao(e.ativo ? "desativar" : "ativar", () => salvarEscola(e.id, e.nome, e.municipio, !e.ativo));
+      const bSorteio = botao("sorteio", () => editarSorteio(e));
+      const bToggle = botao(e.ativo ? "desativar" : "ativar", () => salvarEscola(e.id, e.nome, e.municipio, !e.ativo, e.ordem_sorteio));
       const bExcluir = botao("excluir", () => excluirEscola(e.id), true);
-      tdAcoes.append(bEditar, bToggle, bExcluir);
+      tdAcoes.append(bEditar, bSorteio, bToggle, bExcluir);
       tr.appendChild(tdAcoes);
       tbody.appendChild(tr);
     });
@@ -606,17 +661,31 @@
     if (nome === null) return;
     const municipio = prompt("Município (Macapá, Santana, Mazagão ou vazio):", e.municipio || "");
     if (municipio === null) return;
-    salvarEscola(e.id, nome.trim(), municipio.trim(), e.ativo);
+    salvarEscola(e.id, nome.trim(), municipio.trim(), e.ativo, e.ordem_sorteio);
   }
 
-  async function salvarEscola(id, nome, municipio, ativo) {
+  function editarSorteio(e) {
+    const valor = prompt(
+      "Posição de " + e.nome + " no sorteio público de desempate (Art. 53).\nDeixe vazio para remover.",
+      e.ordem_sorteio ?? ""
+    );
+    if (valor === null) return;
+    const numero = valor.trim() === "" ? null : Number(valor);
+    if (numero !== null && !Number.isInteger(numero)) {
+      alert("Digite um número inteiro, ou deixe vazio.");
+      return;
+    }
+    salvarEscola(e.id, e.nome, e.municipio, e.ativo, numero);
+  }
+
+  async function salvarEscola(id, nome, municipio, ativo, ordemSorteio) {
     const av = document.getElementById("escAviso");
     av.textContent = "";
     try {
       const r = await adminFetch("/api/admin?resource=schools&id=" + id, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, municipio: municipio || null, ativo }),
+        body: JSON.stringify({ nome, municipio: municipio || null, ativo, ordem_sorteio: ordemSorteio }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.erro || "Erro ao salvar.");
@@ -918,24 +987,107 @@
       sub: p.jurado_nome + " · " + p.escola_nome + " · " + p.prova_nome + " (máx. " + arredondar(p.pontuacao_maxima) + ")",
       valor: p.pontos,
       max: p.pontuacao_maxima,
-      onConfirmar: async (numero) => {
+      pedirMotivo: true,
+      onConfirmar: async (numero, motivo) => {
         const r = await adminFetch("/api/admin?resource=pontuacoes&id=" + p.id, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pontos: numero }),
+          body: JSON.stringify({ pontos: numero, motivo }),
         });
         const d = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(d.erro || "Erro ao corrigir.");
         await carregarAuditoria();
+        await carregarHistorico();
       },
     });
   }
 
   async function excluirPontuacao(id) {
+    const motivo = prompt("Motivo da exclusão deste lançamento:");
+    if (motivo === null) return;
+    if (!motivo.trim()) { alert("É preciso informar um motivo."); return; }
     if (!confirm("Excluir este lançamento?")) return;
-    await adminFetch("/api/admin?resource=pontuacoes&id=" + id, { method: "DELETE" });
+    const r = await adminFetch("/api/admin?resource=pontuacoes&id=" + id + "&motivo=" + encodeURIComponent(motivo.trim()), {
+      method: "DELETE",
+    });
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      alert(d.erro || "Erro ao excluir.");
+      return;
+    }
     await carregarAuditoria();
+    await carregarHistorico();
   }
+
+  /* ----- histórico (log de auditoria) ----- */
+  async function carregarHistorico() {
+    const r = await adminFetch("/api/admin?resource=log");
+    const log = await r.json();
+    renderHistorico(log);
+  }
+
+  const ROTULO_ACAO = {
+    criar: "lançou",
+    editar: "editou",
+    apagar: "apagou",
+    correcao_admin: "corrigiu (admin)",
+    exclusao_admin: "excluiu (admin)",
+  };
+
+  function renderHistorico(log) {
+    const tbody = document.getElementById("hiTbody");
+    tbody.innerHTML = "";
+    if (!log.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="vazio">Nenhum lançamento registrado ainda.</td></tr>';
+      return;
+    }
+    log.forEach((l) => {
+      const tr = document.createElement("tr");
+      const quando = new Date(l.criado_em).toLocaleString("pt-BR");
+      tr.innerHTML = `
+        <td>${escapeHtml(quando)}</td>
+        <td>${escapeHtml(ROTULO_ACAO[l.acao] || l.acao)}</td>
+        <td>${escapeHtml(l.prova_nome || "—")}</td>
+        <td>${escapeHtml(l.escola_nome || "—")}</td>
+        <td>${escapeHtml(l.autor)}</td>
+        <td class="num">${l.valor_antigo == null ? "—" : arredondar(l.valor_antigo)}</td>
+        <td class="num">${l.valor_novo == null ? "—" : arredondar(l.valor_novo)}</td>
+        <td>${escapeHtml(l.motivo || "—")}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* ----- configurações (estado da competição) ----- */
+  async function carregarConfiguracao() {
+    const r = await adminFetch("/api/admin?resource=configuracao");
+    const cfg = await r.json();
+    document.getElementById("cfEncerrada").checked = Boolean(cfg.encerrada);
+    document.getElementById("cfOculto").checked = Boolean(cfg.ranking_oculto);
+  }
+
+  document.getElementById("cfSalvar").onclick = async () => {
+    const av = document.getElementById("cfAviso");
+    const suc = document.getElementById("cfSucesso");
+    av.textContent = "";
+    suc.hidden = true;
+    try {
+      const r = await adminFetch("/api/admin?resource=configuracao", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          encerrada: document.getElementById("cfEncerrada").checked,
+          ranking_oculto: document.getElementById("cfOculto").checked,
+        }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.erro || "Erro ao salvar.");
+      suc.hidden = false;
+      setTimeout(() => (suc.hidden = true), 2500);
+    } catch (e) {
+      av.textContent = e.message;
+    }
+  };
 
   /* ----- utilitários ----- */
   function botao(texto, onclick, perigo) {
@@ -955,6 +1107,8 @@
   const $modalTitulo = document.getElementById("modalTitulo");
   const $modalSub = document.getElementById("modalSub");
   const $modalInput = document.getElementById("modalInput");
+  const $modalCampoMotivo = document.getElementById("modalCampoMotivo");
+  const $modalMotivo = document.getElementById("modalMotivo");
   const $modalAviso = document.getElementById("modalAviso");
   const $modalSalvar = document.getElementById("modalSalvar");
   const $modalCancelar = document.getElementById("modalCancelar");
@@ -969,6 +1123,8 @@
     $modalSub.textContent = opts.sub || "";
     $modalInput.value = opts.valor;
     $modalInput.max = opts.max ?? "";
+    $modalCampoMotivo.hidden = !opts.pedirMotivo;
+    $modalMotivo.value = "";
     $modalAviso.textContent = "";
     $modalOverlay.hidden = false;
     $modalInput.focus();
@@ -981,9 +1137,11 @@
         $modalAviso.textContent = "A pontuação não pode passar de " + arredondar(opts.max) + ".";
         return;
       }
+      const motivo = $modalMotivo.value.trim();
+      if (opts.pedirMotivo && !motivo) { $modalAviso.textContent = "Informe o motivo da correção."; return; }
       $modalSalvar.disabled = true;
       try {
-        await opts.onConfirmar(numero);
+        await opts.onConfirmar(numero, motivo);
         fecharModal();
       } catch (e) {
         $modalAviso.textContent = e.message || "Não foi possível salvar.";

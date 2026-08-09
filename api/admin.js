@@ -8,6 +8,7 @@ const {
   slugify,
   secretsConfigured,
 } = require("./_auth");
+const { registrarLog } = require("./_config");
 
 function bad(res, code, erro) {
   return res.status(code).json({ erro });
@@ -72,7 +73,7 @@ module.exports = async (req, res) => {
   if (resource === "schools") {
     if (req.method === "GET") {
       const { rows } = await pool.query(
-        "SELECT id, nome, municipio, ativo FROM schools ORDER BY nome ASC"
+        "SELECT id, nome, municipio, ativo, ordem_sorteio FROM schools ORDER BY nome ASC"
       );
       return res.status(200).json(rows);
     }
@@ -80,18 +81,24 @@ module.exports = async (req, res) => {
       const { nome, municipio } = req.body || {};
       if (!nome || !String(nome).trim()) return bad(res, 400, "Nome é obrigatório.");
       const { rows } = await pool.query(
-        "INSERT INTO schools (nome, municipio) VALUES ($1, $2) RETURNING id, nome, municipio, ativo",
+        "INSERT INTO schools (nome, municipio) VALUES ($1, $2) RETURNING id, nome, municipio, ativo, ordem_sorteio",
         [String(nome).trim(), municipio ? String(municipio).trim() : null]
       );
       return res.status(201).json(rows[0]);
     }
     if (req.method === "PUT") {
       if (!Number.isInteger(id)) return bad(res, 400, "Id inválido.");
-      const { nome, municipio, ativo } = req.body || {};
+      const { nome, municipio, ativo, ordem_sorteio } = req.body || {};
       if (!nome || !String(nome).trim()) return bad(res, 400, "Nome é obrigatório.");
+      let ordemSorteio = null;
+      if (ordem_sorteio !== undefined && ordem_sorteio !== null && String(ordem_sorteio).trim() !== "") {
+        ordemSorteio = Number(ordem_sorteio);
+        if (!Number.isInteger(ordemSorteio)) return bad(res, 400, "Ordem de sorteio inválida.");
+      }
       const { rows } = await pool.query(
-        "UPDATE schools SET nome = $1, municipio = $2, ativo = $3 WHERE id = $4 RETURNING id, nome, municipio, ativo",
-        [String(nome).trim(), municipio ? String(municipio).trim() : null, ativo !== false, id]
+        `UPDATE schools SET nome = $1, municipio = $2, ativo = $3, ordem_sorteio = $4
+         WHERE id = $5 RETURNING id, nome, municipio, ativo, ordem_sorteio`,
+        [String(nome).trim(), municipio ? String(municipio).trim() : null, ativo !== false, ordemSorteio, id]
       );
       if (!rows.length) return bad(res, 404, "Não encontrado.");
       return res.status(200).json(rows[0]);
@@ -221,11 +228,16 @@ module.exports = async (req, res) => {
     }
     if (req.method === "PUT") {
       // Correção de erro material (Art. 12, § único do Edital) por parte do administrador.
+      // Exige motivo: essa é a única via que altera a nota de outra pessoa, então precisa
+      // ficar registrada em pontuacoes_log com uma justificativa, não só o valor novo.
       if (!Number.isInteger(id)) return bad(res, 400, "Id inválido.");
+      const { motivo } = req.body || {};
+      if (!motivo || !String(motivo).trim()) return bad(res, 400, "Informe o motivo da correção.");
       const pontosNum = Number((req.body || {}).pontos);
       if (!Number.isFinite(pontosNum) || pontosNum < 0) return bad(res, 400, "Pontuação inválida.");
       const { rows } = await pool.query(
-        `SELECT pv.pontuacao_maxima FROM pontuacoes p JOIN provas pv ON pv.id = p.prova_id WHERE p.id = $1`,
+        `SELECT p.jurado_id, p.escola_id, p.prova_id, p.pontos, pv.pontuacao_maxima
+         FROM pontuacoes p JOIN provas pv ON pv.id = p.prova_id WHERE p.id = $1`,
         [id]
       );
       if (!rows.length) return bad(res, 404, "Não encontrado.");
@@ -236,15 +248,78 @@ module.exports = async (req, res) => {
         "UPDATE pontuacoes SET pontos = $1, atualizado_em = now() WHERE id = $2 RETURNING id, pontos, atualizado_em",
         [pontosNum, id]
       );
+      await registrarLog(pool, {
+        pontuacaoId: id,
+        juradoId: rows[0].jurado_id,
+        escolaId: rows[0].escola_id,
+        provaId: rows[0].prova_id,
+        acao: "correcao_admin",
+        valorAntigo: Number(rows[0].pontos),
+        valorNovo: pontosNum,
+        autor: "admin: " + session.u,
+        motivo: String(motivo).trim(),
+      });
       return res.status(200).json(updated.rows[0]);
     }
     if (req.method === "DELETE") {
       if (!Number.isInteger(id)) return bad(res, 400, "Id inválido.");
+      const motivo = req.query.motivo;
+      if (!motivo || !String(motivo).trim()) return bad(res, 400, "Informe o motivo da exclusão.");
+      const { rows } = await pool.query(
+        "SELECT jurado_id, escola_id, prova_id, pontos FROM pontuacoes WHERE id = $1",
+        [id]
+      );
+      if (!rows.length) return res.status(204).end();
       await pool.query("DELETE FROM pontuacoes WHERE id = $1", [id]);
+      await registrarLog(pool, {
+        pontuacaoId: id,
+        juradoId: rows[0].jurado_id,
+        escolaId: rows[0].escola_id,
+        provaId: rows[0].prova_id,
+        acao: "exclusao_admin",
+        valorAntigo: Number(rows[0].pontos),
+        valorNovo: null,
+        autor: "admin: " + session.u,
+        motivo: String(motivo).trim(),
+      });
       return res.status(204).end();
     }
     res.setHeader("Allow", "GET, PUT, DELETE");
     return bad(res, 405, "Método não permitido.");
+  }
+
+  if (resource === "configuracao") {
+    if (req.method === "GET") {
+      const { rows } = await pool.query(
+        "SELECT encerrada, ranking_oculto FROM configuracao WHERE id = 1"
+      );
+      return res.status(200).json(rows[0] || { encerrada: false, ranking_oculto: false });
+    }
+    if (req.method === "PUT") {
+      const { encerrada, ranking_oculto } = req.body || {};
+      const { rows } = await pool.query(
+        `UPDATE configuracao SET encerrada = $1, ranking_oculto = $2, atualizado_em = now()
+         WHERE id = 1 RETURNING encerrada, ranking_oculto`,
+        [Boolean(encerrada), Boolean(ranking_oculto)]
+      );
+      return res.status(200).json(rows[0]);
+    }
+    res.setHeader("Allow", "GET, PUT");
+    return bad(res, 405, "Método não permitido.");
+  }
+
+  if (resource === "log") {
+    if (req.method !== "GET") return bad(res, 405, "Método não permitido.");
+    const { rows } = await pool.query(
+      `SELECT l.id, l.acao, l.valor_antigo, l.valor_novo, l.autor, l.motivo, l.criado_em,
+              e.nome AS escola_nome, pv.nome AS prova_nome
+       FROM pontuacoes_log l
+       LEFT JOIN schools e ON e.id = l.escola_id
+       LEFT JOIN provas pv ON pv.id = l.prova_id
+       ORDER BY l.criado_em DESC
+       LIMIT 500`
+    );
+    return res.status(200).json(rows);
   }
 
   return bad(res, 404, "Recurso inválido.");
