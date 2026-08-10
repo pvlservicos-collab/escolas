@@ -30,7 +30,7 @@ async function buildRanking(pool) {
     "SELECT id, nome, municipio, ordem_sorteio FROM schools WHERE ativo = true ORDER BY nome ASC"
   );
   const { rows: somas } = await pool.query(
-    `SELECT pt.escola_id, pt.prova_id, LEAST(SUM(pt.pontos), MIN(p.pontuacao_maxima)) AS pontos
+    `SELECT pt.escola_id, pt.prova_id, SUM(pt.pontos) AS pontos
      FROM pontuacoes pt
      JOIN provas p ON p.id = pt.prova_id AND p.ativo = true
      JOIN schools e ON e.id = pt.escola_id AND e.ativo = true
