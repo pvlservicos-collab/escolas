@@ -481,7 +481,10 @@
 </div>
 
 <script>
-  const KEY = new URLSearchParams(location.search).get("key") || "";
+  const LS_KEY = "gincana_admin_key";
+  // A chave pode vir na URL (primeiro acesso) ou já ter sido lembrada neste navegador
+  // de uma visita anterior — assim dá pra favoritar só /admin, sem o parâmetro.
+  const KEY = new URLSearchParams(location.search).get("key") || localStorage.getItem(LS_KEY) || "";
   const SS_TOKEN = "gincana_admin_token";
 
   const $raizEstado = document.getElementById("raizEstado");
@@ -1215,6 +1218,7 @@
       const r = await fetch("/api/admin?resource=check-key", { headers: { "x-admin-key": KEY } });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.ok) return estadoTexto("Página não encontrada.");
+      localStorage.setItem(LS_KEY, KEY);
     } catch (e) {
       return estadoTexto("Não foi possível verificar o acesso. Recarregue a página.");
     }
