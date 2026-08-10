@@ -37,22 +37,22 @@
 
   .container { position: relative; max-width: 640px; margin: 0 auto; }
 
-  /* emoji decorativos no fundo rosa, ao redor do quadro branco (não dentro dele) */
-  .borda-deco {
-    position: absolute;
+  /* emoji grandes fixos nos 4 cantos da tela (fundo rosa), não presos ao quadro branco */
+  .cantos-deco {
+    position: fixed;
     inset: 0;
+    z-index: -1;
     pointer-events: none;
     user-select: none;
-    z-index: 0;
   }
-  .borda-deco span {
+  .cantos-deco span {
     position: absolute;
     line-height: 1;
     font-size: var(--tam);
-    filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(3px 4px 0 rgba(0, 0, 0, 0.22));
   }
-  @media (max-width: 760px) {
-    .borda-deco { display: none; }
+  @media (max-width: 480px) {
+    .cantos-deco span { font-size: calc(var(--tam) * 0.55); }
   }
 
   header {
@@ -348,19 +348,18 @@
 
   <p class="aviso" id="aviso" hidden></p>
 
-  <div class="borda-deco" aria-hidden="true">
-    <span style="top:2%; left:-58px; --tam:44px; transform:rotate(-14deg);">⭐</span>
-    <span style="top:16%; left:-70px; --tam:52px; transform:rotate(10deg);">🎈</span>
-    <span style="top:34%; left:-56px; --tam:40px; transform:rotate(-8deg);">🎉</span>
-    <span style="top:54%; left:-66px; --tam:46px; transform:rotate(12deg);">🥇</span>
-    <span style="top:74%; left:-58px; --tam:42px; transform:rotate(-12deg);">⭐</span>
-    <span style="top:92%; left:-64px; --tam:44px; transform:rotate(8deg);">🎊</span>
+  <div class="cantos-deco" aria-hidden="true">
+    <span style="top:-22px; left:-22px; --tam:100px; transform:rotate(-18deg);">⭐</span>
+    <span style="top:64px; left:-4px; --tam:66px; transform:rotate(8deg);">🎈</span>
 
-    <span style="top:6%; right:-62px; --tam:48px; transform:rotate(14deg);">🏆</span>
-    <span style="top:24%; right:-56px; --tam:40px; transform:rotate(-10deg);">⚡</span>
-    <span style="top:44%; right:-68px; --tam:50px; transform:rotate(9deg);">🎈</span>
-    <span style="top:64%; right:-58px; --tam:42px; transform:rotate(-14deg);">🎊</span>
-    <span style="top:84%; right:-64px; --tam:46px; transform:rotate(11deg);">⭐</span>
+    <span style="top:-24px; right:-20px; --tam:104px; transform:rotate(16deg);">🏆</span>
+    <span style="top:70px; right:-6px; --tam:68px; transform:rotate(-10deg);">⚡</span>
+
+    <span style="bottom:-20px; left:-18px; --tam:96px; transform:rotate(12deg);">🎉</span>
+    <span style="bottom:72px; left:-2px; --tam:62px; transform:rotate(-9deg);">🥇</span>
+
+    <span style="bottom:-22px; right:-22px; --tam:102px; transform:rotate(-14deg);">🎊</span>
+    <span style="bottom:68px; right:-4px; --tam:64px; transform:rotate(10deg);">⭐</span>
   </div>
 
   <div class="board">
