@@ -73,32 +73,46 @@ module.exports = async (req, res) => {
   if (resource === "schools") {
     if (req.method === "GET") {
       const { rows } = await pool.query(
-        "SELECT id, nome, municipio, ativo, ordem_sorteio FROM schools ORDER BY nome ASC"
+        "SELECT id, nome, municipio, ativo, ordem_sorteio, dia_apresentacao, ordem_apresentacao FROM schools ORDER BY nome ASC"
       );
       return res.status(200).json(rows);
     }
     if (req.method === "POST") {
-      const { nome, municipio } = req.body || {};
+      const { nome, municipio, dia_apresentacao, ordem_apresentacao } = req.body || {};
       if (!nome || !String(nome).trim()) return bad(res, 400, "Nome é obrigatório.");
+      const dia = ["11", "12"].includes(dia_apresentacao) ? dia_apresentacao : null;
+      let ordemApresentacao = null;
+      if (ordem_apresentacao !== undefined && ordem_apresentacao !== null && String(ordem_apresentacao).trim() !== "") {
+        ordemApresentacao = Number(ordem_apresentacao);
+        if (!Number.isInteger(ordemApresentacao)) return bad(res, 400, "Ordem de apresentação inválida.");
+      }
       const { rows } = await pool.query(
-        "INSERT INTO schools (nome, municipio) VALUES ($1, $2) RETURNING id, nome, municipio, ativo, ordem_sorteio",
-        [String(nome).trim(), municipio ? String(municipio).trim() : null]
+        `INSERT INTO schools (nome, municipio, dia_apresentacao, ordem_apresentacao)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, nome, municipio, ativo, ordem_sorteio, dia_apresentacao, ordem_apresentacao`,
+        [String(nome).trim(), municipio ? String(municipio).trim() : null, dia, ordemApresentacao]
       );
       return res.status(201).json(rows[0]);
     }
     if (req.method === "PUT") {
       if (!Number.isInteger(id)) return bad(res, 400, "Id inválido.");
-      const { nome, municipio, ativo, ordem_sorteio } = req.body || {};
+      const { nome, municipio, ativo, ordem_sorteio, dia_apresentacao, ordem_apresentacao } = req.body || {};
       if (!nome || !String(nome).trim()) return bad(res, 400, "Nome é obrigatório.");
       let ordemSorteio = null;
       if (ordem_sorteio !== undefined && ordem_sorteio !== null && String(ordem_sorteio).trim() !== "") {
         ordemSorteio = Number(ordem_sorteio);
         if (!Number.isInteger(ordemSorteio)) return bad(res, 400, "Ordem de sorteio inválida.");
       }
+      const dia = ["11", "12"].includes(dia_apresentacao) ? dia_apresentacao : null;
+      let ordemApresentacao = null;
+      if (ordem_apresentacao !== undefined && ordem_apresentacao !== null && String(ordem_apresentacao).trim() !== "") {
+        ordemApresentacao = Number(ordem_apresentacao);
+        if (!Number.isInteger(ordemApresentacao)) return bad(res, 400, "Ordem de apresentação inválida.");
+      }
       const { rows } = await pool.query(
-        `UPDATE schools SET nome = $1, municipio = $2, ativo = $3, ordem_sorteio = $4
-         WHERE id = $5 RETURNING id, nome, municipio, ativo, ordem_sorteio`,
-        [String(nome).trim(), municipio ? String(municipio).trim() : null, ativo !== false, ordemSorteio, id]
+        `UPDATE schools SET nome = $1, municipio = $2, ativo = $3, ordem_sorteio = $4, dia_apresentacao = $5, ordem_apresentacao = $6
+         WHERE id = $7 RETURNING id, nome, municipio, ativo, ordem_sorteio, dia_apresentacao, ordem_apresentacao`,
+        [String(nome).trim(), municipio ? String(municipio).trim() : null, ativo !== false, ordemSorteio, dia, ordemApresentacao, id]
       );
       if (!rows.length) return bad(res, 404, "Não encontrado.");
       return res.status(200).json(rows[0]);

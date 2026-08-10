@@ -316,15 +316,33 @@
             <option>Mazagão</option>
           </select>
         </div>
+        <div class="campo pequeno">
+          <label for="escDia">Dia (elim.)</label>
+          <select id="escDia">
+            <option value="">—</option>
+            <option value="11">11/08</option>
+            <option value="12">12/08</option>
+          </select>
+        </div>
+        <div class="campo pequeno">
+          <label for="escOrdem">Posição na lista</label>
+          <input id="escOrdem" type="number" step="1" placeholder="1">
+        </div>
         <button class="primario" id="escAdicionar">Adicionar</button>
       </div>
       <p class="aviso" id="escAviso"></p>
 
       <table>
-        <thead><tr><th>Nome</th><th>Município</th><th>Ativa</th><th>Ordem de sorteio</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Município</th><th>Dia</th><th>Posição</th><th>Ativa</th><th>Ordem de sorteio</th><th>Ações</th></tr></thead>
         <tbody id="escTbody"></tbody>
       </table>
       <p class="sub" style="margin-top:14px;">
+        "Dia" é o dia da fase eliminatória em que a escola se apresenta (Art. 25, III). "Posição na lista"
+        é a ordem oficial fornecida (não é alfabética). No dia de cada escola, a caixa de seleção do jurado
+        mostra primeiro as escolas daquele dia (nessa posição) e depois as do outro dia; no dia 13 (Grande
+        Final) ou em qualquer outro dia, usa direto essa mesma sequência, sem separar por dia.
+      </p>
+      <p class="sub">
         A "ordem de sorteio" só é usada como último critério de desempate (Art. 53), quando duas ou mais
         escolas terminam empatadas mesmo após Arrecadação, Desfile, Torta na Cara e Circuito. Preencha com
         o resultado do sorteio público — menor número vence.
@@ -637,18 +655,19 @@
     const tbody = document.getElementById("escTbody");
     tbody.innerHTML = "";
     if (!schools.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="vazio">Nenhuma escola cadastrada.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="vazio">Nenhuma escola cadastrada.</td></tr>';
       return;
     }
     schools.forEach((e) => {
       const tr = document.createElement("tr");
       if (!e.ativo) tr.className = "inativo";
-      tr.innerHTML = `<td>${escapeHtml(e.nome)}</td><td>${escapeHtml(e.municipio || "—")}</td><td>${e.ativo ? "Sim" : "Não"}</td><td class="num">${e.ordem_sorteio ?? "—"}</td>`;
+      const diaRotulo = e.dia_apresentacao ? e.dia_apresentacao + "/08" : "—";
+      tr.innerHTML = `<td>${escapeHtml(e.nome)}</td><td>${escapeHtml(e.municipio || "—")}</td><td>${diaRotulo}</td><td class="num">${e.ordem_apresentacao ?? "—"}</td><td>${e.ativo ? "Sim" : "Não"}</td><td class="num">${e.ordem_sorteio ?? "—"}</td>`;
       const tdAcoes = document.createElement("td");
       tdAcoes.className = "acoes-cel";
       const bEditar = botao("editar", () => editarEscola(e));
       const bSorteio = botao("sorteio", () => editarSorteio(e));
-      const bToggle = botao(e.ativo ? "desativar" : "ativar", () => salvarEscola(e.id, e.nome, e.municipio, !e.ativo, e.ordem_sorteio));
+      const bToggle = botao(e.ativo ? "desativar" : "ativar", () => salvarEscola(e.id, e.nome, e.municipio, !e.ativo, e.ordem_sorteio, e.dia_apresentacao, e.ordem_apresentacao));
       const bExcluir = botao("excluir", () => excluirEscola(e.id), true);
       tdAcoes.append(bEditar, bSorteio, bToggle, bExcluir);
       tr.appendChild(tdAcoes);
@@ -661,7 +680,22 @@
     if (nome === null) return;
     const municipio = prompt("Município (Macapá, Santana, Mazagão ou vazio):", e.municipio || "");
     if (municipio === null) return;
-    salvarEscola(e.id, nome.trim(), municipio.trim(), e.ativo, e.ordem_sorteio);
+    const dia = prompt("Dia da fase eliminatória (11, 12 ou vazio):", e.dia_apresentacao || "");
+    if (dia === null) return;
+    const diaLimpo = dia.trim();
+    if (diaLimpo && diaLimpo !== "11" && diaLimpo !== "12") {
+      alert('Dia inválido. Digite "11", "12" ou deixe vazio.');
+      return;
+    }
+    const posicao = prompt("Posição na lista oficial (número, ou vazio):", e.ordem_apresentacao ?? "");
+    if (posicao === null) return;
+    const posicaoLimpa = posicao.trim();
+    const posicaoNum = posicaoLimpa === "" ? null : Number(posicaoLimpa);
+    if (posicaoNum !== null && !Number.isInteger(posicaoNum)) {
+      alert("Digite um número inteiro para a posição, ou deixe vazio.");
+      return;
+    }
+    salvarEscola(e.id, nome.trim(), municipio.trim(), e.ativo, e.ordem_sorteio, diaLimpo || null, posicaoNum);
   }
 
   function editarSorteio(e) {
@@ -675,17 +709,24 @@
       alert("Digite um número inteiro, ou deixe vazio.");
       return;
     }
-    salvarEscola(e.id, e.nome, e.municipio, e.ativo, numero);
+    salvarEscola(e.id, e.nome, e.municipio, e.ativo, numero, e.dia_apresentacao, e.ordem_apresentacao);
   }
 
-  async function salvarEscola(id, nome, municipio, ativo, ordemSorteio) {
+  async function salvarEscola(id, nome, municipio, ativo, ordemSorteio, dia, ordemApresentacao) {
     const av = document.getElementById("escAviso");
     av.textContent = "";
     try {
       const r = await adminFetch("/api/admin?resource=schools&id=" + id, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, municipio: municipio || null, ativo, ordem_sorteio: ordemSorteio }),
+        body: JSON.stringify({
+          nome,
+          municipio: municipio || null,
+          ativo,
+          ordem_sorteio: ordemSorteio,
+          dia_apresentacao: dia || null,
+          ordem_apresentacao: ordemApresentacao,
+        }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.erro || "Erro ao salvar.");
@@ -705,6 +746,8 @@
   document.getElementById("escAdicionar").onclick = async () => {
     const nomeEl = document.getElementById("escNome");
     const municipioEl = document.getElementById("escMunicipio");
+    const diaEl = document.getElementById("escDia");
+    const ordemEl = document.getElementById("escOrdem");
     const av = document.getElementById("escAviso");
     av.textContent = "";
     if (!nomeEl.value.trim()) { av.textContent = "Digite o nome da escola."; return; }
@@ -712,12 +755,19 @@
       const r = await adminFetch("/api/admin?resource=schools", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome: nomeEl.value.trim(), municipio: municipioEl.value || null }),
+        body: JSON.stringify({
+          nome: nomeEl.value.trim(),
+          municipio: municipioEl.value || null,
+          dia_apresentacao: diaEl.value || null,
+          ordem_apresentacao: ordemEl.value.trim() === "" ? null : Number(ordemEl.value),
+        }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.erro || "Erro ao adicionar.");
       nomeEl.value = "";
       municipioEl.value = "";
+      diaEl.value = "";
+      ordemEl.value = "";
       await carregarEscolas();
     } catch (e) {
       av.textContent = e.message;

@@ -14,6 +14,17 @@ CREATE TABLE IF NOT EXISTS schools (
 -- acontecer; menor número vence quando os critérios de prova terminam empatados.
 ALTER TABLE schools ADD COLUMN IF NOT EXISTS ordem_sorteio INTEGER;
 
+-- Dia em que a escola disputa a fase eliminatória (Art. 25, III do Edital): '11' ou
+-- '12'. Usada só para ordenar a caixa de seleção do jurado (quem apresenta "hoje"
+-- aparece primeiro); no dia 13 (Grande Final) todas as escolas participam juntas.
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS dia_apresentacao TEXT;
+
+-- Posição fixa da escola na lista oficial (não é ordem alfabética nem de sorteio).
+-- No dia de apresentação dela, as escolas daquele dia aparecem primeiro, nessa ordem;
+-- as do outro dia ficam depois, também nessa ordem. No dia 13 (ou qualquer outro dia),
+-- usa direto essa mesma sequência, sem separar por dia.
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS ordem_apresentacao INTEGER;
+
 CREATE TABLE IF NOT EXISTS provas (
   id                SERIAL PRIMARY KEY,
   numero            TEXT NOT NULL,

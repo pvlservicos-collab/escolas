@@ -114,7 +114,7 @@ module.exports = async (req, res) => {
       "SELECT id, numero, ordem, nome, pontuacao_maxima FROM provas WHERE ativo = true ORDER BY ordem ASC"
     );
     const { rows: schools } = await pool.query(
-      "SELECT id, nome, municipio FROM schools WHERE ativo = true ORDER BY nome ASC"
+      "SELECT id, nome, municipio, dia_apresentacao, ordem_apresentacao FROM schools WHERE ativo = true ORDER BY nome ASC"
     );
     return res.status(200).json({ provas, schools });
   }
@@ -127,7 +127,7 @@ module.exports = async (req, res) => {
       "SELECT id, numero, ordem, nome, pontuacao_maxima FROM provas WHERE ativo = true ORDER BY ordem ASC"
     );
     const { rows: schools } = await pool.query(
-      "SELECT id, nome, municipio FROM schools WHERE ativo = true ORDER BY nome ASC"
+      "SELECT id, nome, municipio, dia_apresentacao, ordem_apresentacao FROM schools WHERE ativo = true ORDER BY nome ASC"
     );
     const { rows: minhas } = await pool.query(
       "SELECT id, escola_id, prova_id, pontos, atualizado_em FROM pontuacoes WHERE jurado_id = $1",

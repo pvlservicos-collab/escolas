@@ -656,6 +656,35 @@
     $salvar.disabled = encerrada;
   }
 
+  // Dia do evento hoje ("11", "12") ou null (dia 3 / fora do evento — usa a lista toda,
+  // na ordem oficial, sem separar por dia).
+  function diaHojeEvento() {
+    const hoje = new Date();
+    if (hoje.getFullYear() === 2026 && hoje.getMonth() === 7) {
+      if (hoje.getDate() === 11) return "11";
+      if (hoje.getDate() === 12) return "12";
+    }
+    return null;
+  }
+
+  // Escolas do dia de hoje primeiro (na posição oficial da lista), depois as do outro
+  // dia (também na posição oficial). No dia 13 (ou fora do evento), direto pela posição
+  // oficial da lista inteira, sem separar por dia — como pedido.
+  function ordenarEscolas(lista) {
+    const hoje = diaHojeEvento();
+    return [...lista].sort((a, b) => {
+      if (hoje) {
+        const aHoje = a.dia_apresentacao === hoje ? 0 : 1;
+        const bHoje = b.dia_apresentacao === hoje ? 0 : 1;
+        if (aHoje !== bHoje) return aHoje - bHoje;
+      }
+      const oa = a.ordem_apresentacao ?? Infinity;
+      const ob = b.ordem_apresentacao ?? Infinity;
+      if (oa !== ob) return oa - ob;
+      return a.nome.localeCompare(b.nome, "pt-BR");
+    });
+  }
+
   function montarSelects() {
     $prova.innerHTML = "";
     provas.forEach((p) => {
@@ -666,7 +695,7 @@
     });
 
     $escola.innerHTML = "";
-    schools.forEach((e) => {
+    ordenarEscolas(schools).forEach((e) => {
       const opt = document.createElement("option");
       opt.value = e.id;
       opt.textContent = e.nome + (e.municipio ? " — " + e.municipio : "");
