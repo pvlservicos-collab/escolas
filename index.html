@@ -35,7 +35,25 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  .container { max-width: 640px; margin: 0 auto; }
+  .container { position: relative; max-width: 640px; margin: 0 auto; }
+
+  /* emoji decorativos no fundo rosa, ao redor do quadro branco (não dentro dele) */
+  .borda-deco {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+  }
+  .borda-deco span {
+    position: absolute;
+    line-height: 1;
+    font-size: var(--tam);
+    filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.2));
+  }
+  @media (max-width: 760px) {
+    .borda-deco { display: none; }
+  }
 
   header {
     position: relative;
@@ -132,28 +150,11 @@
   /* ---------- quadro (área de leitura, branco-gelo) ---------- */
   .board {
     position: relative;
-    isolation: isolate;
-    overflow: hidden;
+    z-index: 1;
     background: var(--gelo);
     border-radius: 18px;
     padding: 22px;
     box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
-  }
-
-  .board-deco {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-    user-select: none;
-  }
-
-  .board-deco span {
-    position: absolute;
-    line-height: 1;
-    font-size: var(--tam);
-    filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.16));
   }
 
   /* ---------- filtros por prova ---------- */
@@ -328,7 +329,6 @@
     .pontos { font-size: 18px; }
     .nome { font-size: 15px; }
     .board { padding: 16px; border-radius: 14px; }
-    .board-deco span { font-size: calc(var(--tam) * 0.45); }
   }
 </style>
 
@@ -348,14 +348,22 @@
 
   <p class="aviso" id="aviso" hidden></p>
 
-  <div class="board">
-    <div class="board-deco" aria-hidden="true">
-      <span style="top:12px; left:-28px; --tam:64px; transform:rotate(-16deg);">⭐</span>
-      <span style="top:12px; right:-26px; --tam:58px; transform:rotate(14deg);">🏆</span>
-      <span style="bottom:12px; left:-24px; --tam:56px; transform:rotate(12deg);">🎈</span>
-      <span style="bottom:12px; right:-26px; --tam:58px; transform:rotate(-14deg);">⚡</span>
-    </div>
+  <div class="borda-deco" aria-hidden="true">
+    <span style="top:2%; left:-58px; --tam:44px; transform:rotate(-14deg);">⭐</span>
+    <span style="top:16%; left:-70px; --tam:52px; transform:rotate(10deg);">🎈</span>
+    <span style="top:34%; left:-56px; --tam:40px; transform:rotate(-8deg);">🎉</span>
+    <span style="top:54%; left:-66px; --tam:46px; transform:rotate(12deg);">🥇</span>
+    <span style="top:74%; left:-58px; --tam:42px; transform:rotate(-12deg);">⭐</span>
+    <span style="top:92%; left:-64px; --tam:44px; transform:rotate(8deg);">🎊</span>
 
+    <span style="top:6%; right:-62px; --tam:48px; transform:rotate(14deg);">🏆</span>
+    <span style="top:24%; right:-56px; --tam:40px; transform:rotate(-10deg);">⚡</span>
+    <span style="top:44%; right:-68px; --tam:50px; transform:rotate(9deg);">🎈</span>
+    <span style="top:64%; right:-58px; --tam:42px; transform:rotate(-14deg);">🎊</span>
+    <span style="top:84%; right:-64px; --tam:46px; transform:rotate(11deg);">⭐</span>
+  </div>
+
+  <div class="board">
     <div class="chips" id="chips"></div>
 
     <div class="titulo-lista">
