@@ -23,6 +23,20 @@
 
   * { box-sizing: border-box; }
 
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes floatY {
+    0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+    50% { transform: translateY(-10px) rotate(var(--rot, 0deg)); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  }
+
   body {
     margin: 0;
     padding: 40px 18px 80px;
@@ -50,6 +64,8 @@
     line-height: 1;
     font-size: var(--tam);
     filter: drop-shadow(3px 4px 0 rgba(0, 0, 0, 0.22));
+    animation: floatY var(--dur, 5s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
   }
   @media (max-width: 480px) {
     .cantos-deco span { font-size: calc(var(--tam) * 0.55); }
@@ -133,8 +149,10 @@
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
+    transition: background 0.18s ease, transform 0.12s ease;
   }
   .atualizado button:hover { background: rgba(255, 255, 255, 0.26); }
+  .atualizado button:active { transform: scale(0.94); }
 
   .aviso {
     font-size: 13px;
@@ -155,6 +173,7 @@
     border-radius: 18px;
     padding: 22px;
     box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+    animation: fadeInUp 0.5s ease both;
   }
 
   /* ---------- filtros por prova ---------- */
@@ -175,7 +194,10 @@
     border: 1.5px solid var(--linha);
     border-radius: 999px;
     cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
   }
+
+  .chips button:active { transform: scale(0.96); }
 
   .chips button:hover { color: var(--texto); border-color: var(--texto); }
 
@@ -217,7 +239,11 @@
     padding: 14px 4px;
     border-bottom: 1px solid var(--linha);
     cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.18s ease, box-shadow 0.18s ease;
   }
+
+  li:hover { background: rgba(36, 64, 156, 0.05); }
 
   li.top { border-radius: 10px; padding-left: 10px; padding-right: 10px; margin: 6px 0; }
 
@@ -274,13 +300,16 @@
   }
 
   .detalhe {
-    display: none;
-    margin: 10px 0 0 50px;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin: 0 0 0 50px;
     padding: 0;
     list-style: none;
+    transition: max-height 0.32s ease, opacity 0.22s ease, margin-top 0.32s ease;
   }
 
-  li.aberta .detalhe { display: block; }
+  li.aberta .detalhe { max-height: 600px; opacity: 1; margin-top: 10px; }
 
   .detalhe li {
     display: flex;
@@ -349,17 +378,17 @@
   <p class="aviso" id="aviso" hidden></p>
 
   <div class="cantos-deco" aria-hidden="true">
-    <span style="top:-22px; left:-22px; --tam:100px; transform:rotate(-18deg);">⭐</span>
-    <span style="top:64px; left:-4px; --tam:66px; transform:rotate(8deg);">🎈</span>
+    <span style="top:-22px; left:-22px; --tam:100px; --rot:-18deg; --dur:6s; --delay:0s;">⭐</span>
+    <span style="top:64px; left:-4px; --tam:66px; --rot:8deg; --dur:5s; --delay:.6s;">🎈</span>
 
-    <span style="top:-24px; right:-20px; --tam:104px; transform:rotate(16deg);">🏆</span>
-    <span style="top:70px; right:-6px; --tam:68px; transform:rotate(-10deg);">⚡</span>
+    <span style="top:-24px; right:-20px; --tam:104px; --rot:16deg; --dur:5.5s; --delay:.3s;">🏆</span>
+    <span style="top:70px; right:-6px; --tam:68px; --rot:-10deg; --dur:4.5s; --delay:.9s;">⚡</span>
 
-    <span style="bottom:-20px; left:-18px; --tam:96px; transform:rotate(12deg);">🎉</span>
-    <span style="bottom:72px; left:-2px; --tam:62px; transform:rotate(-9deg);">🥇</span>
+    <span style="bottom:-20px; left:-18px; --tam:96px; --rot:12deg; --dur:6.5s; --delay:.2s;">🎉</span>
+    <span style="bottom:72px; left:-2px; --tam:62px; --rot:-9deg; --dur:5s; --delay:1.1s;">🥇</span>
 
-    <span style="bottom:-22px; right:-22px; --tam:102px; transform:rotate(-14deg);">🎊</span>
-    <span style="bottom:68px; right:-4px; --tam:64px; transform:rotate(10deg);">⭐</span>
+    <span style="bottom:-22px; right:-22px; --tam:102px; --rot:-14deg; --dur:6s; --delay:.5s;">🎊</span>
+    <span style="bottom:68px; right:-4px; --tam:64px; --rot:10deg; --dur:5.2s; --delay:.8s;">⭐</span>
   </div>
 
   <div class="board">
@@ -408,6 +437,11 @@
 
   function classePosicao(i) {
     return i === 0 ? "top pos-1" : i === 1 ? "top pos-2" : i === 2 ? "top pos-3" : "";
+  }
+
+  function animarEntrada(li, i) {
+    li.style.animation = "fadeInUp 0.32s ease both";
+    li.style.animationDelay = Math.min(i * 25, 260) + "ms";
   }
 
   async function carregar() {
@@ -484,6 +518,7 @@
       const li = document.createElement("li");
       li.className = classePosicao(i);
       if (abertas.has(escola.id)) li.className = (li.className + " aberta").trim();
+      animarEntrada(li, i);
 
       const detalheProvas = provas
         .map((p) => ({ nome: p.numero + " · " + p.nome, pontos: escola.porProva[p.id] || 0 }))
@@ -507,7 +542,7 @@
         li.onclick = () => {
           if (abertas.has(escola.id)) abertas.delete(escola.id);
           else abertas.add(escola.id);
-          render();
+          li.classList.toggle("aberta");
         };
       }
 
@@ -528,6 +563,7 @@
     linhas.forEach((escola, i) => {
       const li = document.createElement("li");
       if (escola.pontos > 0) li.className = classePosicao(i);
+      animarEntrada(li, i);
       li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.pontos));
       $lista.appendChild(li);
     });
@@ -581,13 +617,13 @@
 
     linhas.forEach((escola, i) => {
       const li = document.createElement("li");
-      li.className = classePosicao(i);
+      li.className = (classePosicao(i) + " aberta").trim();
+      animarEntrada(li, i);
 
       li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.total));
 
       const ul = document.createElement("ul");
       ul.className = "detalhe";
-      ul.style.display = "block";
       CASCATA_DESEMPATE.forEach((c) => {
         const prova = provaPorNumero[c.numero];
         const item = document.createElement("li");
