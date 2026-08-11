@@ -233,6 +233,22 @@
     color: var(--apagado);
   }
 
+  .titulo-acoes { display: flex; align-items: center; gap: 10px; }
+
+  .botao-olho {
+    background: none;
+    border: none;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 4px;
+    transition: transform 0.15s ease;
+  }
+  .botao-olho:hover { transform: scale(1.18); }
+
+  li.borrado { pointer-events: none; }
+  li.borrado .linha { filter: blur(9px); user-select: none; transition: filter 0.3s ease; }
+
   ol { list-style: none; margin: 0; padding: 0; }
 
   li {
@@ -339,13 +355,6 @@
     color: var(--texto);
   }
 
-  .aviso-empate {
-    margin: 8px 0 0 50px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #b45500;
-  }
-
   footer.creditos {
     text-align: center;
     margin-top: 26px;
@@ -396,7 +405,10 @@
 
     <div class="titulo-lista">
       <h2 id="rotulo">Classificação geral</h2>
-      <span id="contagem"></span>
+      <div class="titulo-acoes">
+        <button type="button" id="olhoTop3" class="botao-olho" hidden></button>
+        <span id="contagem"></span>
+      </div>
     </div>
 
     <ol id="lista"></ol>
@@ -414,15 +426,11 @@
   let abertas = new Set();
   let oculto = false;
 
-  // Espelha a cascata do backend (Art. 53): Arrecadação → Desfile → Torta na Cara →
-  // Circuito → sorteio público. Usado só para exibir a régua na aba "Desempate"; quem
-  // decide a ordem de verdade é sempre o servidor.
-  const CASCATA_DESEMPATE = [
-    { numero: "1", rotulo: "Arrecadação" },
-    { numero: "2", rotulo: "Desfile" },
-    { numero: "7", rotulo: "Torta na Cara" },
-    { numero: "4", rotulo: "Circuito" },
-  ];
+  // Escolha pessoal de cada visitante (fica só neste navegador): o Top 3 vem borrado
+  // por padrão pra não estragar a revelação oficial; quem quiser espiar antes clica no
+  // olho e confirma.
+  const TOP3_KEY = "gincana_top3_revelado";
+  let top3Revelado = localStorage.getItem(TOP3_KEY) === "1";
 
   const $chips = document.getElementById("chips");
   const $lista = document.getElementById("lista");
@@ -430,6 +438,7 @@
   const $contagem = document.getElementById("contagem");
   const $hora = document.getElementById("hora");
   const $aviso = document.getElementById("aviso");
+  const $olhoTop3 = document.getElementById("olhoTop3");
 
   function arredondar(n) {
     return Math.round(n * 100) / 100;
@@ -482,11 +491,29 @@
     };
     $chips.appendChild(criar("total", "Geral"));
     provas.forEach((p) => $chips.appendChild(criar(String(p.id), p.numero + " · " + p.nome)));
-    $chips.appendChild(criar("desempate", "Desempate"));
   }
+
+  function atualizarOlho() {
+    const mostra = !oculto && filtroProva === "total";
+    $olhoTop3.hidden = !mostra;
+    if (!mostra) return;
+    $olhoTop3.textContent = top3Revelado ? "🙈" : "👁️";
+    $olhoTop3.title = top3Revelado ? "Ocultar o Top 3 de novo" : "Revelar o Top 3 antes da hora";
+  }
+
+  $olhoTop3.onclick = () => {
+    const pergunta = top3Revelado
+      ? "Ocultar (borrar) o Top 3 de novo?"
+      : "Revelar o Top 3 agora, antes da apresentação oficial?";
+    if (!confirm(pergunta)) return;
+    top3Revelado = !top3Revelado;
+    localStorage.setItem(TOP3_KEY, top3Revelado ? "1" : "0");
+    render();
+  };
 
   function render() {
     $lista.innerHTML = "";
+    atualizarOlho();
 
     if (oculto) {
       $rotulo.textContent = "Resultado";
@@ -498,9 +525,6 @@
     if (filtroProva === "total") {
       $rotulo.textContent = "Classificação geral";
       renderTotal();
-    } else if (filtroProva === "desempate") {
-      $rotulo.textContent = "Critérios de desempate";
-      renderDesempate();
     } else {
       const prova = provas.find((p) => String(p.id) === filtroProva);
       $rotulo.textContent = prova ? prova.numero + " · " + prova.nome : "Prova";
@@ -517,6 +541,7 @@
     linhas.forEach((escola, i) => {
       const li = document.createElement("li");
       li.className = classePosicao(i);
+      if (!top3Revelado && i < 3) li.className += " borrado";
       if (abertas.has(escola.id)) li.className = (li.className + " aberta").trim();
       animarEntrada(li, i);
 
@@ -604,55 +629,6 @@
     li.textContent = msg;
     $lista.appendChild(li);
     $contagem.textContent = "";
-  }
-
-  function renderDesempate() {
-    const linhas = [...schools].sort((a, b) => b.total - a.total);
-    $contagem.textContent = "Arrecadação → Desfile → Torta na Cara → Circuito → sorteio";
-
-    if (!linhas.length) return vazio("Nenhuma escola cadastrada ainda.");
-
-    const provaPorNumero = {};
-    provas.forEach((p) => (provaPorNumero[p.numero] = p));
-
-    linhas.forEach((escola, i) => {
-      const li = document.createElement("li");
-      li.className = (classePosicao(i) + " aberta").trim();
-      animarEntrada(li, i);
-
-      li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.total));
-
-      const ul = document.createElement("ul");
-      ul.className = "detalhe";
-      CASCATA_DESEMPATE.forEach((c) => {
-        const prova = provaPorNumero[c.numero];
-        const item = document.createElement("li");
-        const nome = document.createElement("span");
-        nome.textContent = c.rotulo;
-        const pts = document.createElement("span");
-        pts.textContent = prova ? arredondar(escola.porProva[prova.id] || 0) : "—";
-        item.append(nome, pts);
-        ul.appendChild(item);
-      });
-      const sorteioItem = document.createElement("li");
-      const sorteioNome = document.createElement("span");
-      sorteioNome.textContent = "Sorteio público";
-      const sorteioVal = document.createElement("span");
-      sorteioVal.textContent = escola.ordem_sorteio != null ? escola.ordem_sorteio : "—";
-      sorteioItem.append(sorteioNome, sorteioVal);
-      ul.appendChild(sorteioItem);
-      li.appendChild(ul);
-      li.style.cursor = "default";
-
-      if (escola.empatada) {
-        const aviso = document.createElement("div");
-        aviso.className = "aviso-empate";
-        aviso.textContent = "Empate não resolvido — aguardando sorteio público.";
-        li.appendChild(aviso);
-      }
-
-      $lista.appendChild(li);
-    });
   }
 
   document.getElementById("atualizar").onclick = carregar;
