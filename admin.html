@@ -8,6 +8,10 @@
     --linha: #e2e2e2;
     --fundo: #f5f5f5;
     --apagado: #767676;
+    --azul: #24409c;
+    --laranja: #f7941d;
+    --vermelho: #d6293e;
+    --dourado: #b8860b;
   }
 
   * { box-sizing: border-box; }
@@ -216,6 +220,76 @@
     font-family: inherit;
     font-size: 13px;
     line-height: 1.6;
+    margin: 0;
+  }
+
+  /* ---------- regras das provas (mesmo menu sanfona da página do jurado) ---------- */
+  .acc-item {
+    border-left: 4px solid var(--cor-item, var(--azul));
+    border-radius: 0 10px 10px 0;
+    background: #fbfbfb;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .acc-titulo {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 14px;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--preto);
+    cursor: pointer;
+  }
+
+  .acc-numero {
+    flex-shrink: 0;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--cor-item, var(--azul));
+    border-radius: 999px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .acc-titulo-texto { flex: 1; line-height: 1.3; }
+
+  .acc-seta {
+    flex-shrink: 0;
+    font-size: 13px;
+    color: var(--apagado);
+    transition: transform 0.25s ease;
+  }
+
+  .acc-item.aberto .acc-seta { transform: rotate(90deg); }
+
+  .acc-corpo {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0 15px;
+    transition: max-height 0.35s ease, opacity 0.25s ease, padding 0.35s ease;
+  }
+
+  .acc-item.aberto .acc-corpo { opacity: 1; padding: 0 15px 16px; }
+
+  .acc-corpo .max { font-size: 12px; color: var(--apagado); margin: 0 0 10px; }
+  .acc-corpo pre {
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #333;
     margin: 0;
   }
 
@@ -671,6 +745,20 @@
   function trocarAba(aba) {
     document.querySelectorAll("#abas button").forEach((b) => b.setAttribute("aria-selected", b.dataset.aba === aba ? "true" : "false"));
     document.querySelectorAll("main .painel").forEach((p) => (p.hidden = p.id !== "painel-" + aba));
+    recarregarAba(aba);
+  }
+
+  // Sempre busca dado fresco ao trocar de aba — o painel não escuta em tempo real
+  // ações feitas em outro lugar (ex: jurado apagando uma nota pelo link dele), então
+  // sem isso uma aba já aberta antes podia continuar mostrando algo já apagado.
+  function recarregarAba(aba) {
+    if (aba === "auditoria") carregarAuditoria();
+    else if (aba === "historico") carregarHistorico();
+    else if (aba === "escolas") carregarEscolas();
+    else if (aba === "provas") carregarProvas();
+    else if (aba === "jurados") { carregarJurados(); carregarSenhaPadrao(); }
+    else if (aba === "links") renderLinksJurados();
+    else if (aba === "config") carregarConfiguracao();
   }
 
   /* ----- escolas ----- */
@@ -907,6 +995,17 @@
   }
 
   /* ----- regras (somente leitura, edição de texto fica na aba Provas) ----- */
+  function alternarAccordion(item) {
+    const corpo = item.querySelector(".acc-corpo");
+    if (item.classList.contains("aberto")) {
+      corpo.style.maxHeight = "0px";
+      item.classList.remove("aberto");
+    } else {
+      item.classList.add("aberto");
+      corpo.style.maxHeight = corpo.scrollHeight + "px";
+    }
+  }
+
   function renderRegras() {
     const div = document.getElementById("regrasLista");
     div.innerHTML = "";
@@ -914,18 +1013,31 @@
       div.innerHTML = '<p class="vazio">Nenhuma prova cadastrada.</p>';
       return;
     }
-    provas.forEach((p) => {
-      const card = document.createElement("div");
-      card.className = "regra-card";
-      const h3 = document.createElement("h3");
-      h3.textContent = p.numero + " · " + p.nome;
+    provas.forEach((p, i) => {
+      const item = document.createElement("div");
+      item.className = "acc-item";
+      item.style.setProperty("--cor-item", "var(--laranja)");
+
+      const botao = document.createElement("button");
+      botao.type = "button";
+      botao.className = "acc-titulo";
+      botao.innerHTML =
+        '<span class="acc-numero">' + (i + 1) + "</span>" +
+        '<span class="acc-titulo-texto">' + escapeHtml(p.numero + " · " + p.nome) + (p.ativo ? "" : " (inativa)") + "</span>" +
+        '<span class="acc-seta">▸</span>';
+      botao.onclick = () => alternarAccordion(item);
+
+      const corpo = document.createElement("div");
+      corpo.className = "acc-corpo";
       const max = document.createElement("p");
       max.className = "max";
-      max.textContent = "Pontuação máxima: " + arredondar(p.pontuacao_maxima) + " pontos" + (p.ativo ? "" : "  ·  (inativa)");
+      max.textContent = "Pontuação máxima: " + arredondar(p.pontuacao_maxima) + " pontos";
       const pre = document.createElement("pre");
       pre.textContent = p.regras || "Sem regras cadastradas ainda. Edite na aba Provas.";
-      card.append(h3, max, pre);
-      div.appendChild(card);
+      corpo.append(max, pre);
+
+      item.append(botao, corpo);
+      div.appendChild(item);
     });
   }
 

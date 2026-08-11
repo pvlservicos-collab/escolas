@@ -417,6 +417,12 @@
   }
 
   /* ---------- regulamento (sanfona) ---------- */
+  /* Enquanto o jurado ainda não digitou a senha, a tela é só o cartão pequeno de
+     login — o regulamento (sempre visível, não depende de login) ficava colado nele.
+     Esse recuo extra só entra nessa tela; some assim que loga ou já tinha logado. */
+  #regulamentoCard { transition: margin-top 0.2s ease; }
+  #regulamentoCard.recuado { margin-top: 140px; }
+
   .regulamento-titulo {
     font-family: "Baloo 2", sans-serif;
     font-size: 19px;
@@ -588,7 +594,7 @@
     <footer class="creditos">Gincana Estadual da Juventude 2026 · SEJUV/AP</footer>
   </div>
 
-  <div class="card">
+  <div class="card" id="regulamentoCard">
     <h2 class="regulamento-titulo">📋 Regulamento da Gincana</h2>
     <p class="regulamento-sub">Edital 005/2026 — SEJUV/AP. Toque em qualquer tópico para abrir e conferir as regras.</p>
     <div id="regulamentoLista"></div>
@@ -642,6 +648,7 @@
   const $sucessoTexto = document.getElementById("sucessoTexto");
   const $minhas = document.getElementById("minhas");
   const $avisoEncerrado = document.getElementById("avisoEncerrado");
+  const $regulamentoCard = document.getElementById("regulamentoCard");
 
   // Provas com nota por critério em vez de um campo único (o restante das provas usa
   // #pontos normal). Chaves precisam bater com provas.nome no banco.
@@ -693,6 +700,7 @@
     $estado.textContent = msg;
     $barraJurado.hidden = true;
     ajustarEspacoBarra();
+    $regulamentoCard.classList.add("recuado");
   }
 
   async function buscarDados(senha, comoAlvo) {
@@ -732,6 +740,7 @@
     $senhaAviso.textContent = "";
     $senhaInput.value = "";
     $senhaInput.focus();
+    $regulamentoCard.classList.add("recuado");
   }
 
   $senhaContinuar.onclick = async () => {
@@ -780,6 +789,7 @@
     $barraJurado.hidden = true;
     ajustarEspacoBarra();
     renderSelecaoLista();
+    $regulamentoCard.classList.remove("recuado");
   }
 
   function renderSelecaoLista() {
@@ -830,6 +840,7 @@
     atualizarNotaMax();
     preencherExistente();
     $salvar.disabled = encerrada;
+    $regulamentoCard.classList.remove("recuado");
   }
 
   // Dia do evento hoje ("11", "12") ou null (dia 3 / fora do evento — usa a lista toda,
