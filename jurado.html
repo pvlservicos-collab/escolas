@@ -392,6 +392,89 @@
     font-weight: 700;
     color: var(--apagado-claro);
   }
+
+  /* ---------- regulamento (sanfona) ---------- */
+  .regulamento-titulo {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0 0 6px;
+  }
+
+  .regulamento-sub { font-size: 13.5px; font-weight: 600; color: #555; margin: 0 0 18px; line-height: 1.5; }
+
+  .acc-item {
+    border-left: 4px solid var(--cor-item, var(--azul));
+    border-radius: 0 10px 10px 0;
+    background: #fbfbfb;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .acc-titulo {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 14px;
+    font-family: inherit;
+    font-size: 15.5px;
+    font-weight: 700;
+    color: var(--texto);
+    cursor: pointer;
+  }
+
+  .acc-numero {
+    flex-shrink: 0;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--cor-item, var(--azul));
+    border-radius: 999px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .acc-titulo-texto { flex: 1; line-height: 1.3; }
+
+  .acc-seta {
+    flex-shrink: 0;
+    font-size: 13px;
+    color: var(--apagado);
+    transition: transform 0.25s ease;
+  }
+
+  .acc-item.aberto .acc-seta { transform: rotate(90deg); }
+
+  .acc-corpo {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0 15px;
+    transition: max-height 0.35s ease, opacity 0.25s ease, padding 0.35s ease;
+  }
+
+  .acc-item.aberto .acc-corpo { opacity: 1; padding: 0 15px 16px; }
+
+  .acc-corpo h4 { font-size: 14.5px; font-weight: 800; margin: 14px 0 6px; color: var(--texto); }
+  .acc-corpo h5 { font-size: 13.5px; font-weight: 700; margin: 12px 0 4px; color: var(--texto); }
+  .acc-corpo h4:first-child, .acc-corpo h5:first-child { margin-top: 2px; }
+  .acc-corpo p { font-size: 14.5px; line-height: 1.6; margin: 0 0 10px; color: #333; }
+  .acc-corpo ul, .acc-corpo ol { margin: 0 0 10px; padding-left: 20px; }
+  .acc-corpo li { font-size: 14.5px; line-height: 1.6; margin-bottom: 4px; color: #333; }
+  .acc-corpo strong { color: var(--texto); }
+
+  @media (max-width: 480px) {
+    .acc-titulo { font-size: 14.5px; padding: 12px; }
+    .acc-corpo p, .acc-corpo li { font-size: 14px; }
+  }
 </style>
 
 <div class="barra-jurado" id="barraJurado" hidden>
@@ -467,6 +550,12 @@
     </div>
 
     <footer class="creditos">Gincana Estadual da Juventude 2026 · SEJUV/AP</footer>
+  </div>
+
+  <div class="card">
+    <h2 class="regulamento-titulo">📋 Regulamento da Gincana</h2>
+    <p class="regulamento-sub">Edital 005/2026 — SEJUV/AP. Toque em qualquer tópico para abrir e conferir as regras.</p>
+    <div id="regulamentoLista"></div>
   </div>
 </div>
 
@@ -866,5 +955,703 @@
     if (e.key === "Enter") salvar();
   });
 
+  /* ---------------- regulamento (sanfona) ---------------- */
+  const REGULAMENTO = [
+    { titulo: "Como Funciona a Gincana", cor: "var(--azul)", corpo: `
+A competição contará com até **20 escolas estaduais**, sendo:
+
+* Até 12 escolas de Macapá;
+* Até 6 escolas de Santana;
+* Até 2 escolas de Mazagão.
+
+Cada escola participará com **uma equipe oficialmente inscrita**, composta por até **40 estudantes regularmente matriculados** na respectiva unidade escolar.
+
+Cada escola poderá credenciar ainda até **5 acompanhantes**, entre servidores da unidade escolar ou colaboradores previamente autorizados pela direção.
+
+Todos os estudantes deverão estar regularmente matriculados na escola que representam até a data de publicação do edital. É proibido representar uma escola diferente daquela em que o estudante está matriculado.
+
+Cada equipe deverá indicar:
+
+* 1 Capitão;
+* 1 Professor Responsável.
+
+O Capitão e o Professor Responsável serão os representantes oficiais da equipe perante a Comissão Organizadora.
+
+Somente o Capitão ou o Professor Responsável poderá apresentar pedidos de esclarecimento, comunicar ocorrências e formular questionamentos sobre a execução das provas.
+` },
+    { titulo: "Cronograma da Competição", cor: "var(--azul)", corpo: `
+### 06 e 07 de agosto
+Período de inscrições das escolas.
+
+### 10 de agosto
+Sorteio público e divulgação oficial da ordem das apresentações.
+
+O sorteio ocorrerá presencialmente na sede da SEJUV, às **10h**, com a presença de pelo menos um representante de cada escola inscrita.
+
+A ordem definida no sorteio será obrigatoriamente utilizada na sequência de apresentação das escolas.
+
+**Observação:** caso a escola não envie representante ao sorteio, perderá o direito de fazer reclamações, recursos ou questionamentos posteriores sobre a ordem e a data de sua participação. Caberá à própria escola buscar essas informações.
+
+### 11 e 12 de agosto
+Primeiro e segundo dias de competição.
+
+Serão realizadas competições eliminatórias por grupos, com até **10 escolas por dia**, acompanhadas de credenciamento presencial diário.
+
+### 13 de agosto
+Grande Final.
+
+As **20 escolas participantes** competirão simultaneamente.
+` },
+    { titulo: "Sistema de Pontuação", cor: "var(--azul)", corpo: `
+A pontuação é **acumulativa**.
+
+Os pontos conquistados nos dias 11 e 12 de agosto serão registrados em uma tabela única de classificação.
+
+No início da Grande Final, todas as 20 escolas carregarão exatamente o saldo de pontos conquistado nas respectivas etapas eliminatórias.
+
+Os pontos obtidos no terceiro dia serão somados ao saldo anterior para formar o ranking definitivo da competição.
+
+A pontuação máxima de uma equipe é de **150 pontos**.
+
+### Distribuição dos pontos
+
+1. Desfile das Escolas: **20 pontos**
+2. Caça ao Tesouro: **15 pontos**
+3. Circuito Recreativo: **15 pontos**
+4. Gol a Gol: **10 pontos**
+5. Campo Minado: **10 pontos**
+6. Quiz "Torta na Cara": **30 pontos**
+7. Miss e Mister Juventude: **20 pontos**
+8. Prova Surpresa: **10 pontos**
+9. Arrecadação Solidária: **20 pontos**
+
+**Total: 150 pontos.**
+` },
+    { titulo: "Prova 1 — Desfile das Escolas", cor: "var(--laranja)", corpo: `
+## Objetivo
+Promover a identidade institucional das escolas, estimulando criatividade, organização, integração e espírito de equipe.
+
+## Participantes
+Poderão participar até **40 estudantes** da escola.
+
+A apresentação seguirá a ordem definida pelo sorteio realizado no dia 10 de agosto de 2026.
+
+## Como funciona
+Cada escola deverá realizar uma apresentação representando sua instituição, demonstrando organização, criatividade, animação e identidade por meio do desfile e do grito de guerra.
+
+O tempo máximo de apresentação será de **3 minutos**.
+
+## Critérios de avaliação
+* Organização da escola: **5 pontos**
+* Criatividade: **4 pontos**
+* Animação: **5 pontos**
+* Grito de guerra: **6 pontos**
+
+**Pontuação máxima: 20 pontos.**
+
+## Regras e penalidades
+Poderão gerar penalização:
+
+* Atraso;
+* Ultrapassar o tempo máximo;
+* Conduta inadequada.
+
+## Observação
+A ordem de apresentação será obrigatoriamente aquela definida no sorteio público.
+` },
+    { titulo: "Prova 2 — Caça ao Tesouro", cor: "var(--laranja)", corpo: `
+## Tema
+**"Juventudes que Transformam: Explorando a Expofeira"**
+
+## Objetivo
+Estimular o raciocínio lógico, a cooperação mútua, a observação atenta, a comunicação assertiva e a agilidade física.
+
+## Participantes
+Cada escola deverá formar uma equipe com até **6 estudantes**.
+
+## Como funciona
+Cada equipe receberá exclusivamente a **primeira pista** na linha de largada.
+
+A partir dela, deverá encontrar o local indicado e solucionar corretamente cada etapa para receber a próxima pista.
+
+Ao chegar ao local indicado pela pista, o fiscal deverá:
+
+1. Verificar e validar a resposta da equipe;
+2. Carimbar o mapa oficial do grupo;
+3. Entregar a próxima pista.
+
+## Regra de unidade
+Todos os integrantes da equipe deverão permanecer juntos durante todo o percurso.
+
+O fiscal somente validará a resposta e entregará a próxima pista quando **todos os integrantes estiverem presentes** no local.
+
+## Tempo
+O tempo máximo para concluir toda a prova será de **20 minutos**.
+
+## Regras
+É proibido que fiscais ou organizadores forneçam dicas às equipes.
+
+Caso a equipe esteja no local errado, deverá continuar procurando por conta própria.
+
+## Pontuação
+* Primeira equipe a concluir todas as etapas: **15 pontos**
+* Demais equipes que concluírem dentro dos 20 minutos: **10 pontos**
+* Equipes que ultrapassarem os 20 minutos: **0 ponto**
+
+## Critérios de classificação e desempate
+A classificação seguirá, sucessivamente:
+
+1. Cumprimento integral de todas as pistas na ordem exata estabelecida;
+2. Menor tempo total de execução cronometrado.
+
+## Desclassificação
+Será desclassificada imediatamente a equipe que:
+
+* Descumprir as orientações ou desrespeitar os fiscais de pista;
+* Destruir, ocultar ou depredar pistas, sinalizações ou ambientes da Expofeira.
+` },
+    { titulo: "Prova 3 — Circuito Recreativo", cor: "var(--laranja)", corpo: `
+## Objetivo
+Estimular a cooperação mútua, o desenvolvimento da coordenação motora ampla, a agilidade física e o planejamento estratégico em equipe.
+
+## Participantes
+Cada escola deverá participar com uma equipe formada por **exatamente 5 estudantes**.
+
+## Como funciona
+A prova será realizada individualmente por escola e será **exclusivamente cronometrada**.
+
+Vencerá a escola que concluir todo o circuito no menor tempo.
+
+O cronômetro será iniciado na largada da primeira estação e será interrompido somente quando o último atleta da última estação cruzar a linha de chegada.
+
+O circuito é sequencial e obrigatório.
+
+### Estação 1 — Corrida de Saco
+**2 participantes.**
+
+Dois estudantes realizarão um percurso total de **15 metros em formato de revezamento**.
+
+O primeiro estudante fará o percurso dentro do saco e, ao cruzar a linha de transição, entregará o saco ao segundo estudante, que realizará o trajeto de retorno, liberando a próxima estação.
+
+### Estação 2 — Ovo Cozido na Colher
+**2 participantes.**
+
+Os estudantes deverão transportar um ovo cozido equilibrado sobre uma colher segurada exclusivamente com uma das mãos.
+
+A dupla somente poderá avançar para a próxima estação quando chegar à linha de chegada.
+
+Regra específica: se o ovo cair da colher, o competidor deverá recolher o objeto e **reiniciar o trajeto desde o início desta estação**.
+
+### Estação 3 — Completando o Círculo
+**1 participante.**
+
+Um estudante deverá transportar copos plásticos posicionados em linha até o interior de um círculo demarcado, utilizando um bambolê.
+
+O transporte deverá ser feito rigorosamente com **1 copo por vez**. É proibido carregar múltiplos copos simultaneamente — o descumprimento poderá resultar em paralisação pela fiscalização.
+
+## Pontuação
+A equipe vencedora do circuito receberá **15 pontos**.
+
+## Penalidades
+O descumprimento de qualquer regra específica de uma estação obrigará o competidor ou a dupla a **reiniciar imediatamente aquela estação**.
+
+Não será permitida a progressão para a etapa seguinte até que a atividade seja validada pelo fiscal.
+
+A utilização de interferência física externa, como ajuda de professores, torcida ou colegas que estejam fora da prova, resultará no acréscimo automático de **10 segundos** ao tempo final da equipe.
+` },
+    { titulo: "Prova 4 — Gol a Gol", cor: "var(--laranja)", corpo: `
+## Objetivo
+Desenvolver a coordenação motora, a precisão dos movimentos e o reflexo em ambiente de competição esportiva recreativa.
+
+## Participantes
+**2 estudantes por escola.**
+
+## Como funciona
+Os competidores formarão duas colunas opostas em uma área delimitada.
+
+O objetivo é fazer a bola passar **por entre as pernas do adversário**.
+
+O competidor que sofrer o "gol", ou seja, tiver a bola passando entre suas pernas, será eliminado.
+
+A disputa seguirá em sistema eliminatório simples, no formato **mata-mata**, até a definição do vencedor.
+
+## Pontuação
+A escola do competidor que vencer o sistema eliminatório receberá **10 pontos**.
+
+## Regras e desclassificação
+O atleta poderá ser desclassificado imediatamente por:
+
+* Uso de força excessiva;
+* Conduta antidesportiva;
+* Agressão verbal;
+* Agressão física contra o adversário;
+* Agressão verbal ou física contra a arbitragem;
+* Impedir intencionalmente a passagem da bola por baixo da perna.
+` },
+    { titulo: "Prova 5 — Campo Minado", cor: "var(--laranja)", corpo: `
+## Objetivo
+Estimular a tomada de decisão sob pressão por meio de uma dinâmica de sorte e intuição.
+
+## Participantes
+**5 estudantes representantes por escola.**
+
+## Como funciona
+Os competidores participarão de uma disputa eliminatória consecutiva utilizando **garrafas sensoriais**.
+
+A cada rodada, o participante da vez acionará uma garrafa do circuito.
+
+A cor apresentada na garrafa determinará a eliminação conforme a dinâmica da prova.
+
+As rodadas continuarão até restar apenas **1 vencedor**.
+
+## Pontuação
+O estudante que vencer a última rodada eliminatória garantirá **10 pontos para sua escola**.
+
+## Penalidades
+Será eliminado diretamente o aluno que:
+
+* Agir de má-fé;
+* Danificar as garrafas;
+* Tentar olhar antecipadamente o conteúdo ou a cor.
+
+## Observação
+A dinâmica descrita no edital determina a eliminação conforme a cor revelada pela garrafa. A organização deverá conduzir a sequência de rodadas conforme essa regra.
+` },
+    { titulo: 'Prova 6 — Quiz "Torta na Cara"', cor: "var(--laranja)", corpo: `
+## Objetivo
+Estimular o domínio de conhecimentos gerais, a agilidade do raciocínio e o espírito de cooperação e trabalho em equipe.
+
+## Participantes
+Cada escola terá uma equipe composta por **exatamente 10 estudantes**.
+
+Cada estudante poderá ter apenas **1 participação ativa** durante toda a prova. É proibida a repetição de competidores em rodadas distintas.
+
+### Fase 1 — Seletiva e Chaveamento
+Cada escola indicará **5 estudantes** para responderem a um bloco de **5 perguntas**.
+
+Os conteúdos desta fase serão:
+
+* Capitais geográficas;
+* Plurais;
+* Coletivos;
+* Gentílicos.
+
+O critério de classificação será o número de acertos.
+
+Desempate: em caso de empate no número de acertos, será utilizado como critério de desempate o **menor tempo totalizado para as respostas**.
+
+As escolas eliminadas nesta fase não avançarão para o chaveamento e receberão **5 pontos fixos pela participação**.
+
+### Fase 2 — Torneio "Torta na Cara"
+As escolas classificadas serão organizadas em um cronograma de chaveamento com limite de **8 escolas por dia**.
+
+Os confrontos serão realizados no formato **1 contra 1**, estudante contra estudante, utilizando os **5 estudantes restantes** da equipe que não participaram da Fase 1.
+
+Cada estudante terá **10 segundos** para responder à pergunta formulada pelo mediador, contados a partir da autorização do cronometrista e posteriormente após ser o primeiro a apertar o botão de resposta.
+
+## Conteúdos
+As perguntas poderão envolver:
+
+* Conhecimentos gerais;
+* Geografia;
+* História;
+* Português;
+* Gramática;
+* Literatura;
+* Cultura regional do Amapá;
+* Cultura nacional;
+* Atualidades;
+* Ciências.
+
+## Critérios de avaliação
+A validação dos pontos observará:
+
+1. Exatidão da resposta;
+2. Cumprimento rigoroso do limite de 10 segundos;
+3. Respeito integral às regras de postura e acionamento dos botões/pulsadores.
+
+## Pontuação
+* Campeã: **30 pontos**
+* Vice-campeã: **25 pontos**
+* Semifinalistas: **20 pontos**
+* Demais participantes: **10 pontos**
+
+## Penalidades
+A equipe perderá a vez de resposta, com direito de repasse da pergunta à equipe adversária, nos casos de:
+
+* Manifestação ou resposta após o término dos 10 segundos;
+* Auxílio externo da torcida, professores ou colegas;
+* Intervenção verbal, gestual ou por qualquer outro meio;
+* Ofensas verbais, provocações ou simulações;
+* Desrespeito aos adversários ou à banca examinadora.
+
+Casos graves de conduta antidesportiva ou reincidência de auxílio externo deliberado poderão resultar na **desclassificação sumária da escola na prova**, por decisão soberana da Comissão Julgadora.
+` },
+    { titulo: "Prova 7 — Concurso Miss e Mister Juventude", cor: "var(--laranja)", corpo: `
+## Objetivo
+Valorizar o protagonismo juvenil, a criatividade, a expressão artística, a desenvoltura e a identidade cultural dos estudantes.
+
+A prova também busca incentivar a autoestima, o respeito à diversidade e a representação positiva da comunidade escolar.
+
+## Participantes
+Cada escola poderá inscrever:
+
+* **1 candidata à categoria Miss Juventude**
+* **1 candidato à categoria Mister Juventude**
+
+Os participantes deverão estar regularmente matriculados na escola que representam e devidamente credenciados.
+
+A substituição de candidatos somente será permitida até o encerramento do credenciamento.
+
+## Tempo
+Cada escola terá até **5 minutos** para realizar sua apresentação, incluindo entrada, apresentação, performance e saída. O controle será feito pela Comissão Organizadora.
+
+O tempo excedente poderá resultar em desconto de até **1 ponto** na nota final.
+
+## Como funciona
+A apresentação deverá ser realizada conjuntamente pela dupla representante da escola.
+
+Será permitida a utilização de manifestações culturais e artísticas, incluindo dança, performance artística e outras compatíveis com os objetivos da competição, observando o tema oficial da Gincana.
+
+## Conteúdos proibidos
+Não serão toleradas apresentações, trilhas sonoras, coreografias ou gestos com conotação sexual, teor difamatório ou conteúdo obsceno.
+
+## Critérios de avaliação
+* Criatividade e originalidade: **5 pontos**
+* Desenvoltura, comunicação e expressão corporal: **5 pontos**
+* Representatividade do tema e valorização da cultura local: **3 pontos**
+* Figurino, caracterização e composição cênica: **4 pontos**
+* Interação com o público e presença de palco: **3 pontos**
+
+**Total: 20 pontos.**
+
+## Penalidades
+Poderão resultar em advertência, perda de pontuação ou desclassificação: descumprimento do tempo máximo; linguagem ofensiva ou discriminatória; conteúdo que incentive violência, preconceito, discriminação, álcool, drogas ou conduta ilícita; materiais que ofereçam risco; desrespeito às comissões, equipes ou público; qualquer conduta que comprometa a ordem, segurança ou finalidade educativa da competição.
+` },
+    { titulo: "Prova 8 — Prova Surpresa", cor: "var(--laranja)", corpo: `
+## Objetivo
+Testar a prontidão, organização prévia e agilidade das equipes participantes.
+
+## Participantes
+Poderão participar todos os integrantes da comitiva da escola presentes no local.
+
+## Como funciona
+Cada escola deverá levar ao evento uma **caixa fechada** contendo objetos diversos escolhidos previamente pela própria equipe, misturados e soltos dentro da caixa.
+
+É proibido colar ou fixar os objetos nas paredes ou no fundo da caixa.
+
+Durante a Gincana, o mediador solicitará um objeto específico.
+
+## Tempo
+A equipe terá no máximo **30 segundos** para localizar e entregar o objeto solicitado.
+
+## Regras
+Somente **1 representante por equipe** poderá realizar a entrega física do objeto ao mediador.
+
+O objeto deverá ser retirado exclusivamente da caixa oficial da prova. A caixa deverá permanecer fechada até a autorização expressa do mediador.
+
+É proibido retirar objetos de mochilas, bolsos, vestimentas ou qualquer outro local externo à caixa oficial.
+
+## Pontuação
+Cada objeto correto entregue dentro do tempo e das regras valerá **1 ponto**. A pontuação máxima é de **10 pontos**.
+
+## Penalidades
+Se o objeto for retirado de qualquer lugar externo à caixa, o ponto daquela rodada será anulado.
+
+É proibido colocar na caixa objetos cortantes, perfurantes, inflamáveis ou que ofereçam risco à integridade física. A identificação de itens perigosos resultará na **desclassificação imediata da equipe nesta prova**.
+` },
+    { titulo: "Prova 9 — Arrecadação Solidária", cor: "var(--laranja)", corpo: `
+## Objetivo
+Estimular o espírito de solidariedade, cidadania e responsabilidade social entre os participantes, promovendo apoio a famílias e indivíduos em situação de vulnerabilidade.
+
+## Participantes
+A prova é de caráter coletivo. Toda a comunidade escolar vinculada à equipe poderá participar da arrecadação.
+
+## O que pode ser arrecadado
+**Alimentos não perecíveis, considerando o padrão de 1 kg de alimento.**
+
+## Itens não aceitos
+Serão desconsiderados, podendo implicar na desclassificação do item:
+
+* Alimentos perecíveis ou com prazo de validade vencido;
+* Embalagens violadas, rasgadas, amassadas ou sem rótulo de identificação.
+
+## Data, horário e local de entrega
+**Data:** 10 de agosto de 2026
+**Horário:** das 8h às 18h, horário local
+**Local:** Secretaria de Estado da Juventude, SEJUV
+**Endereço:** Rua Beira Rio, nº 464, Santa Inês.
+
+Não serão aceitas entregas fora do horário estabelecido.
+
+## Conferência e validação
+A apuração será realizada pela **SEJUV e SEED no ato da entrega**.
+
+Após a conferência, será lavrada uma **ata de entrega e pesagem**, assinada obrigatoriamente pelo representante da equipe/escola e pelos fiscais da SEJUV. Após a assinatura, **não serão aceitas reclamações posteriores**.
+
+## Pontuação
+**A cada 10 kg de itens válidos arrecadados = 1 ponto.**
+
+Cada equipe poderá acumular no máximo **20 pontos** nesta prova, independentemente de arrecadar quantidade superior ao peso necessário para atingir o limite.
+
+## Destinação
+A totalidade dos itens arrecadados será destinada exclusivamente à distribuição para **famílias em situação de vulnerabilidade**.
+` },
+    { titulo: "Regras Gerais da Competição", cor: "var(--vermelho)", corpo: `
+## Horário das provas
+Todas as equipes deverão observar rigorosamente o cronograma e o horário de início de cada prova ou atividade.
+
+Existe uma tolerância máxima de **10 minutos** para que a equipe esteja posicionada e pronta após a convocação oficial do mediador. O esgotamento desse prazo poderá resultar em perda de **0,5 ponto** na pontuação geral ou impedimento de participação na respectiva prova, a critério da Comissão Organizadora.
+
+Nenhuma prova poderá começar sem autorização expressa da Comissão Organizadora ou do mediador.
+
+## Fiscalização
+As provas serão conduzidas e fiscalizadas por coordenadores, árbitros, jurados, monitores e fiscais designados pela Comissão Organizadora.
+
+Todos os participantes deverão acatar prontamente as orientações e decisões dos responsáveis pela execução das atividades.
+
+O descumprimento das normas ou orientações da equipe técnica poderá gerar, na primeira ocorrência, **advertência formal**, e em cada reincidência, dedução de **0,5 ponto** da pontuação geral da equipe.
+
+## Conduta das equipes
+Durante toda a Gincana deverão ser observados respeito, cooperação, ética, inclusão, disciplina, espírito esportivo e convivência harmoniosa.
+
+É proibido utilizar linguagem ofensiva, gestos obscenos ou qualquer conteúdo que incentive violência ou discriminação.
+
+Também é terminantemente proibida qualquer modalidade de manifestação, propaganda ou posicionamento de **cunho político-partidário por parte dos candidatos**.
+
+O descumprimento poderá levar à desclassificação imediata da prova ou do evento, conforme a gravidade.
+` },
+    { titulo: "Identificação e Uniforme", cor: "var(--azul)", corpo: `
+Todos os estudantes, professores, acompanhantes e integrantes da organização deverão utilizar a identificação fornecida pela Comissão Organizadora durante toda a programação oficial.
+
+A identificação poderá ser feita por pulseira, crachá ou outro instrumento oficial definido pela organização, sendo obrigatória para acesso às áreas reservadas às equipes.
+
+Qualquer perda, extravio ou utilização indevida deverá ser comunicada imediatamente à Comissão Organizadora.
+
+Todos os estudantes deverão utilizar o **uniforme oficial da instituição de ensino**. Acessórios serão permitidos desde que não descaracterizem, modifiquem ou ocultem a identificação original do uniforme.
+` },
+    { titulo: "Capitão e Professor Responsável", cor: "var(--azul)", corpo: `
+Cada equipe deverá indicar um estudante como Capitão e um Professor Responsável. Ambos serão os representantes oficiais da equipe perante a Comissão Organizadora.
+
+Somente eles poderão solicitar esclarecimentos, comunicar ocorrências, formular questionamentos sobre as provas e representar oficialmente a equipe perante a organização.
+
+O Capitão e o Professor Responsável deverão utilizar identificação visual de fácil visualização fornecida pela organização.
+
+Não serão admitidas manifestações de outros integrantes perante a Comissão Organizadora ou Comissão Julgadora.
+
+### Penalidade
+Primeira ocorrência: **advertência verbal**. Reincidência: perda de **0,5 ponto**.
+` },
+    { titulo: "Regras de Segurança", cor: "var(--vermelho)", corpo: `
+Todas as atividades deverão ocorrer em ambiente seguro. É proibida a utilização de materiais, equipamentos ou práticas que possam colocar em risco participantes, organização ou público.
+
+A Comissão Organizadora poderá interromper, suspender ou cancelar qualquer prova quando identificar situação que represente risco à segurança, determinando continuidade, substituição ou remarcação da prova.
+
+A Comissão Organizadora também poderá alterar a ordem das provas ou suspender atividades por motivos técnicos, climáticos, estruturais, de segurança, de força maior ou de interesse da Administração Pública.
+
+Essas alterações deverão ser comunicadas às equipes com a maior antecedência possível. Quando justificadas pelo interesse público ou pela segurança dos participantes, não gerarão direito à impugnação da programação.
+` },
+    { titulo: "Penalidades Gerais", cor: "var(--vermelho)", corpo: `
+## Advertência formal
+Será aplicada na primeira ocorrência de descumprimento de normas leves ou orientações técnicas da equipe de apoio.
+
+## Perda de pontos
+Será aplicada a dedução de **0,5 ponto** nos seguintes casos:
+
+1. Reincidência em infração anteriormente advertida;
+2. Atraso injustificado que prejudique o cronograma;
+3. Conduta antidesportiva ou incompatível com o espírito da competição;
+4. Manifestação indevida de integrantes perante a organização, exceto Capitão ou Professor Responsável.
+
+## Desclassificação
+A equipe poderá ser desclassificada em situações graves, como:
+
+1. Fraude ou tentativa de fraude;
+2. Substituição irregular de participantes;
+3. Participação de estudantes não credenciados ou não matriculados;
+4. Ofensa grave às Comissões, equipes de apoio ou público;
+5. Vandalismo ou agressão física;
+6. Uso de substâncias ilícitas;
+7. Porte de materiais perigosos, incluindo pirotécnicos, inflamáveis ou cortantes;
+8. Racismo, injúria racial ou discriminação por raça, cor, etnia, religião, deficiência, identidade de gênero ou orientação sexual;
+9. Abandono definitivo da competição antes da conclusão das provas.
+
+O abandono implica perda de qualquer direito à premiação.
+
+A aplicação das penalidades compete à Comissão Julgadora e deverá ocorrer após o devido registro formal, garantindo transparência ao processo.
+` },
+    { titulo: "Desempate da Classificação Geral", cor: "var(--vermelho)", corpo: `
+Caso duas ou mais escolas terminem empatadas na pontuação final, serão utilizados sucessivamente os seguintes critérios:
+
+### 1º
+Maior pontuação na **Arrecadação Solidária**.
+
+### 2º
+Desempenho no **Desfile das Escolas**, considerando organização da delegação e identidade institucional.
+
+### 3º
+Desempenho no **Quiz "Torta na Cara"**, considerando conhecimentos gerais e agilidade mental.
+
+### 4º
+Desempenho no **Circuito Recreativo**, considerando cooperação e coordenação motora.
+
+### 5º
+Persistindo o empate, será realizado **sorteio público** pela Comissão Organizadora.
+
+## Desempate de Miss e Mister
+Em caso de empate entre candidatos de Miss e Mister, será realizada uma rodada de perguntas sobre conhecimentos regionais. A banca observará segurança na resposta, domínio do conteúdo, coerência na fala, clareza, coesão, lógica, estruturação do discurso, desenvoltura, postura, oratória, expressividade e capacidade de comunicação com o público e o júri.
+` },
+    { titulo: "Comissão Julgadora", cor: "var(--azul)", corpo: `
+A Comissão Julgadora será formada por profissionais ou pessoas com reconhecida experiência nas modalidades avaliadas, designados ou contratados pela SEED e SEJUV.
+
+Compete à Comissão Julgadora avaliar tecnicamente as provas, preencher fichas de avaliação, registrar as pontuações, encaminhar resultados à Comissão Organizadora, e atuar com imparcialidade, independência e observância dos critérios estabelecidos no edital.
+
+As decisões técnicas da Comissão Julgadora são **soberanas e irrecorríveis quanto ao mérito da avaliação**. Somente será admitida revisão para correção de erro material na apuração ou registro da pontuação.
+
+São considerados erros materiais: erros aritméticos na soma das notas; troca de nomes entre unidades escolares; erros de digitação ou transcrição de dados para o sistema de apuração.
+` },
+    { titulo: "Organização do Evento", cor: "var(--azul)", corpo: `
+A Gincana é promovida pelo Governo do Estado do Amapá, por intermédio da SEJUV. A coordenação geral será exercida conjuntamente pela Secretaria de Estado da Juventude (SEJUV) e pela Secretaria de Estado da Educação (SEED).
+
+A Comissão Organizadora será composta por representantes da SEJUV e SEED, competindo-lhe acompanhar o planejamento, auxiliar na definição do cronograma, colaborar na comunicação com as escolas, propor melhorias, coordenar a execução, realizar o credenciamento, supervisionar as provas, garantir o cumprimento do regulamento, solucionar questões operacionais, aplicar penalidades previstas e decidir sobre casos omissos e questões administrativas.
+
+A execução operacional poderá contar com apoio de organizações da sociedade civil, instituições públicas ou privadas e demais parceiros formalmente autorizados pela Administração Pública.
+` },
+    { titulo: "Inscrição e Credenciamento", cor: "var(--azul)", corpo: `
+As inscrições ocorreram nos dias **06 e 07 de agosto de 2026**, até as 23h59, e são gratuitas.
+
+A escola deverá apresentar ofício assinado pela direção autorizando o uso do nome da unidade, declaração de matrícula regular dos estudantes, lista nominal dos estudantes e lista nominal dos professores/acompanhantes responsáveis.
+
+Após o encerramento do prazo, não será permitida a inclusão de participantes, salvo casos excepcionais autorizados pela Comissão Organizadora antes do início das competições.
+
+No credenciamento serão entregues as identificações dos competidores ao Professor Responsável, que ficará encarregado da distribuição.
+
+A escola deverá obrigatoriamente formalizar os nomes dos candidatos a Miss e Mister, indicar formalmente o Capitão, e entregar mídia física (pen drive) com os arquivos de áudio no dia do desfile.
+
+Serão entregues **2 braceletes ou identificações de Capitão por escola**.
+` },
+    { titulo: "Premiação", cor: "var(--dourado)", corpo: `
+As premiações serão entregues exclusivamente na cerimônia oficial de encerramento, no dia **13 de agosto de 2026**, com base na consolidação final da pontuação acumulada.
+
+## 🥇 1º Lugar
+Troféu; medalhas para todos os integrantes; 1 notebook; 1 Kit Multimídia Escolar Master (1 impressora, 1 projetor multimídia, 1 caixa de som amplificada, 2 microfones sem fio e 70 fones de ouvido sem fio).
+
+## 🥈 2º Lugar
+Troféu; medalhas para todos os integrantes; 1 notebook; 1 Kit Multimídia Escolar Avançado (1 caixa de som amplificada, 2 microfones sem fio e 70 fones de ouvido sem fio).
+
+## 🥉 3º Lugar
+Troféu; medalhas para todos os integrantes; 1 notebook; 1 Kit Multimídia Escolar Básico (1 projetor multimídia e 70 fones de ouvido sem fio).
+
+## Demais escolas
+1 notebook e 1 projetor multimídia para cada instituição participante.
+
+## Miss e Mister Juventude
+A vencedora e o vencedor recebem, cada um: 1 smartphone Apple iPhone e 1 faixa personalizada de cortejo.
+` },
+    { titulo: "Estrutura e Logística", cor: "var(--verde)", corpo: `
+O Governo do Estado garantirá aos participantes credenciados o suporte logístico e a infraestrutura necessária.
+
+### Transporte
+Locação de ônibus de padrão rodoviário para levar as escolas participantes de suas respectivas unidades até o local do evento e realizar o retorno.
+
+### Hidratação
+Água mineral sem gás durante todo o período da programação oficial.
+
+### Alimentação
+Um **Kit Lanche individual diário por participante**.
+
+### Atendimento de saúde
+Equipe de pronto-socorro para suporte e atendimento de primeiros socorros durante as atividades, caso necessário.
+
+### Infraestrutura
+Sonorização, banheiros químicos e controle de acesso, garantindo segurança e conforto às delegações.
+` },
+    { titulo: "Observações Importantes do Edital", cor: "var(--azul)", corpo: `
+A inscrição da escola e a participação dos representantes significam **conhecimento e aceitação integral** de todas as normas e condições estabelecidas no edital.
+
+A Comissão Organizadora poderá expedir normas e orientações complementares sempre que necessário para garantir boa execução, transparência e lisura da competição.
+
+O resultado final será homologado conjuntamente pela **SEJUV e SEED** após a conclusão dos trabalhos dos jurados.
+
+A SEJUV, a SEED e as Comissões Organizadora e Julgadora não se responsabilizam por objetos pessoais perdidos, extraviados ou danificados durante o evento.
+
+A participação implica autorização gratuita para uso de **imagem, voz e nome dos participantes**, exclusivamente para fins institucionais, educativos e de divulgação das ações do Governo do Estado do Amapá, sendo vedada utilização comercial.
+
+O tratamento dos dados pessoais deverá observar a **Lei Geral de Proteção de Dados (Lei Federal nº 13.709/2018 — LGPD)**, limitando-se aos fins de organização, execução e prestação de contas da Gincana.
+
+Os casos omissos ou situações não previstas no regulamento serão resolvidos pela Comissão Organizadora. O edital entra em vigor na data de sua publicação oficial no portal da SEJUV.
+` },
+  ];
+
+  function inlineMd(texto) {
+    return texto.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  }
+
+  function markdownParaHtml(md) {
+    const linhas = md.trim().split("\n");
+    let html = "";
+    let listaAberta = null;
+    function fecharLista() {
+      if (listaAberta) { html += "</" + listaAberta + ">"; listaAberta = null; }
+    }
+    linhas.forEach((linhaRaw) => {
+      const linha = linhaRaw.trim();
+      let m;
+      if (!linha) { fecharLista(); return; }
+      if ((m = linha.match(/^###\s+(.*)/))) { fecharLista(); html += "<h5>" + inlineMd(m[1]) + "</h5>"; }
+      else if ((m = linha.match(/^##\s+(.*)/))) { fecharLista(); html += "<h4>" + inlineMd(m[1]) + "</h4>"; }
+      else if ((m = linha.match(/^[*-]\s+(.*)/))) {
+        if (listaAberta !== "ul") { fecharLista(); html += "<ul>"; listaAberta = "ul"; }
+        html += "<li>" + inlineMd(m[1]) + "</li>";
+      } else if ((m = linha.match(/^\d+\.\s+(.*)/))) {
+        if (listaAberta !== "ol") { fecharLista(); html += "<ol>"; listaAberta = "ol"; }
+        html += "<li>" + inlineMd(m[1]) + "</li>";
+      } else {
+        fecharLista();
+        html += "<p>" + inlineMd(linha) + "</p>";
+      }
+    });
+    fecharLista();
+    return html;
+  }
+
+  function alternarAccordion(item) {
+    const corpo = item.querySelector(".acc-corpo");
+    if (item.classList.contains("aberto")) {
+      corpo.style.maxHeight = "0px";
+      item.classList.remove("aberto");
+    } else {
+      item.classList.add("aberto");
+      corpo.style.maxHeight = corpo.scrollHeight + "px";
+    }
+  }
+
+  function montarRegulamento() {
+    const $lista = document.getElementById("regulamentoLista");
+    $lista.innerHTML = "";
+    REGULAMENTO.forEach((secao, i) => {
+      const item = document.createElement("div");
+      item.className = "acc-item";
+      item.style.setProperty("--cor-item", secao.cor);
+
+      const botao = document.createElement("button");
+      botao.type = "button";
+      botao.className = "acc-titulo";
+      botao.innerHTML =
+        '<span class="acc-numero">' + (i + 1) + '</span>' +
+        '<span class="acc-titulo-texto">' + secao.titulo + '</span>' +
+        '<span class="acc-seta">▸</span>';
+      botao.onclick = () => alternarAccordion(item);
+
+      const corpo = document.createElement("div");
+      corpo.className = "acc-corpo";
+      corpo.innerHTML = markdownParaHtml(secao.corpo);
+
+      item.append(botao, corpo);
+      $lista.appendChild(item);
+    });
+  }
+
+  montarRegulamento();
   carregar();
 </script>
