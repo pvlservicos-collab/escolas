@@ -236,15 +236,17 @@
   .titulo-acoes { display: flex; align-items: center; gap: 10px; }
 
   .botao-olho {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
-    font-size: 18px;
-    line-height: 1;
+    color: var(--apagado);
     cursor: pointer;
-    padding: 2px 4px;
-    transition: transform 0.15s ease;
+    padding: 3px;
+    transition: transform 0.15s ease, color 0.15s ease;
   }
-  .botao-olho:hover { transform: scale(1.18); }
+  .botao-olho:hover { transform: scale(1.15); color: var(--azul); }
 
   li.borrado { pointer-events: none; }
   li.borrado .linha { filter: blur(9px); user-select: none; transition: filter 0.3s ease; }
@@ -426,11 +428,16 @@
   let abertas = new Set();
   let oculto = false;
 
-  // Escolha pessoal de cada visitante (fica só neste navegador): o Top 3 vem borrado
-  // por padrão pra não estragar a revelação oficial; quem quiser espiar antes clica no
-  // olho e confirma.
+  // Escolha pessoal de cada visitante (fica só neste navegador): o Top 3 aparece
+  // normal por padrão; clicar no olho borra (e clicar de novo revela), sempre com
+  // confirmação.
   const TOP3_KEY = "gincana_top3_revelado";
-  let top3Revelado = localStorage.getItem(TOP3_KEY) === "1";
+  let top3Revelado = localStorage.getItem(TOP3_KEY) !== "0";
+
+  const ICONE_OLHO_ABERTO =
+    '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const ICONE_OLHO_FECHADO =
+    '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
 
   const $chips = document.getElementById("chips");
   const $lista = document.getElementById("lista");
@@ -497,8 +504,8 @@
     const mostra = !oculto && filtroProva === "total";
     $olhoTop3.hidden = !mostra;
     if (!mostra) return;
-    $olhoTop3.textContent = top3Revelado ? "🙈" : "👁️";
-    $olhoTop3.title = top3Revelado ? "Ocultar o Top 3 de novo" : "Revelar o Top 3 antes da hora";
+    $olhoTop3.innerHTML = top3Revelado ? ICONE_OLHO_ABERTO : ICONE_OLHO_FECHADO;
+    $olhoTop3.title = top3Revelado ? "Ocultar o Top 3" : "Revelar o Top 3";
   }
 
   $olhoTop3.onclick = () => {
