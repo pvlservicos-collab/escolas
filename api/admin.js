@@ -13,8 +13,8 @@ function bad(res, code, erro) {
   return res.status(code).json({ erro });
 }
 
-// Trava de força bruta no login: 5 tentativas erradas do mesmo IP bloqueiam por 15min.
-const LOCKOUT_LIMIAR = 5;
+// Trava de força bruta no login: 10 tentativas erradas do mesmo IP bloqueiam por 15min.
+const LOCKOUT_LIMIAR = 10;
 const LOCKOUT_JANELA_MS = 15 * 60 * 1000;
 
 function chaveCliente(req) {
@@ -79,8 +79,12 @@ module.exports = async (req, res) => {
       return bad(res, 429, "Muitas tentativas incorretas. Tente novamente em alguns minutos.");
     }
     const { usuario, senha } = req.body || {};
+    // Usuário não é sigilo (é só um nome de tela), então não precisa ser sensível a
+    // maiúscula/minúscula — foi digitar "Lary" em vez de "lary" que causou o bloqueio
+    // que motivou essa mudança. A senha continua exigindo a caixa exata.
     const okUser =
-      typeof usuario === "string" && safeEqual(usuario, process.env.ADMIN_USERNAME || "");
+      typeof usuario === "string" &&
+      safeEqual(usuario.toLowerCase(), (process.env.ADMIN_USERNAME || "").toLowerCase());
     const okPass =
       typeof senha === "string" && safeEqual(senha, process.env.ADMIN_PASSWORD || "");
     if (!okUser || !okPass) {
