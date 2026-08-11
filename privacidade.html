@@ -1,0 +1,116 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacidade e dados — Gincana Estadual da Juventude 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --rosa: #df1889;
+    --azul: #24409c;
+    --azul-2: #16277a;
+    --gelo: #fafafa;
+    --texto: #1a1a1a;
+    --linha: #e7e7e7;
+    --apagado: #8a8a8a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 40px 18px 80px;
+    background-color: var(--rosa);
+    color: var(--texto);
+    font-family: "Nunito", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 640px; margin: 0 auto; }
+
+  .voltar {
+    display: inline-block;
+    margin-bottom: 18px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 999px;
+    padding: 7px 16px;
+  }
+  .voltar:hover { background: rgba(255, 255, 255, 0.28); }
+
+  h1 {
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    font-size: 26px;
+    line-height: 1.15;
+    color: #fff;
+    text-shadow: 2px 2px 0 var(--azul-2);
+    margin: 0 0 24px;
+  }
+
+  .board {
+    background: var(--gelo);
+    border-radius: 18px;
+    padding: 28px 26px;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+  }
+
+  section + section {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--linha);
+  }
+
+  h2 {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--texto);
+    margin: 0 0 10px;
+  }
+
+  p {
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: #333;
+    margin: 0 0 10px;
+  }
+  p:last-child { margin-bottom: 0; }
+
+  footer.creditos {
+    text-align: center;
+    margin-top: 26px;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  @media (max-width: 480px) {
+    .board { padding: 20px 18px; border-radius: 14px; }
+    h1 { font-size: 21px; }
+  }
+</style>
+
+<div class="container">
+  <a class="voltar" href="/">← Voltar ao ranking</a>
+  <h1>Privacidade e dados</h1>
+
+  <div class="board">
+    <section id="politica">
+      <h2>Política de privacidade e dados</h2>
+      <p>Este ranking exibe publicamente apenas o nome das escolas participantes e as pontuações lançadas pela comissão julgadora. Nenhum dado pessoal de estudantes, professores ou responsáveis é publicado nesta página.</p>
+    </section>
+
+    <section id="exclusao">
+      <h2>Exclusão de dados</h2>
+      <p>Para solicitar correção ou exclusão de algum dado relacionado à sua escola, entre em contato com a Comissão Organizadora da SEJUV/AP.</p>
+    </section>
+  </div>
+
+  <footer class="creditos">Gincana Estadual da Juventude 2026 · SEJUV/AP</footer>
+</div>
