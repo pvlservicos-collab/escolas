@@ -276,7 +276,14 @@
      esquerda até opacidade 0% na direita, sem contorno nem sombra — com tantas
      escolas repetindo cor de turma, bordas/sombras empilhadas ficavam poluídas. */
   li.turma {
-    background: linear-gradient(90deg, rgba(var(--cor-turma-rgb), 0.16), rgba(var(--cor-turma-rgb), 0) 100%);
+    background: linear-gradient(90deg, rgba(var(--cor-turma-rgb), 0.11), rgba(var(--cor-turma-rgb), 0) 100%);
+  }
+  /* Especificidade maior que "li:hover" de propósito: sem isso, o hover trocava o
+     degradê da turma pelo azul genérico do hover comum. Aqui só escurece um pouco
+     em cima da própria cor, em vez de trocar de cor. */
+  li.turma:hover {
+    background: linear-gradient(90deg, rgba(var(--cor-turma-rgb), 0.11), rgba(var(--cor-turma-rgb), 0) 100%);
+    filter: brightness(0.94);
   }
 
   ol { list-style: none; margin: 0; padding: 0; }
