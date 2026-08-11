@@ -272,12 +272,11 @@
 
   .medalha { font-size: 17px; margin-left: 4px; }
 
-  /* Sombra colorida de acordo com a cor da turma da escola — no mesmo estilo do
-     degradê + contorno usado nas medalhas do pódio (pos-1/2/3), só que mais fraca,
-     aplicada via variáveis inline (--cor-turma-rgb) porque a cor muda por escola. */
+  /* Brilho colorido de acordo com a cor da turma da escola: só um degradê saindo da
+     esquerda até opacidade 0% na direita, sem contorno nem sombra — com tantas
+     escolas repetindo cor de turma, bordas/sombras empilhadas ficavam poluídas. */
   li.turma {
-    background: linear-gradient(90deg, rgba(var(--cor-turma-rgb), 0.11), transparent 75%);
-    box-shadow: 0 0 0 1.5px rgba(var(--cor-turma-rgb), 0.38), 0 5px 13px rgba(var(--cor-turma-rgb), 0.2);
+    background: linear-gradient(90deg, rgba(var(--cor-turma-rgb), 0.16), rgba(var(--cor-turma-rgb), 0) 100%);
   }
 
   ol { list-style: none; margin: 0; padding: 0; }
