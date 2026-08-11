@@ -2,8 +2,10 @@
 // pontuacoes audit trail (Art. 12, § único do Edital).
 
 async function getConfiguracao(pool) {
-  const { rows } = await pool.query("SELECT encerrada, ranking_oculto FROM configuracao WHERE id = 1");
-  return rows[0] || { encerrada: false, ranking_oculto: false };
+  const { rows } = await pool.query(
+    "SELECT encerrada, ranking_oculto, senha_padrao_jurado FROM configuracao WHERE id = 1"
+  );
+  return rows[0] || { encerrada: false, ranking_oculto: false, senha_padrao_jurado: null };
 }
 
 async function registrarLog(pool, { pontuacaoId, juradoId, escolaId, provaId, acao, valorAntigo, valorNovo, autor, motivo }) {

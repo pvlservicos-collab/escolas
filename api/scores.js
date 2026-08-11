@@ -1,18 +1,44 @@
 const { getPool } = require("./_db");
 const { getConfiguracao, registrarLog } = require("./_config");
+const { safeEqual } = require("./_auth");
 
 function bad(res, code, erro) {
   return res.status(code).json({ erro });
 }
 
-async function getJuradoByToken(pool, token) {
-  if (!token || typeof token !== "string") return null;
+// Jurados comuns: senha = a senha padrão única (configuracao.senha_padrao_jurado).
+// Jurado mestre: senha própria (jurados.senha). Nenhum dos dois é exposto a quem não
+// souber a senha certa — só saber o token (nome) não basta mais.
+async function autenticarJurado(pool, token, senha) {
+  if (!token || typeof token !== "string" || !senha || typeof senha !== "string") return null;
   const { rows } = await pool.query(
-    "SELECT id, nome, ativo FROM jurados WHERE token = $1",
+    "SELECT id, nome, ativo, mestre, senha FROM jurados WHERE token = $1",
     [token]
   );
   if (!rows.length || !rows[0].ativo) return null;
-  return rows[0];
+  const jurado = rows[0];
+
+  const senhaEsperada = jurado.mestre
+    ? jurado.senha
+    : (await getConfiguracao(pool)).senha_padrao_jurado;
+
+  if (!senhaEsperada || !safeEqual(senha, senhaEsperada)) return null;
+  return jurado;
+}
+
+// Resolve em nome de qual jurado a ação será registrada: o próprio autenticado, ou —
+// só se ele for mestre — outro jurado comum indicado por `alvoId` (o mestre "assume" a
+// conta sem precisar da senha da pessoa).
+async function resolverAlvo(pool, autenticado, alvoId) {
+  if (alvoId === undefined || alvoId === null || alvoId === "") return autenticado;
+  if (!autenticado.mestre) return null;
+  const id = Number(alvoId);
+  if (!Number.isInteger(id)) return null;
+  const { rows } = await pool.query(
+    "SELECT id, nome, ativo FROM jurados WHERE id = $1 AND ativo = true AND mestre = false",
+    [id]
+  );
+  return rows.length ? rows[0] : null;
 }
 
 // Critérios de desempate sucessivos (Art. 53 do Edital): melhor pontuação, nesta ordem,
@@ -27,7 +53,7 @@ async function buildRanking(pool) {
     "SELECT id, numero, ordem, nome, pontuacao_maxima FROM provas WHERE ativo = true ORDER BY ordem ASC"
   );
   const { rows: schools } = await pool.query(
-    "SELECT id, nome, municipio, ordem_sorteio FROM schools WHERE ativo = true ORDER BY nome ASC"
+    "SELECT id, nome, municipio, ordem_sorteio, cor_turma FROM schools WHERE ativo = true ORDER BY nome ASC"
   );
   const { rows: somas } = await pool.query(
     `SELECT pt.escola_id, pt.prova_id, SUM(pt.pontos) AS pontos
@@ -65,6 +91,7 @@ async function buildRanking(pool) {
         nome: e.nome,
         municipio: e.municipio,
         ordem_sorteio: e.ordem_sorteio,
+        cor_turma: e.cor_turma,
         porProva,
         total,
       };
@@ -120,14 +147,19 @@ module.exports = async (req, res) => {
       "SELECT id, numero, ordem, nome, pontuacao_maxima FROM provas WHERE ativo = true ORDER BY ordem ASC"
     );
     const { rows: schools } = await pool.query(
-      "SELECT id, nome, municipio, dia_apresentacao, ordem_apresentacao FROM schools WHERE ativo = true ORDER BY nome ASC"
+      "SELECT id, nome, municipio, dia_apresentacao, ordem_apresentacao, cor_turma FROM schools WHERE ativo = true ORDER BY nome ASC"
     );
     return res.status(200).json({ provas, schools });
   }
 
   if (req.method === "GET" && resource === "mine") {
-    const jurado = await getJuradoByToken(pool, token);
-    if (!jurado) return bad(res, 401, "Link inválido, desativado ou expirado.");
+    const autenticado = await autenticarJurado(pool, token, req.query.senha);
+    if (!autenticado) return bad(res, 401, "Link ou senha inválidos.");
+
+    // "como" só tem efeito se quem autenticou for o jurado mestre: deixa ver/lançar
+    // notas em nome de outro jurado sem saber a senha dele.
+    const alvo = await resolverAlvo(pool, autenticado, req.query.como);
+    if (!alvo) return bad(res, 400, "Jurado alvo inválido.");
 
     const { rows: provas } = await pool.query(
       "SELECT id, numero, ordem, nome, pontuacao_maxima FROM provas WHERE ativo = true ORDER BY ordem ASC"
@@ -136,28 +168,38 @@ module.exports = async (req, res) => {
       "SELECT id, nome, municipio, dia_apresentacao, ordem_apresentacao FROM schools WHERE ativo = true ORDER BY nome ASC"
     );
     const { rows: minhas } = await pool.query(
-      "SELECT id, escola_id, prova_id, pontos, atualizado_em FROM pontuacoes WHERE jurado_id = $1",
-      [jurado.id]
+      "SELECT id, escola_id, prova_id, pontos, penalidade, atualizado_em FROM pontuacoes WHERE jurado_id = $1",
+      [alvo.id]
     );
     const config = await getConfiguracao(pool);
 
-    // Nenhum outro jurado (nem seus tokens) é devolvido aqui: um link vazado só pode
-    // agir como o próprio dono do link. A troca de jurado num tablet compartilhado é
-    // resolvida inteiramente no cliente, a partir dos links que o próprio dispositivo
-    // já abriu — ver jurado.html.
-    return res.status(200).json({
-      jurado: { id: jurado.id, nome: jurado.nome },
+    const resposta = {
+      jurado: { id: alvo.id, nome: alvo.nome },
+      mestre: Boolean(autenticado.mestre),
       provas,
       schools,
       minhas,
       encerrada: config.encerrada,
-    });
+    };
+
+    // Roster só sai para o mestre, e só com id/nome (sem token/senha de ninguém) —
+    // é usado apenas para montar a lista de "atuar como", nunca para autenticação.
+    if (autenticado.mestre) {
+      const { rows: todos } = await pool.query(
+        "SELECT id, nome FROM jurados WHERE ativo = true AND mestre = false ORDER BY nome ASC"
+      );
+      resposta.jurados = todos;
+    }
+
+    return res.status(200).json(resposta);
   }
 
   if (req.method === "POST") {
-    const { token: bodyToken, escola_id, prova_id, pontos } = req.body || {};
-    const jurado = await getJuradoByToken(pool, bodyToken);
-    if (!jurado) return bad(res, 401, "Link inválido, desativado ou expirado.");
+    const { token: bodyToken, senha, jurado_id, escola_id, prova_id, pontos, penalidade } = req.body || {};
+    const autenticado = await autenticarJurado(pool, bodyToken, senha);
+    if (!autenticado) return bad(res, 401, "Link ou senha inválidos.");
+    const alvo = await resolverAlvo(pool, autenticado, jurado_id);
+    if (!alvo) return bad(res, 400, "Jurado alvo inválido.");
 
     const config = await getConfiguracao(pool);
     if (config.encerrada) {
@@ -167,6 +209,7 @@ module.exports = async (req, res) => {
     const escolaId = Number(escola_id);
     const provaId = Number(prova_id);
     const pontosNum = Number(pontos);
+    const penalidadeVal = penalidade ? String(penalidade).trim().slice(0, 200) : null;
 
     if (!Number.isInteger(escolaId)) return bad(res, 400, "Escola inválida.");
     if (!Number.isInteger(provaId)) return bad(res, 400, "Prova inválida.");
@@ -191,36 +234,38 @@ module.exports = async (req, res) => {
 
     const { rows: existentes } = await pool.query(
       "SELECT pontos FROM pontuacoes WHERE jurado_id = $1 AND escola_id = $2 AND prova_id = $3",
-      [jurado.id, escolaId, provaId]
+      [alvo.id, escolaId, provaId]
     );
     const valorAntigo = existentes.length ? Number(existentes[0].pontos) : null;
 
     const { rows } = await pool.query(
-      `INSERT INTO pontuacoes (jurado_id, escola_id, prova_id, pontos)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO pontuacoes (jurado_id, escola_id, prova_id, pontos, penalidade)
+       VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT (jurado_id, escola_id, prova_id)
-       DO UPDATE SET pontos = EXCLUDED.pontos, atualizado_em = now()
-       RETURNING id, escola_id, prova_id, pontos, atualizado_em`,
-      [jurado.id, escolaId, provaId, pontosNum]
+       DO UPDATE SET pontos = EXCLUDED.pontos, penalidade = EXCLUDED.penalidade, atualizado_em = now()
+       RETURNING id, escola_id, prova_id, pontos, penalidade, atualizado_em`,
+      [alvo.id, escolaId, provaId, pontosNum, penalidadeVal]
     );
 
     await registrarLog(pool, {
       pontuacaoId: rows[0].id,
-      juradoId: jurado.id,
+      juradoId: alvo.id,
       escolaId,
       provaId,
       acao: valorAntigo === null ? "criar" : "editar",
       valorAntigo,
       valorNovo: pontosNum,
-      autor: jurado.nome,
+      autor: autenticado.mestre && autenticado.id !== alvo.id ? `${alvo.nome} (via mestre ${autenticado.nome})` : alvo.nome,
     });
 
     return res.status(200).json(rows[0]);
   }
 
   if (req.method === "DELETE") {
-    const jurado = await getJuradoByToken(pool, token);
-    if (!jurado) return bad(res, 401, "Link inválido, desativado ou expirado.");
+    const autenticado = await autenticarJurado(pool, token, req.query.senha);
+    if (!autenticado) return bad(res, 401, "Link ou senha inválidos.");
+    const alvo = await resolverAlvo(pool, autenticado, req.query.jurado_id);
+    if (!alvo) return bad(res, 400, "Jurado alvo inválido.");
 
     const config = await getConfiguracao(pool);
     if (config.encerrada) {
@@ -232,21 +277,21 @@ module.exports = async (req, res) => {
 
     const { rows: existentes } = await pool.query(
       "SELECT escola_id, prova_id, pontos FROM pontuacoes WHERE id = $1 AND jurado_id = $2",
-      [id, jurado.id]
+      [id, alvo.id]
     );
     if (!existentes.length) return res.status(204).end();
 
-    await pool.query("DELETE FROM pontuacoes WHERE id = $1 AND jurado_id = $2", [id, jurado.id]);
+    await pool.query("DELETE FROM pontuacoes WHERE id = $1 AND jurado_id = $2", [id, alvo.id]);
 
     await registrarLog(pool, {
       pontuacaoId: id,
-      juradoId: jurado.id,
+      juradoId: alvo.id,
       escolaId: existentes[0].escola_id,
       provaId: existentes[0].prova_id,
       acao: "apagar",
       valorAntigo: Number(existentes[0].pontos),
       valorNovo: null,
-      autor: jurado.nome,
+      autor: autenticado.mestre && autenticado.id !== alvo.id ? `${alvo.nome} (via mestre ${autenticado.nome})` : alvo.nome,
     });
 
     return res.status(204).end();

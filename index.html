@@ -51,6 +51,18 @@
 
   .container { position: relative; max-width: 640px; margin: 0 auto; }
 
+  @media (min-width: 900px) {
+    .container { max-width: 1120px; }
+    .layout { display: flex; align-items: flex-start; gap: 48px; }
+    .coluna-titulo { flex: 0 0 320px; position: sticky; top: 40px; }
+    .coluna-titulo header { text-align: left; padding: 6px 0 0; }
+    .coluna-titulo h1 { font-size: 38px; }
+    .coluna-titulo .faixa { transform: rotate(-2deg) translateX(0); }
+    .coluna-titulo .sticker { display: none; }
+    .coluna-titulo .atualizado { justify-content: flex-start; }
+    .board-col { flex: 1; min-width: 0; }
+  }
+
   /* emoji grandes fixos nos 4 cantos da tela (fundo rosa), não presos ao quadro branco */
   .cantos-deco {
     position: fixed;
@@ -251,6 +263,26 @@
   li.borrado { pointer-events: none; }
   li.borrado .linha { filter: blur(9px); user-select: none; transition: filter 0.3s ease; }
 
+  @keyframes revelarTop3 {
+    0% { transform: scale(0.92); opacity: 0.35; filter: blur(6px); }
+    60% { transform: scale(1.035); opacity: 1; filter: blur(0); }
+    100% { transform: scale(1); opacity: 1; filter: blur(0); }
+  }
+  li.revelando .linha { animation: revelarTop3 0.6s ease both; }
+
+  .medalha { font-size: 17px; margin-left: 4px; }
+
+  .sombrinha {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 7px;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.15);
+    vertical-align: middle;
+  }
+
   ol { list-style: none; margin: 0; padding: 0; }
 
   li {
@@ -365,6 +397,28 @@
     color: var(--apagado-claro);
   }
 
+  .rodape-legal {
+    max-width: 560px;
+    margin: 14px auto 0;
+    padding: 0 10px;
+    text-align: center;
+  }
+  .rodape-legal h3 {
+    font-size: 11.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--apagado-claro);
+    margin: 14px 0 4px;
+  }
+  .rodape-legal p {
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.72);
+    margin: 0;
+  }
+
   @media (max-width: 480px) {
     .pontos { font-size: 18px; }
     .nome { font-size: 15px; }
@@ -373,21 +427,6 @@
 </style>
 
 <div class="container">
-  <header>
-    <span class="sticker s1" aria-hidden="true">⭐</span>
-    <span class="sticker s2" aria-hidden="true">⚡</span>
-    <span class="sticker s3" aria-hidden="true">🏆</span>
-    <div class="faixa">Juventudes que Transformam</div>
-    <h1>Gincana da Juventude</h1>
-    <p class="sub">Ranking geral das escolas — 11, 12 e 13 de agosto</p>
-    <div class="atualizado">
-      <span id="hora">—</span>
-      <button id="atualizar" type="button">Atualizar</button>
-    </div>
-  </header>
-
-  <p class="aviso" id="aviso" hidden></p>
-
   <div class="cantos-deco" aria-hidden="true">
     <span style="top:-22px; left:-22px; --tam:100px; --rot:-18deg; --dur:6s; --delay:0s;">⭐</span>
     <span style="top:64px; left:-4px; --tam:66px; --rot:8deg; --dur:5s; --delay:.6s;">🎈</span>
@@ -402,21 +441,49 @@
     <span style="bottom:68px; right:-4px; --tam:64px; --rot:10deg; --dur:5.2s; --delay:.8s;">⭐</span>
   </div>
 
-  <div class="board">
-    <div class="chips" id="chips"></div>
+  <div class="layout">
+    <div class="coluna-titulo">
+      <header>
+        <span class="sticker s1" aria-hidden="true">⭐</span>
+        <span class="sticker s2" aria-hidden="true">⚡</span>
+        <span class="sticker s3" aria-hidden="true">🏆</span>
+        <div class="faixa">Juventudes que Transformam</div>
+        <h1>Gincana da Juventude</h1>
+        <p class="sub">Ranking geral das escolas — 11, 12 e 13 de agosto</p>
+        <div class="atualizado">
+          <span id="hora">—</span>
+          <button id="atualizar" type="button">Atualizar</button>
+        </div>
+      </header>
 
-    <div class="titulo-lista">
-      <h2 id="rotulo">Classificação geral</h2>
-      <div class="titulo-acoes">
-        <button type="button" id="olhoTop3" class="botao-olho" hidden></button>
-        <span id="contagem"></span>
-      </div>
+      <p class="aviso" id="aviso" hidden></p>
     </div>
 
-    <ol id="lista"></ol>
+    <div class="board-col">
+      <div class="board">
+        <div class="chips" id="chips"></div>
+
+        <div class="titulo-lista">
+          <h2 id="rotulo">Classificação geral</h2>
+          <div class="titulo-acoes">
+            <button type="button" id="olhoTop3" class="botao-olho" hidden></button>
+            <span id="contagem"></span>
+          </div>
+        </div>
+
+        <ol id="lista"></ol>
+      </div>
+    </div>
   </div>
 
   <footer class="creditos">Gincana Estadual da Juventude 2026 · SEJUV/AP</footer>
+
+  <div class="rodape-legal">
+    <h3>Política de privacidade e dados</h3>
+    <p>Este ranking exibe publicamente apenas o nome das escolas participantes e as pontuações lançadas pela comissão julgadora. Nenhum dado pessoal de estudantes, professores ou responsáveis é publicado nesta página.</p>
+    <h3>Exclusão de dados</h3>
+    <p>Para solicitar correção ou exclusão de algum dado relacionado à sua escola, entre em contato com a Comissão Organizadora da SEJUV/AP.</p>
+  </div>
 </div>
 
 <script>
@@ -430,9 +497,34 @@
 
   // Escolha pessoal de cada visitante (fica só neste navegador): o Top 3 aparece
   // normal por padrão; clicar no olho borra (e clicar de novo revela), sempre com
-  // confirmação.
+  // confirmação. Mas toda vez que a pessoa clica de volta na aba "Geral", o Top 3
+  // borra de novo — não pode ficar revelado "de lembrança" de uma navegação anterior.
   const TOP3_KEY = "gincana_top3_revelado";
   let top3Revelado = localStorage.getItem(TOP3_KEY) !== "0";
+  let justRevelado = false;
+
+  // Cor da turma da escola na lista oficial de credenciamento — vira uma marcação
+  // (bolinha) ao lado do nome. Propositalmente distante das cores de medalha
+  // (ouro/prata/bronze), que ficam só para as 3 primeiras posições do geral.
+  const CORES_TURMA = {
+    "azul escuro": "#1a3a8f",
+    "azul claro": "#4fa8e0",
+    "verde escuro": "#1f7a3d",
+    "verde claro": "#7ed957",
+    "amarelo": "#f5d000",
+    "vermelho": "#e53935",
+    "laranja": "#fb8c00",
+    "rosa": "#ec4899",
+    "roxo": "#8e44ad",
+    "branco": "#ffffff",
+    "preto": "#333333",
+  };
+  const MEDALHA = ["🥇", "🥈", "🥉"];
+
+  function corTurma(nome) {
+    if (!nome) return null;
+    return CORES_TURMA[String(nome).trim().toLowerCase()] || null;
+  }
 
   const ICONE_OLHO_ABERTO =
     '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -491,6 +583,10 @@
       b.setAttribute("aria-pressed", filtroProva === valor ? "true" : "false");
       b.onclick = () => {
         filtroProva = valor;
+        if (valor === "total") {
+          top3Revelado = false;
+          localStorage.setItem(TOP3_KEY, "0");
+        }
         montarChips();
         render();
       };
@@ -513,8 +609,10 @@
       ? "Ocultar (borrar) o Top 3 de novo?"
       : "Revelar o Top 3 agora, antes da apresentação oficial?";
     if (!confirm(pergunta)) return;
+    const estavaEscondido = !top3Revelado;
     top3Revelado = !top3Revelado;
     localStorage.setItem(TOP3_KEY, top3Revelado ? "1" : "0");
+    justRevelado = estavaEscondido && top3Revelado;
     render();
   };
 
@@ -549,6 +647,7 @@
       const li = document.createElement("li");
       li.className = classePosicao(i);
       if (!top3Revelado && i < 3) li.className += " borrado";
+      if (justRevelado && i < 3) li.className += " revelando";
       if (abertas.has(escola.id)) li.className = (li.className + " aberta").trim();
       animarEntrada(li, i);
 
@@ -556,7 +655,7 @@
         .map((p) => ({ nome: p.numero + " · " + p.nome, pontos: escola.porProva[p.id] || 0 }))
         .filter((d) => d.pontos > 0);
 
-      li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.total));
+      li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.total, escola.cor_turma, i < 3 ? MEDALHA[i] : null));
 
       if (detalheProvas.length) {
         const ul = document.createElement("ul");
@@ -580,28 +679,32 @@
 
       $lista.appendChild(li);
     });
+
+    justRevelado = false;
   }
 
   function renderProva(prova) {
     if (!prova) return vazio("Prova não encontrada.");
     const linhas = [...schools]
-      .map((e) => ({ nome: e.nome, municipio: e.municipio, pontos: e.porProva[prova.id] || 0 }))
+      .map((e) => ({ nome: e.nome, municipio: e.municipio, pontos: e.porProva[prova.id] || 0, cor_turma: e.cor_turma }))
       .sort((a, b) => b.pontos - a.pontos);
 
     $contagem.textContent = "máximo " + arredondar(prova.pontuacao_maxima) + " pontos";
 
     if (!linhas.length) return vazio("Nenhuma escola cadastrada ainda.");
 
+    // Medalhas de ouro/prata/bronze só valem para a classificação geral (Art. 53) —
+    // aqui é só a pontuação daquela prova isolada, então nenhuma posição ganha o
+    // destaque visual de pódio.
     linhas.forEach((escola, i) => {
       const li = document.createElement("li");
-      if (escola.pontos > 0) li.className = classePosicao(i);
       animarEntrada(li, i);
-      li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.pontos));
+      li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.pontos, escola.cor_turma, null));
       $lista.appendChild(li);
     });
   }
 
-  function linhaPrincipal(i, nome, municipio, pontos) {
+  function linhaPrincipal(i, nome, municipio, pontos, corTurmaNome, medalha) {
     const div = document.createElement("div");
     div.className = "linha";
 
@@ -613,7 +716,21 @@
     info.className = "info";
     const nomeSpan = document.createElement("span");
     nomeSpan.className = "nome";
-    nomeSpan.textContent = nome;
+    const cor = corTurma(corTurmaNome);
+    if (cor) {
+      const bolinha = document.createElement("span");
+      bolinha.className = "sombrinha";
+      bolinha.style.background = cor;
+      bolinha.title = corTurmaNome;
+      nomeSpan.appendChild(bolinha);
+    }
+    nomeSpan.appendChild(document.createTextNode(nome));
+    if (medalha) {
+      const m = document.createElement("span");
+      m.className = "medalha";
+      m.textContent = medalha;
+      nomeSpan.appendChild(m);
+    }
     info.appendChild(nomeSpan);
     if (municipio) {
       const m = document.createElement("span");

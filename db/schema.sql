@@ -25,6 +25,11 @@ ALTER TABLE schools ADD COLUMN IF NOT EXISTS dia_apresentacao TEXT;
 -- usa direto essa mesma sequência, sem separar por dia.
 ALTER TABLE schools ADD COLUMN IF NOT EXISTS ordem_apresentacao INTEGER;
 
+-- Cor da turma/delegação da escola (da lista oficial de credenciamento — ex: "Azul
+-- Escuro", "Verde Claro"). Vira uma marcação ao lado do nome no ranking; não pode se
+-- confundir com as cores de medalha (ouro/prata/bronze), que são só para o Top 3.
+ALTER TABLE schools ADD COLUMN IF NOT EXISTS cor_turma TEXT;
+
 CREATE TABLE IF NOT EXISTS provas (
   id                SERIAL PRIMARY KEY,
   numero            TEXT NOT NULL,
@@ -44,6 +49,12 @@ CREATE TABLE IF NOT EXISTS jurados (
   criado_em  TIMESTAMP NOT NULL DEFAULT now()
 );
 
+-- Jurados comuns entram com o link deles + a senha padrão única (configuracao.
+-- senha_padrao_jurado) e não podem trocar de identidade. O jurado "mestre" (só deve
+-- existir um) tem senha própria aqui e pode assumir a conta de qualquer outro jurado.
+ALTER TABLE jurados ADD COLUMN IF NOT EXISTS mestre BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE jurados ADD COLUMN IF NOT EXISTS senha TEXT;
+
 CREATE TABLE IF NOT EXISTS pontuacoes (
   id             SERIAL PRIMARY KEY,
   jurado_id      INTEGER NOT NULL REFERENCES jurados(id) ON DELETE CASCADE,
@@ -54,6 +65,10 @@ CREATE TABLE IF NOT EXISTS pontuacoes (
   atualizado_em  TIMESTAMP NOT NULL DEFAULT now(),
   UNIQUE (jurado_id, escola_id, prova_id)
 );
+
+-- Penalidade marcada pelo jurado (ex: "Atraso") na prova Desfile — não desconta pontos
+-- sozinha, é só uma observação visível para o admin.
+ALTER TABLE pontuacoes ADD COLUMN IF NOT EXISTS penalidade TEXT;
 
 -- O índice do UNIQUE(jurado_id, escola_id, prova_id) já cobre buscas por jurado_id
 -- sozinho (é a coluna líder — usado em "minhas notas"), mas não ajuda o GROUP BY do
@@ -87,6 +102,9 @@ CREATE TABLE IF NOT EXISTS configuracao (
   CONSTRAINT configuracao_singleton CHECK (id = 1)
 );
 INSERT INTO configuracao (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+
+-- Senha única compartilhada por todos os jurados comuns (não o mestre).
+ALTER TABLE configuracao ADD COLUMN IF NOT EXISTS senha_padrao_jurado TEXT;
 
 -- Trava de força bruta no login do admin (usuário/senha sem mais o link secreto por
 -- cima). Chaveada por IP de origem; zera sozinha quando um login correto acontece.

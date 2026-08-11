@@ -148,6 +148,43 @@
     margin: 0 0 9px;
   }
 
+  .criterios-lista { display: flex; flex-direction: column; gap: 12px; margin-bottom: 4px; }
+  .criterio-campo { margin-bottom: 0; }
+  .criterio-campo label { font-size: 11.5px; color: #444; }
+
+  .campo-penalidade {
+    margin-top: 4px;
+    padding-top: 14px;
+    border-top: 1.5px dashed var(--linha);
+  }
+
+  .opcao-penalidade {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--texto);
+    cursor: pointer;
+    margin: 0;
+  }
+  .opcao-penalidade input { width: 18px; height: 18px; flex-shrink: 0; }
+
+  .penalidade-opcoes { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 0 2px; }
+
+  .opcao-penalidade-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #444;
+    cursor: pointer;
+  }
+  .opcao-penalidade-item input { width: 16px; height: 16px; flex-shrink: 0; }
+
   button.principal {
     width: 100%;
     font-family: "Baloo 2", sans-serif;
@@ -478,11 +515,21 @@
 
   <div id="estado" class="card estado" hidden></div>
 
+  <div id="senhaTela" class="card" hidden>
+    <h2 class="titulo-selecao">Digite a senha</h2>
+    <p class="nota-selecao">Peça a senha do jurado para a organização, se ainda não tiver.</p>
+    <div class="campo">
+      <label for="senhaInput">Senha</label>
+      <input id="senhaInput" type="password" autocomplete="off">
+    </div>
+    <button class="principal" id="senhaContinuar">Entrar</button>
+    <p class="aviso" id="senhaAviso"></p>
+  </div>
+
   <div id="selecao" class="card" hidden>
-    <h2 class="titulo-selecao">Selecione o jurado</h2>
-    <p class="nota-selecao">Confirme quem está usando este aparelho. Você só precisa fazer isso uma vez neste navegador — depois é só usar "trocar jurado" quando precisar.</p>
+    <h2 class="titulo-selecao">Atuar como qual jurado?</h2>
+    <p class="nota-selecao">Você é o jurado mestre: pode lançar notas em nome de qualquer jurado, ou como você mesmo.</p>
     <div id="selecaoLista" class="lista-selecao"></div>
-    <button class="principal" id="selecaoContinuar" style="margin-top:18px;">Continuar</button>
   </div>
 
   <div id="conteudo" hidden>
@@ -498,17 +545,32 @@
         <select id="escola"></select>
       </div>
 
-      <div class="campo">
+      <div class="campo" id="campoPontosSimples">
         <label for="pontos">Pontuação</label>
         <p class="faixa-pontos" id="notaMax"></p>
         <input id="pontos" type="number" step="any" min="0" placeholder="0">
+      </div>
+
+      <div id="campoCriterios" hidden>
+        <div class="campo">
+          <label>Critérios de avaliação</label>
+          <div id="criteriosLista" class="criterios-lista"></div>
+          <p class="faixa-pontos" id="totalCriterios"></p>
+        </div>
+        <div class="campo campo-penalidade" id="campoPenalidade" hidden>
+          <label class="opcao-penalidade">
+            <input type="checkbox" id="penalidadeCheck">
+            <span>Penalidade</span>
+          </label>
+          <div id="penalidadeOpcoes" class="penalidade-opcoes" hidden></div>
+        </div>
       </div>
 
       <button class="principal" id="salvar">Salvar nota</button>
       <p class="aviso" id="aviso"></p>
       <div class="sucesso-card" id="sucesso" hidden>
         <span class="sucesso-icone">✓</span>
-        <span>Nota enviada</span>
+        <span id="sucessoTexto">Nota enviada</span>
       </div>
     </div>
 
@@ -528,44 +590,31 @@
 </div>
 
 <script>
-  const STORAGE_KEY = "gincana_jurado_ativo";
-  // Tokens de outros jurados nunca vêm do servidor (um link vazado não pode virar chave
-  // mestra do sistema). "Conhecidos" guarda só os links que ESTE dispositivo já abriu de
-  // fato, para permitir trocar de jurado num tablet compartilhado sem re-digitar o link.
-  const CONHECIDOS_KEY = "gincana_jurados_conhecidos";
+  // Sem mais "trocar jurado" livre pra todo mundo: cada jurado comum entra com o link
+  // dele + a senha padrão única e fica travado nessa identidade. Só o jurado mestre
+  // (senha própria) pode assumir a conta de qualquer outro, veja escolherAtuarComo().
+  const SENHA_KEY_PREFIXO = "gincana_senha_";
   const params = new URLSearchParams(location.search);
   const urlToken = params.get("token") || "";
 
-  function carregarConhecidos() {
-    try {
-      const obj = JSON.parse(localStorage.getItem(CONHECIDOS_KEY));
-      return obj && typeof obj === "object" ? obj : {};
-    } catch (e) {
-      return {};
-    }
-  }
-
-  function lembrarConhecido(token, nome) {
-    const c = carregarConhecidos();
-    c[token] = nome;
-    localStorage.setItem(CONHECIDOS_KEY, JSON.stringify(c));
-  }
-
-  let tokenAtivo = "";
+  let senhaAtiva = "";
+  let comoId = null; // quando o mestre está atuando como outro jurado, o id dele
+  let mestre = false;
+  let juradosRoster = [];
   let provas = [];
   let schools = [];
   let minhas = [];
   let juradoNome = "";
-  let selecionadoTemp = "";
   let sucessoTimeout = null;
-  let dadosCacheToken = "";
-  let dadosCache = null;
   let encerrada = false;
 
   const $estado = document.getElementById("estado");
+  const $senhaTela = document.getElementById("senhaTela");
+  const $senhaInput = document.getElementById("senhaInput");
+  const $senhaContinuar = document.getElementById("senhaContinuar");
+  const $senhaAviso = document.getElementById("senhaAviso");
   const $selecao = document.getElementById("selecao");
   const $selecaoLista = document.getElementById("selecaoLista");
-  const $selecaoContinuar = document.getElementById("selecaoContinuar");
   const $conteudo = document.getElementById("conteudo");
   const $barraJurado = document.getElementById("barraJurado");
   const $nomeJuradoDestaque = document.getElementById("nomeJuradoDestaque");
@@ -574,11 +623,43 @@
   const $escola = document.getElementById("escola");
   const $pontos = document.getElementById("pontos");
   const $notaMax = document.getElementById("notaMax");
+  const $campoPontosSimples = document.getElementById("campoPontosSimples");
+  const $campoCriterios = document.getElementById("campoCriterios");
+  const $criteriosLista = document.getElementById("criteriosLista");
+  const $totalCriterios = document.getElementById("totalCriterios");
+  const $campoPenalidade = document.getElementById("campoPenalidade");
+  const $penalidadeCheck = document.getElementById("penalidadeCheck");
+  const $penalidadeOpcoes = document.getElementById("penalidadeOpcoes");
   const $salvar = document.getElementById("salvar");
   const $aviso = document.getElementById("aviso");
   const $sucesso = document.getElementById("sucesso");
+  const $sucessoTexto = document.getElementById("sucessoTexto");
   const $minhas = document.getElementById("minhas");
   const $avisoEncerrado = document.getElementById("avisoEncerrado");
+
+  // Provas com nota por critério em vez de um campo único (o restante das provas usa
+  // #pontos normal). Chaves precisam bater com provas.nome no banco.
+  const CRITERIOS_POR_PROVA = {
+    "Desfile das Escolas": {
+      criterios: [
+        { chave: "organizacao", rotulo: "Organização da escola", max: 5 },
+        { chave: "criatividade", rotulo: "Criatividade", max: 4 },
+        { chave: "animacao", rotulo: "Animação", max: 5 },
+        { chave: "grito", rotulo: "Grito de guerra", max: 6 },
+      ],
+      penalidades: ["Atraso", "Ultrapassar o tempo máximo", "Conduta inadequada"],
+    },
+    "Miss e Mister Juventude": {
+      criterios: [
+        { chave: "criatividade", rotulo: "Criatividade e originalidade", max: 5 },
+        { chave: "desenvoltura", rotulo: "Desenvoltura, comunicação e expressão corporal", max: 5 },
+        { chave: "representatividade", rotulo: "Representatividade do tema e cultura local", max: 3 },
+        { chave: "figurino", rotulo: "Figurino, caracterização e composição cênica", max: 4 },
+        { chave: "interacao", rotulo: "Interação com o público e presença de palco", max: 3 },
+      ],
+      penalidades: null,
+    },
+  };
 
   function arredondar(n) {
     return Math.round(n * 100) / 100;
@@ -593,17 +674,25 @@
   }
   window.addEventListener("resize", ajustarEspacoBarra);
 
-  function mostrarEstado(msg) {
-    $estado.hidden = false;
-    $estado.textContent = msg;
+  function esconderTudo() {
+    $estado.hidden = true;
+    $senhaTela.hidden = true;
     $selecao.hidden = true;
     $conteudo.hidden = true;
+  }
+
+  function mostrarEstado(msg) {
+    esconderTudo();
+    $estado.hidden = false;
+    $estado.textContent = msg;
     $barraJurado.hidden = true;
     ajustarEspacoBarra();
   }
 
-  async function buscarDados(tok) {
-    const r = await fetch("/api/scores?resource=mine&token=" + encodeURIComponent(tok));
+  async function buscarDados(senha, comoAlvo) {
+    const params2 = new URLSearchParams({ resource: "mine", token: urlToken, senha });
+    if (comoAlvo) params2.set("como", comoAlvo);
+    const r = await fetch("/api/scores?" + params2.toString());
     if (!r.ok) {
       const d = await r.json().catch(() => ({}));
       throw new Error(d.erro || "Não foi possível abrir este link.");
@@ -614,31 +703,54 @@
   async function carregar() {
     if (!urlToken) return mostrarEstado("Link inválido: falta o código do jurado.");
 
-    let dadosIniciais;
-    try {
-      dadosIniciais = await buscarDados(urlToken);
-    } catch (e) {
-      return mostrarEstado(e.message || "Não foi possível carregar. Verifique sua conexão e recarregue a página.");
+    const senhaSalva = localStorage.getItem(SENHA_KEY_PREFIXO + urlToken);
+    if (senhaSalva) {
+      try {
+        const dados = await buscarDados(senhaSalva);
+        senhaAtiva = senhaSalva;
+        aplicarDados(dados, null);
+        decidirTela();
+        return;
+      } catch (e) {
+        localStorage.removeItem(SENHA_KEY_PREFIXO + urlToken);
+      }
     }
-
-    lembrarConhecido(urlToken, dadosIniciais.jurado.nome);
-    dadosCacheToken = urlToken;
-    dadosCache = dadosIniciais;
-
-    // Só pula a tela de seleção se este exato link já foi confirmado antes neste
-    // navegador. Abrir o link de outro jurado (token diferente) sempre pede
-    // confirmação de novo, mesmo que já tenha uma sessão ativa de outra pessoa.
-    const salvo = localStorage.getItem(STORAGE_KEY);
-    if (salvo === urlToken) {
-      aplicarDados(dadosIniciais, urlToken);
-      mostrarConteudo();
-    } else {
-      mostrarSelecao(urlToken);
-    }
+    mostrarSenhaTela();
   }
 
-  function aplicarDados(dados, tok) {
-    tokenAtivo = tok;
+  function mostrarSenhaTela() {
+    esconderTudo();
+    $senhaTela.hidden = false;
+    $barraJurado.hidden = true;
+    ajustarEspacoBarra();
+    $senhaAviso.textContent = "";
+    $senhaInput.value = "";
+    $senhaInput.focus();
+  }
+
+  $senhaContinuar.onclick = async () => {
+    const senha = $senhaInput.value;
+    if (!senha) { $senhaAviso.textContent = "Digite a senha."; return; }
+    $senhaContinuar.disabled = true;
+    $senhaAviso.textContent = "";
+    try {
+      const dados = await buscarDados(senha);
+      senhaAtiva = senha;
+      localStorage.setItem(SENHA_KEY_PREFIXO + urlToken, senha);
+      aplicarDados(dados, null);
+      decidirTela();
+    } catch (e) {
+      $senhaAviso.textContent = e.message || "Senha incorreta.";
+    } finally {
+      $senhaContinuar.disabled = false;
+    }
+  };
+  $senhaInput.addEventListener("keydown", (e) => { if (e.key === "Enter") $senhaContinuar.click(); });
+
+  function aplicarDados(dados, novoComoId) {
+    if (novoComoId !== undefined) comoId = novoComoId;
+    mestre = Boolean(dados.mestre);
+    juradosRoster = dados.jurados || [];
     provas = dados.provas;
     schools = dados.schools;
     minhas = dados.minhas;
@@ -646,65 +758,64 @@
     encerrada = Boolean(dados.encerrada);
   }
 
-  function mostrarSelecao(preSelecionar) {
-    $estado.hidden = true;
-    $conteudo.hidden = true;
+  // Mestre sem ter escolhido ninguém ainda: mostra a lista pra decidir. Jurado comum
+  // (ou mestre que já escolheu): vai direto pra tela de lançar nota.
+  function decidirTela() {
+    if (mestre && comoId === undefined) {
+      mostrarSelecaoAtuarComo();
+    } else {
+      mostrarConteudo();
+    }
+  }
+
+  function mostrarSelecaoAtuarComo() {
+    esconderTudo();
     $selecao.hidden = false;
     $barraJurado.hidden = true;
     ajustarEspacoBarra();
-    selecionadoTemp = preSelecionar || tokenAtivo || urlToken;
     renderSelecaoLista();
   }
 
   function renderSelecaoLista() {
     $selecaoLista.innerHTML = "";
-    const conhecidos = carregarConhecidos();
-    Object.keys(conhecidos).forEach((token) => {
+
+    const opcaoMestre = document.createElement("button");
+    opcaoMestre.type = "button";
+    opcaoMestre.className = "opcao-jurado";
+    opcaoMestre.innerHTML = "<span>" + juradoNome + " (você mesmo)</span>";
+    opcaoMestre.onclick = () => escolherAtuarComo(null);
+    $selecaoLista.appendChild(opcaoMestre);
+
+    juradosRoster.forEach((j) => {
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "opcao-jurado" + (token === selecionadoTemp ? " selecionada" : "");
-
-      const nomeSpan = document.createElement("span");
-      nomeSpan.textContent = conhecidos[token];
-      btn.appendChild(nomeSpan);
-
-      if (token === urlToken) {
-        const marca = document.createElement("span");
-        marca.className = "marca";
-        marca.textContent = "é você";
-        btn.appendChild(marca);
-      }
-
-      btn.onclick = () => {
-        selecionadoTemp = token;
-        renderSelecaoLista();
-      };
+      btn.className = "opcao-jurado";
+      btn.innerHTML = "<span>" + j.nome + "</span>";
+      btn.onclick = () => escolherAtuarComo(j.id);
       $selecaoLista.appendChild(btn);
     });
   }
 
-  $selecaoContinuar.onclick = async () => {
-    $selecaoContinuar.disabled = true;
+  async function escolherAtuarComo(id) {
     try {
-      const dados = selecionadoTemp === dadosCacheToken ? dadosCache : await buscarDados(selecionadoTemp);
-      lembrarConhecido(selecionadoTemp, dados.jurado.nome);
-      localStorage.setItem(STORAGE_KEY, selecionadoTemp);
-      aplicarDados(dados, selecionadoTemp);
+      const dados = await buscarDados(senhaAtiva, id || undefined);
+      aplicarDados(dados, id);
       mostrarConteudo();
     } catch (e) {
-      alert(e.message || "Não foi possível confirmar. Tente novamente.");
-    } finally {
-      $selecaoContinuar.disabled = false;
+      alert(e.message || "Não foi possível trocar. Tente novamente.");
     }
+  }
+
+  $trocarJurado.onclick = () => {
+    comoId = undefined;
+    mostrarSelecaoAtuarComo();
   };
 
-  $trocarJurado.onclick = () => mostrarSelecao(tokenAtivo);
-
   function mostrarConteudo() {
-    $estado.hidden = true;
-    $selecao.hidden = true;
+    esconderTudo();
     $conteudo.hidden = false;
     $nomeJuradoDestaque.textContent = juradoNome;
+    $trocarJurado.hidden = !mestre;
     $barraJurado.hidden = false;
     ajustarEspacoBarra();
     $avisoEncerrado.hidden = !encerrada;
@@ -766,11 +877,83 @@
     return provas.find((p) => String(p.id) === String($prova.value));
   }
 
+  function criteriosDaProvaAtual() {
+    const p = provaAtual();
+    return (p && CRITERIOS_POR_PROVA[p.nome]) || null;
+  }
+
   function atualizarNotaMax() {
     const p = provaAtual();
     if (!p) return;
-    $pontos.max = p.pontuacao_maxima;
-    $notaMax.textContent = "De 0 a " + arredondar(p.pontuacao_maxima) + " pontos";
+    const config = criteriosDaProvaAtual();
+    if (config) {
+      $campoPontosSimples.hidden = true;
+      $campoCriterios.hidden = false;
+      montarCriterios(config);
+    } else {
+      $campoPontosSimples.hidden = false;
+      $campoCriterios.hidden = true;
+      $pontos.max = p.pontuacao_maxima;
+      $notaMax.textContent = "De 0 a " + arredondar(p.pontuacao_maxima) + " pontos";
+    }
+  }
+
+  function montarCriterios(config) {
+    $criteriosLista.innerHTML = "";
+    config.criterios.forEach((c) => {
+      const campo = document.createElement("div");
+      campo.className = "campo criterio-campo";
+      const label = document.createElement("label");
+      label.setAttribute("for", "crit_" + c.chave);
+      label.textContent = c.rotulo + " (0 a " + c.max + ")";
+      const input = document.createElement("input");
+      input.type = "number";
+      input.step = "any";
+      input.min = "0";
+      input.max = String(c.max);
+      input.id = "crit_" + c.chave;
+      input.placeholder = "0";
+      input.addEventListener("input", atualizarTotalCriterios);
+      campo.append(label, input);
+      $criteriosLista.appendChild(campo);
+    });
+
+    $campoPenalidade.hidden = !config.penalidades;
+    $penalidadeOpcoes.innerHTML = "";
+    $penalidadeCheck.checked = false;
+    $penalidadeOpcoes.hidden = true;
+    if (config.penalidades) {
+      config.penalidades.forEach((texto) => {
+        const item = document.createElement("label");
+        item.className = "opcao-penalidade-item";
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = "penalidadeOpcao";
+        radio.value = texto;
+        item.append(radio, document.createTextNode(texto));
+        $penalidadeOpcoes.appendChild(item);
+      });
+    }
+
+    atualizarTotalCriterios();
+  }
+
+  $penalidadeCheck.addEventListener("change", () => {
+    $penalidadeOpcoes.hidden = !$penalidadeCheck.checked;
+  });
+
+  function atualizarTotalCriterios() {
+    const config = criteriosDaProvaAtual();
+    if (!config) return;
+    let total = 0;
+    let maximo = 0;
+    config.criterios.forEach((c) => {
+      maximo += c.max;
+      const el = document.getElementById("crit_" + c.chave);
+      const v = parseFloat(el.value);
+      if (!isNaN(v)) total += Math.min(Math.max(v, 0), c.max);
+    });
+    $totalCriterios.textContent = "Total: " + arredondar(total) + " de " + maximo + " pontos";
   }
 
   function achaMinha(provaId, escolaId) {
@@ -781,7 +964,18 @@
 
   function preencherExistente() {
     const existente = achaMinha($prova.value, $escola.value);
-    $pontos.value = existente ? existente.pontos : "";
+    const config = criteriosDaProvaAtual();
+    if (config) {
+      config.criterios.forEach((c) => {
+        const el = document.getElementById("crit_" + c.chave);
+        if (el) el.value = "";
+      });
+      $totalCriterios.textContent = existente
+        ? "Nota já lançada: " + arredondar(existente.pontos) + " pontos — preencha os critérios abaixo para atualizar."
+        : "Total: 0 de " + config.criterios.reduce((a, c) => a + c.max, 0) + " pontos";
+    } else {
+      $pontos.value = existente ? existente.pontos : "";
+    }
     $salvar.disabled = encerrada;
   }
 
@@ -839,9 +1033,9 @@
           $prova.value = m.prova_id;
           $escola.value = m.escola_id;
           atualizarNotaMax();
-          $pontos.value = m.pontos;
+          preencherExistente();
           window.scrollTo({ top: 0, behavior: "smooth" });
-          $pontos.focus();
+          if (!criteriosDaProvaAtual()) $pontos.focus();
         };
 
         const bRemover = document.createElement("button");
@@ -859,7 +1053,6 @@
     if (encerrada) { $aviso.textContent = "Lançamentos encerrados: a competição já foi homologada."; return; }
     const prova = provaAtual();
     const escolaId = Number($escola.value);
-    const pontosNum = parseFloat($pontos.value);
 
     $aviso.textContent = "";
     $sucesso.hidden = true;
@@ -867,7 +1060,30 @@
 
     if (!prova) { $aviso.textContent = "Selecione uma prova."; return; }
     if (!escolaId) { $aviso.textContent = "Selecione uma escola."; return; }
-    if (isNaN(pontosNum) || pontosNum < 0) { $aviso.textContent = "Digite uma pontuação válida."; return; }
+
+    const config = criteriosDaProvaAtual();
+    let pontosNum;
+    let penalidadeVal = null;
+
+    if (config) {
+      pontosNum = 0;
+      for (const c of config.criterios) {
+        const el = document.getElementById("crit_" + c.chave);
+        const v = parseFloat(el.value);
+        if (isNaN(v) || v < 0) { $aviso.textContent = "Preencha todos os critérios."; return; }
+        if (v > c.max) { $aviso.textContent = c.rotulo + " não pode passar de " + c.max + " pontos."; return; }
+        pontosNum += v;
+      }
+      if (config.penalidades && $penalidadeCheck.checked) {
+        const marcada = $penalidadeOpcoes.querySelector('input[name="penalidadeOpcao"]:checked');
+        if (!marcada) { $aviso.textContent = "Selecione qual penalidade aconteceu."; return; }
+        penalidadeVal = marcada.value;
+      }
+    } else {
+      pontosNum = parseFloat($pontos.value);
+      if (isNaN(pontosNum) || pontosNum < 0) { $aviso.textContent = "Digite uma pontuação válida."; return; }
+    }
+
     if (pontosNum > Number(prova.pontuacao_maxima)) {
       $aviso.textContent = "A pontuação máxima desta prova é " + arredondar(prova.pontuacao_maxima) + ".";
       return;
@@ -875,10 +1091,12 @@
 
     $salvar.disabled = true;
     try {
+      const body = { token: urlToken, senha: senhaAtiva, escola_id: escolaId, prova_id: prova.id, pontos: pontosNum, penalidade: penalidadeVal };
+      if (mestre && comoId) body.jurado_id = comoId;
       const r = await fetch("/api/scores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: tokenAtivo, escola_id: escolaId, prova_id: prova.id, pontos: pontosNum }),
+        body: JSON.stringify(body),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.erro || "Erro ao salvar.");
@@ -888,6 +1106,7 @@
       else minhas.push(d);
 
       montarMinhas();
+      $sucessoTexto.textContent = "Nota de " + prova.nome + " enviada";
       $sucesso.hidden = false;
       sucessoTimeout = setTimeout(() => { $sucesso.hidden = true; }, 3000);
     } catch (e) {
@@ -900,9 +1119,9 @@
   async function remover(id) {
     if (!confirm("Apagar esta nota lançada?")) return;
     try {
-      const r = await fetch("/api/scores?token=" + encodeURIComponent(tokenAtivo) + "&id=" + id, {
-        method: "DELETE",
-      });
+      const params2 = new URLSearchParams({ token: urlToken, senha: senhaAtiva, id });
+      if (mestre && comoId) params2.set("jurado_id", comoId);
+      const r = await fetch("/api/scores?" + params2.toString(), { method: "DELETE" });
       if (!r.ok && r.status !== 204) throw new Error();
     } catch (e) {
       $aviso.textContent = "Não foi possível apagar. Tente novamente.";
@@ -948,18 +1167,6 @@ O Capitão e o Professor Responsável serão os representantes oficiais da equip
 Somente o Capitão ou o Professor Responsável poderá apresentar pedidos de esclarecimento, comunicar ocorrências e formular questionamentos sobre a execução das provas.
 ` },
     { titulo: "Cronograma da Competição", cor: "var(--azul)", corpo: `
-### 06 e 07 de agosto
-Período de inscrições das escolas.
-
-### 10 de agosto
-Sorteio público e divulgação oficial da ordem das apresentações.
-
-O sorteio ocorrerá presencialmente na sede da SEJUV, às **10h**, com a presença de pelo menos um representante de cada escola inscrita.
-
-A ordem definida no sorteio será obrigatoriamente utilizada na sequência de apresentação das escolas.
-
-**Observação:** caso a escola não envie representante ao sorteio, perderá o direito de fazer reclamações, recursos ou questionamentos posteriores sobre a ordem e a data de sua participação. Caberá à própria escola buscar essas informações.
-
 ### 11 e 12 de agosto
 Primeiro e segundo dias de competição.
 

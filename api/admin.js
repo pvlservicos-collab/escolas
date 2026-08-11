@@ -102,12 +102,12 @@ module.exports = async (req, res) => {
   if (resource === "schools") {
     if (req.method === "GET") {
       const { rows } = await pool.query(
-        "SELECT id, nome, municipio, ativo, ordem_sorteio, dia_apresentacao, ordem_apresentacao FROM schools ORDER BY nome ASC"
+        "SELECT id, nome, municipio, ativo, ordem_sorteio, dia_apresentacao, ordem_apresentacao, cor_turma FROM schools ORDER BY nome ASC"
       );
       return res.status(200).json(rows);
     }
     if (req.method === "POST") {
-      const { nome, municipio, dia_apresentacao, ordem_apresentacao } = req.body || {};
+      const { nome, municipio, dia_apresentacao, ordem_apresentacao, cor_turma } = req.body || {};
       if (!nome || !String(nome).trim()) return bad(res, 400, "Nome é obrigatório.");
       const dia = ["11", "12"].includes(dia_apresentacao) ? dia_apresentacao : null;
       let ordemApresentacao = null;
@@ -116,16 +116,16 @@ module.exports = async (req, res) => {
         if (!Number.isInteger(ordemApresentacao)) return bad(res, 400, "Ordem de apresentação inválida.");
       }
       const { rows } = await pool.query(
-        `INSERT INTO schools (nome, municipio, dia_apresentacao, ordem_apresentacao)
-         VALUES ($1, $2, $3, $4)
-         RETURNING id, nome, municipio, ativo, ordem_sorteio, dia_apresentacao, ordem_apresentacao`,
-        [String(nome).trim(), municipio ? String(municipio).trim() : null, dia, ordemApresentacao]
+        `INSERT INTO schools (nome, municipio, dia_apresentacao, ordem_apresentacao, cor_turma)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id, nome, municipio, ativo, ordem_sorteio, dia_apresentacao, ordem_apresentacao, cor_turma`,
+        [String(nome).trim(), municipio ? String(municipio).trim() : null, dia, ordemApresentacao, cor_turma ? String(cor_turma).trim() : null]
       );
       return res.status(201).json(rows[0]);
     }
     if (req.method === "PUT") {
       if (!Number.isInteger(id)) return bad(res, 400, "Id inválido.");
-      const { nome, municipio, ativo, ordem_sorteio, dia_apresentacao, ordem_apresentacao } = req.body || {};
+      const { nome, municipio, ativo, ordem_sorteio, dia_apresentacao, ordem_apresentacao, cor_turma } = req.body || {};
       if (!nome || !String(nome).trim()) return bad(res, 400, "Nome é obrigatório.");
       let ordemSorteio = null;
       if (ordem_sorteio !== undefined && ordem_sorteio !== null && String(ordem_sorteio).trim() !== "") {
@@ -139,9 +139,9 @@ module.exports = async (req, res) => {
         if (!Number.isInteger(ordemApresentacao)) return bad(res, 400, "Ordem de apresentação inválida.");
       }
       const { rows } = await pool.query(
-        `UPDATE schools SET nome = $1, municipio = $2, ativo = $3, ordem_sorteio = $4, dia_apresentacao = $5, ordem_apresentacao = $6
-         WHERE id = $7 RETURNING id, nome, municipio, ativo, ordem_sorteio, dia_apresentacao, ordem_apresentacao`,
-        [String(nome).trim(), municipio ? String(municipio).trim() : null, ativo !== false, ordemSorteio, dia, ordemApresentacao, id]
+        `UPDATE schools SET nome = $1, municipio = $2, ativo = $3, ordem_sorteio = $4, dia_apresentacao = $5, ordem_apresentacao = $6, cor_turma = $7
+         WHERE id = $8 RETURNING id, nome, municipio, ativo, ordem_sorteio, dia_apresentacao, ordem_apresentacao, cor_turma`,
+        [String(nome).trim(), municipio ? String(municipio).trim() : null, ativo !== false, ordemSorteio, dia, ordemApresentacao, cor_turma ? String(cor_turma).trim() : null, id]
       );
       if (!rows.length) return bad(res, 404, "Não encontrado.");
       return res.status(200).json(rows[0]);
@@ -216,32 +216,40 @@ module.exports = async (req, res) => {
   if (resource === "jurados") {
     if (req.method === "GET") {
       const { rows } = await pool.query(
-        "SELECT id, nome, token, ativo, criado_em FROM jurados ORDER BY criado_em ASC"
+        "SELECT id, nome, token, ativo, mestre, senha, criado_em FROM jurados ORDER BY mestre DESC, criado_em ASC"
       );
       return res.status(200).json(rows);
     }
     if (req.method === "POST") {
-      const { nome } = req.body || {};
+      const { nome, mestre } = req.body || {};
       if (!nome || !String(nome).trim()) return bad(res, 400, "Nome é obrigatório.");
+      const ehMestre = Boolean(mestre);
       const token = await tokenParaJurado(pool, String(nome).trim());
+      const senhaMestre = ehMestre ? newToken().slice(0, 8) : null;
       const { rows } = await pool.query(
-        "INSERT INTO jurados (nome, token) VALUES ($1, $2) RETURNING id, nome, token, ativo, criado_em",
-        [String(nome).trim(), token]
+        "INSERT INTO jurados (nome, token, mestre, senha) VALUES ($1, $2, $3, $4) RETURNING id, nome, token, ativo, mestre, senha, criado_em",
+        [String(nome).trim(), token, ehMestre, senhaMestre]
       );
       return res.status(201).json(rows[0]);
     }
     if (req.method === "PUT") {
       if (!Number.isInteger(id)) return bad(res, 400, "Id inválido.");
-      const { nome, ativo, regenerar_token } = req.body || {};
+      const { nome, ativo, regenerar_token, mestre, regenerar_senha_mestre } = req.body || {};
       if (!nome || !String(nome).trim()) return bad(res, 400, "Nome é obrigatório.");
       const token = regenerar_token ? await tokenParaJurado(pool, String(nome).trim(), id, true) : undefined;
+      const ehMestre = mestre !== undefined ? Boolean(mestre) : undefined;
+      const senhaMestre = regenerar_senha_mestre ? newToken().slice(0, 8) : undefined;
+      const campos = ["nome = $1", "ativo = $2"];
+      const valores = [String(nome).trim(), ativo !== false];
+      let n = 3;
+      if (token) { campos.push(`token = $${n++}`); valores.push(token); }
+      if (ehMestre !== undefined) { campos.push(`mestre = $${n++}`); valores.push(ehMestre); }
+      if (senhaMestre) { campos.push(`senha = $${n++}`); valores.push(senhaMestre); }
+      valores.push(id);
       const { rows } = await pool.query(
-        token
-          ? `UPDATE jurados SET nome = $1, ativo = $2, token = $3 WHERE id = $4
-             RETURNING id, nome, token, ativo, criado_em`
-          : `UPDATE jurados SET nome = $1, ativo = $2 WHERE id = $3
-             RETURNING id, nome, token, ativo, criado_em`,
-        token ? [String(nome).trim(), ativo !== false, token, id] : [String(nome).trim(), ativo !== false, id]
+        `UPDATE jurados SET ${campos.join(", ")} WHERE id = $${n}
+         RETURNING id, nome, token, ativo, mestre, senha, criado_em`,
+        valores
       );
       if (!rows.length) return bad(res, 404, "Não encontrado.");
       return res.status(200).json(rows[0]);
@@ -258,7 +266,7 @@ module.exports = async (req, res) => {
   if (resource === "pontuacoes") {
     if (req.method === "GET") {
       const { rows } = await pool.query(
-        `SELECT p.id, p.pontos, p.atualizado_em, p.jurado_id, p.escola_id, p.prova_id,
+        `SELECT p.id, p.pontos, p.penalidade, p.atualizado_em, p.jurado_id, p.escola_id, p.prova_id,
                 j.nome AS jurado_nome, e.nome AS escola_nome, pv.nome AS prova_nome,
                 pv.pontuacao_maxima
          FROM pontuacoes p
@@ -334,16 +342,26 @@ module.exports = async (req, res) => {
   if (resource === "configuracao") {
     if (req.method === "GET") {
       const { rows } = await pool.query(
-        "SELECT encerrada, ranking_oculto FROM configuracao WHERE id = 1"
+        "SELECT encerrada, ranking_oculto, senha_padrao_jurado FROM configuracao WHERE id = 1"
       );
-      return res.status(200).json(rows[0] || { encerrada: false, ranking_oculto: false });
+      return res.status(200).json(rows[0] || { encerrada: false, ranking_oculto: false, senha_padrao_jurado: null });
     }
     if (req.method === "PUT") {
-      const { encerrada, ranking_oculto } = req.body || {};
+      const { encerrada, ranking_oculto, senha_padrao_jurado, regenerar_senha_padrao } = req.body || {};
+      if (regenerar_senha_padrao) {
+        const nova = newToken().slice(0, 8);
+        const { rows } = await pool.query(
+          `UPDATE configuracao SET encerrada = $1, ranking_oculto = $2, senha_padrao_jurado = $3, atualizado_em = now()
+           WHERE id = 1 RETURNING encerrada, ranking_oculto, senha_padrao_jurado`,
+          [Boolean(encerrada), Boolean(ranking_oculto), nova]
+        );
+        return res.status(200).json(rows[0]);
+      }
       const { rows } = await pool.query(
-        `UPDATE configuracao SET encerrada = $1, ranking_oculto = $2, atualizado_em = now()
-         WHERE id = 1 RETURNING encerrada, ranking_oculto`,
-        [Boolean(encerrada), Boolean(ranking_oculto)]
+        `UPDATE configuracao SET encerrada = $1, ranking_oculto = $2,
+           senha_padrao_jurado = COALESCE($3, senha_padrao_jurado), atualizado_em = now()
+         WHERE id = 1 RETURNING encerrada, ranking_oculto, senha_padrao_jurado`,
+        [Boolean(encerrada), Boolean(ranking_oculto), senha_padrao_jurado ? String(senha_padrao_jurado).trim() : null]
       );
       return res.status(200).json(rows[0]);
     }

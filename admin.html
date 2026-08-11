@@ -268,19 +268,19 @@
   </header>
 
   <nav class="abas" id="abas">
-    <button data-aba="links" aria-selected="true">Links</button>
+    <button data-aba="historico" aria-selected="true">Histórico</button>
+    <button data-aba="links" aria-selected="false">Links</button>
     <button data-aba="escolas" aria-selected="false">Escolas</button>
     <button data-aba="provas" aria-selected="false">Provas</button>
     <button data-aba="regras" aria-selected="false">Regras das provas</button>
     <button data-aba="jurados" aria-selected="false">Jurados</button>
     <button data-aba="auditoria" aria-selected="false">Auditoria de notas</button>
-    <button data-aba="historico" aria-selected="false">Histórico</button>
     <button data-aba="config" aria-selected="false">Configurações</button>
   </nav>
 
   <main>
     <!-- LINKS -->
-    <section class="painel" id="painel-links">
+    <section class="painel" id="painel-links" hidden>
       <h2 class="titulo">Links do sistema</h2>
       <p class="sub">Todos os links em um só lugar, prontos para copiar e enviar.</p>
 
@@ -328,12 +328,16 @@
           <label for="escOrdem">Posição na lista</label>
           <input id="escOrdem" type="number" step="1" placeholder="1">
         </div>
+        <div class="campo pequeno">
+          <label for="escCor">Cor da turma</label>
+          <input id="escCor" type="text" placeholder="Ex: Azul Escuro">
+        </div>
         <button class="primario" id="escAdicionar">Adicionar</button>
       </div>
       <p class="aviso" id="escAviso"></p>
 
       <table>
-        <thead><tr><th>Nome</th><th>Município</th><th>Dia</th><th>Posição</th><th>Ativa</th><th>Ordem de sorteio</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Município</th><th>Dia</th><th>Posição</th><th>Ativa</th><th>Cor da turma</th><th>Ordem de sorteio</th><th>Ações</th></tr></thead>
         <tbody id="escTbody"></tbody>
       </table>
       <p class="sub" style="margin-top:14px;">
@@ -341,6 +345,10 @@
         é a ordem oficial fornecida (não é alfabética). No dia de cada escola, a caixa de seleção do jurado
         mostra primeiro as escolas daquele dia (nessa posição) e depois as do outro dia; no dia 13 (Grande
         Final) ou em qualquer outro dia, usa direto essa mesma sequência, sem separar por dia.
+      </p>
+      <p class="sub">
+        "Cor da turma" é a cor da lista oficial de credenciamento (ex: "Azul Escuro", "Verde Claro") — vira
+        uma marcação ao lado do nome da escola no ranking público.
       </p>
       <p class="sub">
         A "ordem de sorteio" só é usada como último critério de desempate (Art. 53), quando duas ou mais
@@ -395,19 +403,36 @@
     <!-- JURADOS -->
     <section class="painel" id="painel-jurados" hidden>
       <h2 class="titulo">Jurados</h2>
-      <p class="sub">Cada jurado recebe um link único. Um jurado não enxerga as notas lançadas pelos outros.</p>
+      <p class="sub">Cada jurado recebe um link único (o token) e entra com a senha padrão abaixo. Só o jurado mestre tem senha própria e pode atuar em nome de qualquer outro.</p>
+
+      <div class="regra-card">
+        <label style="margin:0 0 8px;">Senha padrão dos jurados comuns</label>
+        <div class="link-jurado">
+          <input id="jrSenhaPadrao" type="text" readOnly>
+          <button class="secundario" id="jrCopiarSenhaPadrao">copiar</button>
+          <button class="secundario" id="jrRegenerarSenhaPadrao">gerar nova</button>
+        </div>
+        <p class="max" style="margin-top:8px;">Vale para todos os jurados que não são o mestre. Gerar uma nova invalida a senha antiga para todo mundo na hora.</p>
+      </div>
 
       <div class="form-linha">
         <div class="campo">
           <label for="jrNome">Nome do jurado</label>
           <input id="jrNome" type="text" placeholder="Ex: Maria Silva">
         </div>
+        <div class="campo pequeno" style="flex:0 0 auto;">
+          <label for="jrMestre" style="margin-bottom:12px;">Mestre</label>
+          <div class="checkbox-linha">
+            <input type="checkbox" id="jrMestre">
+            <label for="jrMestre" style="margin:0; text-transform:none; font-weight:400;">tem senha própria</label>
+          </div>
+        </div>
         <button class="primario" id="jrAdicionar">Gerar link do jurado</button>
       </div>
       <p class="aviso" id="jrAviso"></p>
 
       <table>
-        <thead><tr><th>Nome</th><th>Link individual</th><th>Ativo</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Link individual</th><th>Mestre</th><th>Senha do mestre</th><th>Ativo</th><th>Ações</th></tr></thead>
         <tbody id="jrTbody"></tbody>
       </table>
     </section>
@@ -417,13 +442,13 @@
       <h2 class="titulo">Auditoria de notas lançadas</h2>
       <p class="sub">Todos os lançamentos individuais dos jurados. A nota final de cada escola/prova é a soma dos jurados, limitada ao máximo da prova. Use aqui apenas para corrigir erro material (Art. 12, § único do Edital) — toda correção ou exclusão feita aqui pede um motivo e fica registrada na aba Histórico.</p>
       <table>
-        <thead><tr><th>Prova</th><th>Escola</th><th>Jurado</th><th>Pontos</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Prova</th><th>Escola</th><th>Jurado</th><th>Pontos</th><th>Penalidade</th><th>Ações</th></tr></thead>
         <tbody id="auTbody"></tbody>
       </table>
     </section>
 
     <!-- HISTÓRICO -->
-    <section class="painel" id="painel-historico" hidden>
+    <section class="painel" id="painel-historico">
       <h2 class="titulo">Histórico de lançamentos</h2>
       <p class="sub">Toda criação, edição ou exclusão de nota, por quem e quando — inclusive o que existia antes. Se uma escola contestar uma pontuação, a resposta está aqui.</p>
       <table>
@@ -587,6 +612,7 @@
       carregarAuditoria(),
       carregarHistorico(),
       carregarConfiguracao(),
+      carregarSenhaPadrao(),
     ]);
   }
 
@@ -658,19 +684,19 @@
     const tbody = document.getElementById("escTbody");
     tbody.innerHTML = "";
     if (!schools.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="vazio">Nenhuma escola cadastrada.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="vazio">Nenhuma escola cadastrada.</td></tr>';
       return;
     }
     schools.forEach((e) => {
       const tr = document.createElement("tr");
       if (!e.ativo) tr.className = "inativo";
       const diaRotulo = e.dia_apresentacao ? e.dia_apresentacao + "/08" : "—";
-      tr.innerHTML = `<td>${escapeHtml(e.nome)}</td><td>${escapeHtml(e.municipio || "—")}</td><td>${diaRotulo}</td><td class="num">${e.ordem_apresentacao ?? "—"}</td><td>${e.ativo ? "Sim" : "Não"}</td><td class="num">${e.ordem_sorteio ?? "—"}</td>`;
+      tr.innerHTML = `<td>${escapeHtml(e.nome)}</td><td>${escapeHtml(e.municipio || "—")}</td><td>${diaRotulo}</td><td class="num">${e.ordem_apresentacao ?? "—"}</td><td>${e.ativo ? "Sim" : "Não"}</td><td>${escapeHtml(e.cor_turma || "—")}</td><td class="num">${e.ordem_sorteio ?? "—"}</td>`;
       const tdAcoes = document.createElement("td");
       tdAcoes.className = "acoes-cel";
       const bEditar = botao("editar", () => editarEscola(e));
       const bSorteio = botao("sorteio", () => editarSorteio(e));
-      const bToggle = botao(e.ativo ? "desativar" : "ativar", () => salvarEscola(e.id, e.nome, e.municipio, !e.ativo, e.ordem_sorteio, e.dia_apresentacao, e.ordem_apresentacao));
+      const bToggle = botao(e.ativo ? "desativar" : "ativar", () => salvarEscola(e.id, e.nome, e.municipio, !e.ativo, e.ordem_sorteio, e.dia_apresentacao, e.ordem_apresentacao, e.cor_turma));
       const bExcluir = botao("excluir", () => excluirEscola(e.id), true);
       tdAcoes.append(bEditar, bSorteio, bToggle, bExcluir);
       tr.appendChild(tdAcoes);
@@ -698,7 +724,9 @@
       alert("Digite um número inteiro para a posição, ou deixe vazio.");
       return;
     }
-    salvarEscola(e.id, nome.trim(), municipio.trim(), e.ativo, e.ordem_sorteio, diaLimpo || null, posicaoNum);
+    const cor = prompt("Cor da turma (ex: Azul Escuro, ou vazio):", e.cor_turma || "");
+    if (cor === null) return;
+    salvarEscola(e.id, nome.trim(), municipio.trim(), e.ativo, e.ordem_sorteio, diaLimpo || null, posicaoNum, cor.trim() || null);
   }
 
   function editarSorteio(e) {
@@ -712,10 +740,10 @@
       alert("Digite um número inteiro, ou deixe vazio.");
       return;
     }
-    salvarEscola(e.id, e.nome, e.municipio, e.ativo, numero, e.dia_apresentacao, e.ordem_apresentacao);
+    salvarEscola(e.id, e.nome, e.municipio, e.ativo, numero, e.dia_apresentacao, e.ordem_apresentacao, e.cor_turma);
   }
 
-  async function salvarEscola(id, nome, municipio, ativo, ordemSorteio, dia, ordemApresentacao) {
+  async function salvarEscola(id, nome, municipio, ativo, ordemSorteio, dia, ordemApresentacao, corTurma) {
     const av = document.getElementById("escAviso");
     av.textContent = "";
     try {
@@ -729,6 +757,7 @@
           ordem_sorteio: ordemSorteio,
           dia_apresentacao: dia || null,
           ordem_apresentacao: ordemApresentacao,
+          cor_turma: corTurma || null,
         }),
       });
       const d = await r.json().catch(() => ({}));
@@ -751,6 +780,7 @@
     const municipioEl = document.getElementById("escMunicipio");
     const diaEl = document.getElementById("escDia");
     const ordemEl = document.getElementById("escOrdem");
+    const corEl = document.getElementById("escCor");
     const av = document.getElementById("escAviso");
     av.textContent = "";
     if (!nomeEl.value.trim()) { av.textContent = "Digite o nome da escola."; return; }
@@ -763,6 +793,7 @@
           municipio: municipioEl.value || null,
           dia_apresentacao: diaEl.value || null,
           ordem_apresentacao: ordemEl.value.trim() === "" ? null : Number(ordemEl.value),
+          cor_turma: corEl.value.trim() || null,
         }),
       });
       const d = await r.json().catch(() => ({}));
@@ -771,6 +802,7 @@
       municipioEl.value = "";
       diaEl.value = "";
       ordemEl.value = "";
+      corEl.value = "";
       await carregarEscolas();
     } catch (e) {
       av.textContent = e.message;
@@ -909,7 +941,7 @@
     const tbody = document.getElementById("jrTbody");
     tbody.innerHTML = "";
     if (!jurados.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="vazio">Nenhum jurado cadastrado.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="vazio">Nenhum jurado cadastrado.</td></tr>';
       return;
     }
     jurados.forEach((j) => {
@@ -935,6 +967,29 @@
       linkDiv.append(inputLink, bCopiar);
       tdLink.appendChild(linkDiv);
 
+      const tdMestre = document.createElement("td");
+      tdMestre.textContent = j.mestre ? "Sim" : "Não";
+
+      const tdSenha = document.createElement("td");
+      if (j.mestre) {
+        const senhaDiv = document.createElement("div");
+        senhaDiv.className = "link-jurado";
+        const inputSenha = document.createElement("input");
+        inputSenha.type = "text";
+        inputSenha.readOnly = true;
+        inputSenha.value = j.senha || "—";
+        const bCopiarSenha = botao("copiar", () => {
+          navigator.clipboard.writeText(j.senha || "").then(() => {
+            bCopiarSenha.textContent = "copiado!";
+            setTimeout(() => (bCopiarSenha.textContent = "copiar"), 1500);
+          });
+        });
+        senhaDiv.append(inputSenha, bCopiarSenha);
+        tdSenha.appendChild(senhaDiv);
+      } else {
+        tdSenha.textContent = "senha padrão";
+      }
+
       const tdAtivo = document.createElement("td");
       tdAtivo.textContent = j.ativo ? "Sim" : "Não";
 
@@ -947,11 +1002,20 @@
           if (confirm("Gerar um novo link para este jurado? O link antigo deixará de funcionar.")) {
             salvarJurado(j, { regenerar_token: true });
           }
-        }),
-        botao("excluir", () => excluirJurado(j.id), true)
+        })
       );
+      if (j.mestre) {
+        tdAcoes.append(
+          botao("nova senha", () => {
+            if (confirm("Gerar uma nova senha para o jurado mestre? A senha antiga deixará de funcionar.")) {
+              salvarJurado(j, { regenerar_senha_mestre: true });
+            }
+          })
+        );
+      }
+      tdAcoes.append(botao("excluir", () => excluirJurado(j.id), true));
 
-      tr.append(tdNome, tdLink, tdAtivo, tdAcoes);
+      tr.append(tdNome, tdLink, tdMestre, tdSenha, tdAtivo, tdAcoes);
       tbody.appendChild(tr);
     });
   }
@@ -988,6 +1052,7 @@
 
   document.getElementById("jrAdicionar").onclick = async () => {
     const nomeEl = document.getElementById("jrNome");
+    const mestreEl = document.getElementById("jrMestre");
     const av = document.getElementById("jrAviso");
     av.textContent = "";
     if (!nomeEl.value.trim()) { av.textContent = "Digite o nome do jurado."; return; }
@@ -995,12 +1060,50 @@
       const r = await adminFetch("/api/admin?resource=jurados", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome: nomeEl.value.trim() }),
+        body: JSON.stringify({ nome: nomeEl.value.trim(), mestre: mestreEl.checked }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.erro || "Erro ao adicionar.");
       nomeEl.value = "";
+      mestreEl.checked = false;
       await carregarJurados();
+    } catch (e) {
+      av.textContent = e.message;
+    }
+  };
+
+  /* ----- senha padrão dos jurados comuns ----- */
+  async function carregarSenhaPadrao() {
+    const r = await adminFetch("/api/admin?resource=configuracao");
+    const cfg = await r.json();
+    document.getElementById("jrSenhaPadrao").value = cfg.senha_padrao_jurado || "—";
+  }
+
+  document.getElementById("jrCopiarSenhaPadrao").onclick = (e) => {
+    const valor = document.getElementById("jrSenhaPadrao").value;
+    navigator.clipboard.writeText(valor).then(() => {
+      e.target.textContent = "copiado!";
+      setTimeout(() => (e.target.textContent = "copiar"), 1500);
+    });
+  };
+
+  document.getElementById("jrRegenerarSenhaPadrao").onclick = async () => {
+    if (!confirm("Gerar uma nova senha padrão? A senha antiga deixará de funcionar para todos os jurados comuns imediatamente.")) return;
+    const av = document.getElementById("jrAviso");
+    av.textContent = "";
+    try {
+      const r = await adminFetch("/api/admin?resource=configuracao", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          encerrada: document.getElementById("cfEncerrada").checked,
+          ranking_oculto: document.getElementById("cfOculto").checked,
+          regenerar_senha_padrao: true,
+        }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.erro || "Erro ao gerar nova senha.");
+      document.getElementById("jrSenhaPadrao").value = d.senha_padrao_jurado || "—";
     } catch (e) {
       av.textContent = e.message;
     }
@@ -1017,12 +1120,12 @@
     const tbody = document.getElementById("auTbody");
     tbody.innerHTML = "";
     if (!pontuacoes.length) {
-      tbody.innerHTML = '<tr><td colspan="5" class="vazio">Nenhuma nota lançada ainda.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="vazio">Nenhuma nota lançada ainda.</td></tr>';
       return;
     }
     pontuacoes.forEach((p) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${escapeHtml(p.prova_nome)}</td><td>${escapeHtml(p.escola_nome)}</td><td>${escapeHtml(p.jurado_nome)}</td><td class="num">${arredondar(p.pontos)}</td>`;
+      tr.innerHTML = `<td>${escapeHtml(p.prova_nome)}</td><td>${escapeHtml(p.escola_nome)}</td><td>${escapeHtml(p.jurado_nome)}</td><td class="num">${arredondar(p.pontos)}</td><td>${escapeHtml(p.penalidade || "—")}</td>`;
       const tdAcoes = document.createElement("td");
       tdAcoes.className = "acoes-cel";
       tdAcoes.append(
