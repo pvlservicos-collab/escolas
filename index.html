@@ -292,13 +292,12 @@
     padding: 14px 4px;
     border-bottom: 1px solid var(--linha);
     cursor: pointer;
-    border-radius: 8px;
     transition: background 0.18s ease, box-shadow 0.18s ease;
   }
 
   li:hover { background: rgba(36, 64, 156, 0.05); }
 
-  li.top { border-radius: 10px; padding-left: 10px; padding-right: 10px; margin: 6px 0; }
+  li.top { padding-left: 10px; padding-right: 10px; margin: 6px 0; }
 
   li.pos-1 {
     background: linear-gradient(90deg, rgba(255, 200, 0, 0.14), transparent 75%);
@@ -320,12 +319,12 @@
   }
 
   .pos {
-    width: 34px;
+    width: 38px;
     font-family: "Baloo 2", sans-serif;
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 800;
     font-variant-numeric: tabular-nums;
-    color: var(--apagado);
+    color: var(--texto);
   }
 
   li.pos-1 .pos { color: #c99700; }
@@ -425,6 +424,7 @@
   @media (max-width: 480px) {
     .pontos { font-size: 18px; }
     .nome { font-size: 15px; }
+    .pos { font-size: 21px; width: 34px; }
     .board { padding: 16px; border-radius: 14px; }
   }
 </style>
@@ -530,17 +530,46 @@
     return CORES_TURMA[String(nome).trim().toLowerCase()] || null;
   }
 
-  function hexParaRgb(hex) {
+  function hexParaRgbArr(hex) {
     const h = hex.replace("#", "");
     const n = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h, 16);
-    return ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
   }
 
-  function aplicarSombraTurma(li, corTurmaNome) {
-    const hex = corTurma(corTurmaNome);
-    if (!hex) return;
+  function clarear(rgb, quantidade) {
+    return rgb.map((c) => Math.round(c + (255 - c) * quantidade));
+  }
+
+  // Várias escolas dividem a mesma cor de turma (é assim na lista oficial de
+  // credenciamento) — sem diferenciar, duas escolas "Vermelho" no ranking ficam
+  // idênticas e confundem quem está olhando. Dentro de cada grupo de mesma cor, a
+  // 1ª escola (por id) fica com o tom normal e as próximas ficam progressivamente
+  // mais claras.
+  let coresEfetivas = {};
+  function calcularCoresEfetivas(lista) {
+    const grupos = {};
+    lista.forEach((e) => {
+      const nomeCor = e.cor_turma && String(e.cor_turma).trim().toLowerCase();
+      if (!nomeCor || !CORES_TURMA[nomeCor]) return;
+      (grupos[nomeCor] = grupos[nomeCor] || []).push(e.id);
+    });
+    const efetiva = {};
+    Object.keys(grupos).forEach((nomeCor) => {
+      const rgbBase = hexParaRgbArr(CORES_TURMA[nomeCor]);
+      grupos[nomeCor]
+        .sort((a, b) => a - b)
+        .forEach((id, i) => {
+          efetiva[id] = (i === 0 ? rgbBase : clarear(rgbBase, Math.min(0.18 * i, 0.6))).join(",");
+        });
+    });
+    return efetiva;
+  }
+
+  function aplicarSombraTurma(li, escolaId) {
+    const rgb = coresEfetivas[escolaId];
+    if (!rgb) return;
     li.classList.add("turma");
-    li.style.setProperty("--cor-turma-rgb", hexParaRgb(hex));
+    li.style.setProperty("--cor-turma-rgb", rgb);
   }
 
   const ICONE_OLHO_ABERTO =
@@ -578,6 +607,7 @@
       if (!oculto) {
         provas = dados.provas;
         schools = dados.schools;
+        coresEfetivas = calcularCoresEfetivas(schools);
         if (primeiraCarga) {
           const arrecadacao = provas.find((p) => p.nome === "Arrecadação Solidária") || provas.find((p) => p.numero === "1");
           if (arrecadacao) filtroProva = String(arrecadacao.id);
@@ -671,7 +701,7 @@
       // As 3 primeiras posições já ganham o degradê/contorno de medalha (ouro/prata/
       // bronze) — a sombra da cor da turma é só para o resto da lista, senão as duas
       // cores brigam visualmente no mesmo lugar.
-      if (i >= 3) aplicarSombraTurma(li, escola.cor_turma);
+      if (i >= 3) aplicarSombraTurma(li, escola.id);
       if (!top3Revelado && i < 3) li.className += " borrado";
       if (justRevelado && i < 3) li.className += " revelando";
       if (abertas.has(escola.id)) li.className = (li.className + " aberta").trim();
@@ -712,7 +742,7 @@
   function renderProva(prova) {
     if (!prova) return vazio("Prova não encontrada.");
     const linhas = [...schools]
-      .map((e) => ({ nome: e.nome, municipio: e.municipio, pontos: e.porProva[prova.id] || 0, cor_turma: e.cor_turma }))
+      .map((e) => ({ id: e.id, nome: e.nome, municipio: e.municipio, pontos: e.porProva[prova.id] || 0 }))
       .sort((a, b) => b.pontos - a.pontos);
 
     $contagem.textContent = "máximo " + arredondar(prova.pontuacao_maxima) + " pontos";
@@ -724,7 +754,7 @@
     // destaque visual de pódio.
     linhas.forEach((escola, i) => {
       const li = document.createElement("li");
-      aplicarSombraTurma(li, escola.cor_turma);
+      aplicarSombraTurma(li, escola.id);
       animarEntrada(li, i);
       li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.pontos, null));
       $lista.appendChild(li);
