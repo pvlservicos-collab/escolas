@@ -55,6 +55,11 @@ CREATE TABLE IF NOT EXISTS pontuacoes (
   UNIQUE (jurado_id, escola_id, prova_id)
 );
 
+-- O índice do UNIQUE(jurado_id, escola_id, prova_id) já cobre buscas por jurado_id
+-- sozinho (é a coluna líder — usado em "minhas notas"), mas não ajuda o GROUP BY do
+-- ranking público, que agrupa por escola_id/prova_id sem jurado_id.
+CREATE INDEX IF NOT EXISTS idx_pontuacoes_escola_prova ON pontuacoes (escola_id, prova_id);
+
 -- Trilha de auditoria de lançamentos (Art. 12, § único do Edital): toda criação, edição
 -- ou exclusão de nota vira uma linha aqui, mesmo depois que a linha em `pontuacoes` some
 -- (jurado_id/escola_id/prova_id não têm FK — precisam sobreviver à exclusão do registro
@@ -82,3 +87,11 @@ CREATE TABLE IF NOT EXISTS configuracao (
   CONSTRAINT configuracao_singleton CHECK (id = 1)
 );
 INSERT INTO configuracao (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+
+-- Trava de força bruta no login do admin (usuário/senha sem mais o link secreto por
+-- cima). Chaveada por IP de origem; zera sozinha quando um login correto acontece.
+CREATE TABLE IF NOT EXISTS login_tentativas (
+  chave           TEXT PRIMARY KEY,
+  falhas          INTEGER NOT NULL DEFAULT 0,
+  ultima_em       TIMESTAMP NOT NULL DEFAULT now()
+);

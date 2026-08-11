@@ -481,6 +481,10 @@
 </div>
 
 <script>
+  // Só um desestímulo de UI (não é proteção de verdade — quem abrir o DevTools direto
+  // ainda vê tudo). A segurança real é a sessão validada no servidor em cada chamada.
+  document.addEventListener("contextmenu", (e) => e.preventDefault());
+
   const SS_TOKEN = "gincana_admin_token";
 
   const $raizEstado = document.getElementById("raizEstado");

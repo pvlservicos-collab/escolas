@@ -13,6 +13,34 @@ function bad(res, code, erro) {
   return res.status(code).json({ erro });
 }
 
+// Trava de força bruta no login: 5 tentativas erradas do mesmo IP bloqueiam por 15min.
+const LOCKOUT_LIMIAR = 5;
+const LOCKOUT_JANELA_MS = 15 * 60 * 1000;
+
+function chaveCliente(req) {
+  const fwd = req.headers["x-forwarded-for"];
+  if (typeof fwd === "string" && fwd.trim()) return fwd.split(",")[0].trim();
+  return "desconhecido";
+}
+
+async function loginBloqueado(pool, chave) {
+  const { rows } = await pool.query("SELECT falhas, ultima_em FROM login_tentativas WHERE chave = $1", [chave]);
+  if (!rows.length || rows[0].falhas < LOCKOUT_LIMIAR) return false;
+  return Date.now() - new Date(rows[0].ultima_em).getTime() < LOCKOUT_JANELA_MS;
+}
+
+async function registrarFalhaLogin(pool, chave) {
+  await pool.query(
+    `INSERT INTO login_tentativas (chave, falhas, ultima_em) VALUES ($1, 1, now())
+     ON CONFLICT (chave) DO UPDATE SET falhas = login_tentativas.falhas + 1, ultima_em = now()`,
+    [chave]
+  );
+}
+
+async function limparFalhasLogin(pool, chave) {
+  await pool.query("DELETE FROM login_tentativas WHERE chave = $1", [chave]);
+}
+
 // Token curto e legível a partir do nome do jurado (ex: "Maria Silva" -> "maria-silva"),
 // com sufixo numérico se já existir. `sufixoAleatorio` força um valor novo (usado ao
 // gerar um novo link, para invalidar o anterior mesmo quando o nome não mudou).
@@ -32,6 +60,7 @@ async function tokenParaJurado(pool, nome, excluirId, sufixoAleatorio) {
 }
 
 module.exports = async (req, res) => {
+ try {
   // Fail closed: if any auth secret is unset, every check below would silently fall
   // back to an empty/guessable value (see _auth.js). Refuse to serve anything rather
   // than risk a blank-credential login bypass.
@@ -45,12 +74,20 @@ module.exports = async (req, res) => {
 
   if (resource === "login") {
     if (req.method !== "POST") return bad(res, 405, "Método não permitido.");
+    const chave = chaveCliente(req);
+    if (await loginBloqueado(pool, chave)) {
+      return bad(res, 429, "Muitas tentativas incorretas. Tente novamente em alguns minutos.");
+    }
     const { usuario, senha } = req.body || {};
     const okUser =
       typeof usuario === "string" && safeEqual(usuario, process.env.ADMIN_USERNAME || "");
     const okPass =
       typeof senha === "string" && safeEqual(senha, process.env.ADMIN_PASSWORD || "");
-    if (!okUser || !okPass) return bad(res, 401, "Usuário ou senha inválidos.");
+    if (!okUser || !okPass) {
+      await registrarFalhaLogin(pool, chave);
+      return bad(res, 401, "Usuário ou senha inválidos.");
+    }
+    await limparFalhasLogin(pool, chave);
     return res.status(200).json({ token: signSession(usuario) });
   }
 
@@ -325,4 +362,8 @@ module.exports = async (req, res) => {
   }
 
   return bad(res, 404, "Recurso inválido.");
+ } catch (err) {
+  console.error("Erro em /api/admin:", err);
+  if (!res.headersSent) return bad(res, 500, "Erro interno. Tente novamente em instantes.");
+ }
 };

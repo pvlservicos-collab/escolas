@@ -97,11 +97,17 @@ async function buildRanking(pool) {
 }
 
 module.exports = async (req, res) => {
+ try {
   const pool = getPool();
   const { resource, token } = req.query;
 
   if (req.method === "GET" && (resource === "ranking" || !resource)) {
     const config = await getConfiguracao(pool);
+    // Página pública, atualiza sozinha a cada 20s e pode ter muita gente com a aba
+    // aberta ao mesmo tempo (torcida, cerimônia). Cachear por alguns segundos na CDN
+    // da Vercel poupa banco e invocações de função sob rajada, sem atrasar de forma
+    // perceptível a revelação do resultado (Momento 3) além do próprio polling de 20s.
+    res.setHeader("Cache-Control", "public, s-maxage=5, stale-while-revalidate=15");
     if (config.ranking_oculto) {
       return res.status(200).json({ oculto: true });
     }
@@ -248,4 +254,8 @@ module.exports = async (req, res) => {
 
   res.setHeader("Allow", "GET, POST, DELETE");
   return bad(res, 405, "Método não permitido.");
+ } catch (err) {
+  console.error("Erro em /api/scores:", err);
+  if (!res.headersSent) return bad(res, 500, "Erro interno. Tente novamente em instantes.");
+ }
 };
