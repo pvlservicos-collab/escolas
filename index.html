@@ -699,10 +699,9 @@
     linhas.forEach((escola, i) => {
       const li = document.createElement("li");
       li.className = classePosicao(i);
-      // As 3 primeiras posições já ganham o degradê/contorno de medalha (ouro/prata/
-      // bronze) — a sombra da cor da turma é só para o resto da lista, senão as duas
-      // cores brigam visualmente no mesmo lugar.
-      if (i >= 3) aplicarSombraTurma(li, escola.id);
+      // Na classificação geral, cor só existe no pódio (medalha de ouro/prata/
+      // bronze nas 3 primeiras) — o resto da lista fica sem a sombra da turma, que
+      // continua aparecendo normalmente nas abas de prova individual.
       if (!top3Revelado && i < 3) li.className += " borrado";
       if (justRevelado && i < 3) li.className += " revelando";
       if (abertas.has(escola.id)) li.className = (li.className + " aberta").trim();
