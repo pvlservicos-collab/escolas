@@ -481,10 +481,6 @@
 </div>
 
 <script>
-  const LS_KEY = "gincana_admin_key";
-  // A chave pode vir na URL (primeiro acesso) ou já ter sido lembrada neste navegador
-  // de uma visita anterior — assim dá pra favoritar só /admin, sem o parâmetro.
-  const KEY = new URLSearchParams(location.search).get("key") || localStorage.getItem(LS_KEY) || "";
   const SS_TOKEN = "gincana_admin_token";
 
   const $raizEstado = document.getElementById("raizEstado");
@@ -501,7 +497,7 @@
   }
 
   async function adminFetch(url, options = {}) {
-    const headers = Object.assign({}, options.headers, { "x-admin-key": KEY });
+    const headers = Object.assign({}, options.headers);
     const token = sessionStorage.getItem(SS_TOKEN);
     if (token) headers["Authorization"] = "Bearer " + token;
     const r = await fetch(url, Object.assign({}, options, { headers }));
@@ -541,7 +537,7 @@
       try {
         const r = await fetch("/api/admin?resource=login", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "x-admin-key": KEY },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ usuario: $u.value.trim(), senha: $s.value }),
         });
         const d = await r.json().catch(() => ({}));
@@ -625,7 +621,7 @@
     const tbody = document.getElementById("lkTbodyGerais");
     tbody.innerHTML = "";
     tbody.appendChild(linhaLink("Ranking público", location.origin + "/"));
-    tbody.appendChild(linhaLink("Painel administrativo (este link)", location.origin + "/admin?key=" + KEY));
+    tbody.appendChild(linhaLink("Painel administrativo (este link)", location.origin + "/admin"));
   }
 
   function renderLinksJurados() {
@@ -1213,16 +1209,6 @@
 
   /* ---------------- boot ---------------- */
   (async function boot() {
-    if (!KEY) return estadoTexto("Página não encontrada.");
-    try {
-      const r = await fetch("/api/admin?resource=check-key", { headers: { "x-admin-key": KEY } });
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok || !d.ok) return estadoTexto("Página não encontrada.");
-      localStorage.setItem(LS_KEY, KEY);
-    } catch (e) {
-      return estadoTexto("Não foi possível verificar o acesso. Recarregue a página.");
-    }
-
     if (sessionStorage.getItem(SS_TOKEN)) {
       try {
         const r = await adminFetch("/api/admin?resource=schools");

@@ -33,16 +33,6 @@ function verifySession(token) {
   }
 }
 
-// Requires both the admin link secret (?key= on the front-end, sent as a header
-// on every admin API call) and, beyond login, a valid session from a successful
-// username/password login.
-function requireAdminKey(req) {
-  const key = req.headers["x-admin-key"];
-  const expected = process.env.ADMIN_LINK_SECRET || "";
-  if (!expected) return false;
-  return typeof key === "string" && safeEqual(key, expected);
-}
-
 function requireAdminSession(req) {
   const header = req.headers["authorization"] || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
@@ -57,7 +47,7 @@ function newToken() {
 // secret): hmac() signs sessions with a public, guessable key, and safeEqual("", "")
 // makes blank username/password pass login. Missing config must fail closed (500),
 // never silently open the admin panel to blank credentials.
-const REQUIRED_ENV = ["SESSION_SECRET", "ADMIN_USERNAME", "ADMIN_PASSWORD", "ADMIN_LINK_SECRET"];
+const REQUIRED_ENV = ["SESSION_SECRET", "ADMIN_USERNAME", "ADMIN_PASSWORD"];
 
 function secretsConfigured() {
   return REQUIRED_ENV.every((k) => typeof process.env[k] === "string" && process.env[k].length > 0);
@@ -77,7 +67,6 @@ function slugify(nome) {
 module.exports = {
   signSession,
   verifySession,
-  requireAdminKey,
   requireAdminSession,
   safeEqual,
   newToken,

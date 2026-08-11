@@ -1,7 +1,6 @@
 const { getPool } = require("./_db");
 const {
   signSession,
-  requireAdminKey,
   requireAdminSession,
   safeEqual,
   newToken,
@@ -43,17 +42,6 @@ module.exports = async (req, res) => {
   const pool = getPool();
   const { resource } = req.query;
   const id = req.query.id !== undefined ? Number(req.query.id) : undefined;
-
-  // ---- unauthenticated: only tells the front-end whether the secret link is valid ----
-  if (resource === "check-key") {
-    if (req.method !== "GET") return bad(res, 405, "Método não permitido.");
-    return res.status(200).json({ ok: requireAdminKey(req) });
-  }
-
-  // Every other action requires the secret-link key on the header.
-  if (!requireAdminKey(req)) {
-    return bad(res, 404, "Não encontrado.");
-  }
 
   if (resource === "login") {
     if (req.method !== "POST") return bad(res, 405, "Método não permitido.");
