@@ -274,15 +274,18 @@
 
   /* Brilho colorido de acordo com a cor da turma da escola: só um degradê saindo da
      esquerda até opacidade 0% na direita, sem contorno nem sombra — com tantas
-     escolas repetindo cor de turma, bordas/sombras empilhadas ficavam poluídas. */
+     escolas repetindo cor de turma, bordas/sombras empilhadas ficavam poluídas.
+     --cor-turma-alpha varia por escola (ver calcularCoresEfetivas): quando duas
+     escolas dividem a mesma cor, a força do degradê muda entre elas — clarear só o
+     RGB não bastava porque com pouca opacidade a diferença quase não aparecia. */
   li.turma {
-    background: linear-gradient(90deg, rgba(var(--cor-turma-rgb), 0.11), rgba(var(--cor-turma-rgb), 0) 100%);
+    background: linear-gradient(90deg, rgba(var(--cor-turma-rgb), var(--cor-turma-alpha, 0.13)), rgba(var(--cor-turma-rgb), 0) 100%);
   }
   /* Especificidade maior que "li:hover" de propósito: sem isso, o hover trocava o
      degradê da turma pelo azul genérico do hover comum. Aqui só escurece um pouco
      em cima da própria cor, em vez de trocar de cor. */
   li.turma:hover {
-    background: linear-gradient(90deg, rgba(var(--cor-turma-rgb), 0.11), rgba(var(--cor-turma-rgb), 0) 100%);
+    background: linear-gradient(90deg, rgba(var(--cor-turma-rgb), var(--cor-turma-alpha, 0.13)), rgba(var(--cor-turma-rgb), 0) 100%);
     filter: brightness(0.94);
   }
 
@@ -319,17 +322,24 @@
   }
 
   .pos {
-    width: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(36, 64, 156, 0.1);
     font-family: "Baloo 2", sans-serif;
-    font-size: 24px;
+    font-size: 15px;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
-    color: var(--texto);
+    color: var(--azul);
   }
 
-  li.pos-1 .pos { color: #c99700; }
-  li.pos-2 .pos { color: #8c8c96; }
-  li.pos-3 .pos { color: #a85d23; }
+  li.pos-1 .pos { background: #c99700; color: #fff; }
+  li.pos-2 .pos { background: #8c8c96; color: #fff; }
+  li.pos-3 .pos { background: #a85d23; color: #fff; }
 
   .info { flex: 1; min-width: 0; }
 
@@ -424,7 +434,7 @@
   @media (max-width: 480px) {
     .pontos { font-size: 18px; }
     .nome { font-size: 15px; }
-    .pos { font-size: 21px; width: 34px; }
+    .pos { width: 30px; height: 30px; font-size: 13px; }
     .board { padding: 16px; border-radius: 14px; }
   }
 </style>
@@ -536,15 +546,13 @@
     return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
   }
 
-  function clarear(rgb, quantidade) {
-    return rgb.map((c) => Math.round(c + (255 - c) * quantidade));
-  }
-
   // Várias escolas dividem a mesma cor de turma (é assim na lista oficial de
   // credenciamento) — sem diferenciar, duas escolas "Vermelho" no ranking ficam
-  // idênticas e confundem quem está olhando. Dentro de cada grupo de mesma cor, a
-  // 1ª escola (por id) fica com o tom normal e as próximas ficam progressivamente
-  // mais claras.
+  // idênticas e confundem quem está olhando. Clarear só o RGB não resolve porque o
+  // degradê já é bem transparente (a diferença de tom quase some no branco); o que
+  // realmente aparece é a FORÇA do degradê, então cada escola do mesmo grupo de cor
+  // recebe uma opacidade diferente — a 1ª (por id) fica mais forte, as próximas cada
+  // vez mais fracas/claras.
   let coresEfetivas = {};
   function calcularCoresEfetivas(lista) {
     const grupos = {};
@@ -555,21 +563,22 @@
     });
     const efetiva = {};
     Object.keys(grupos).forEach((nomeCor) => {
-      const rgbBase = hexParaRgbArr(CORES_TURMA[nomeCor]);
+      const rgb = hexParaRgbArr(CORES_TURMA[nomeCor]).join(",");
       grupos[nomeCor]
         .sort((a, b) => a - b)
         .forEach((id, i) => {
-          efetiva[id] = (i === 0 ? rgbBase : clarear(rgbBase, Math.min(0.18 * i, 0.6))).join(",");
+          efetiva[id] = { rgb, alpha: Math.max(0.15 - i * 0.075, 0.04) };
         });
     });
     return efetiva;
   }
 
   function aplicarSombraTurma(li, escolaId) {
-    const rgb = coresEfetivas[escolaId];
-    if (!rgb) return;
+    const dados = coresEfetivas[escolaId];
+    if (!dados) return;
     li.classList.add("turma");
-    li.style.setProperty("--cor-turma-rgb", rgb);
+    li.style.setProperty("--cor-turma-rgb", dados.rgb);
+    li.style.setProperty("--cor-turma-alpha", dados.alpha);
   }
 
   const ICONE_OLHO_ABERTO =
