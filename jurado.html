@@ -24,6 +24,12 @@
 
   * { box-sizing: border-box; }
 
+  /* Garante que o atributo "hidden" sempre vença, mesmo em elementos cuja classe
+     declara display:flex (ex: .sucesso-card, .penalidade-opcoes) — sem isso, esse
+     display explícito sobrescreve o [hidden] padrão do navegador e o elemento fica
+     visível o tempo todo. */
+  [hidden] { display: none !important; }
+
   body {
     margin: 0;
     padding: 40px 18px 80px;

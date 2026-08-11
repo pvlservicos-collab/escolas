@@ -23,6 +23,11 @@
 
   * { box-sizing: border-box; }
 
+  /* Garante que o atributo "hidden" sempre vença, mesmo em elementos cuja classe
+     declara display:flex (ex: .botao-olho) — sem isso, esse display explícito
+     sobrescreve o [hidden] padrão do navegador e o elemento fica visível sempre. */
+  [hidden] { display: none !important; }
+
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
