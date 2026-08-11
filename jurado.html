@@ -943,11 +943,11 @@
       config.penalidades.forEach((texto) => {
         const item = document.createElement("label");
         item.className = "opcao-penalidade-item";
-        const radio = document.createElement("input");
-        radio.type = "radio";
-        radio.name = "penalidadeOpcao";
-        radio.value = texto;
-        item.append(radio, document.createTextNode(texto));
+        const check = document.createElement("input");
+        check.type = "checkbox";
+        check.name = "penalidadeOpcao";
+        check.value = texto;
+        item.append(check, document.createTextNode(texto));
         $penalidadeOpcoes.appendChild(item);
       });
     }
@@ -1092,9 +1092,9 @@
         pontosNum += v;
       }
       if (config.penalidades && $penalidadeCheck.checked) {
-        const marcada = $penalidadeOpcoes.querySelector('input[name="penalidadeOpcao"]:checked');
-        if (!marcada) { $aviso.textContent = "Selecione qual penalidade aconteceu."; return; }
-        penalidadeVal = marcada.value;
+        const marcadas = [...$penalidadeOpcoes.querySelectorAll('input[name="penalidadeOpcao"]:checked')];
+        if (!marcadas.length) { $aviso.textContent = "Selecione qual penalidade aconteceu."; return; }
+        penalidadeVal = marcadas.map((m) => m.value).join(", ");
       }
     } else {
       pontosNum = parseFloat($pontos.value);
