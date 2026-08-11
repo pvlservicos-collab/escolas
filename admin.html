@@ -349,6 +349,7 @@
     <button data-aba="regras" aria-selected="false">Regras das provas</button>
     <button data-aba="jurados" aria-selected="false">Jurados</button>
     <button data-aba="auditoria" aria-selected="false">Auditoria de notas</button>
+    <button data-aba="penalidades" aria-selected="false">Penalidades</button>
     <button data-aba="config" aria-selected="false">Configurações</button>
   </nav>
 
@@ -521,6 +522,34 @@
       </table>
     </section>
 
+    <!-- PENALIDADES -->
+    <section class="painel" id="painel-penalidades" hidden>
+      <h2 class="titulo">Penalidades administrativas</h2>
+      <p class="sub">Desconta meio ponto (-0,5) direto do total geral da escola no ranking — não muda a pontuação de nenhuma prova, a prova selecionada é só o registro de onde a penalidade aconteceu.</p>
+
+      <div class="form-linha">
+        <div class="campo">
+          <label for="peEscola">Escola</label>
+          <select id="peEscola"><option value="">Selecione</option></select>
+        </div>
+        <div class="campo">
+          <label for="peProva">Prova</label>
+          <select id="peProva"><option value="">Selecione</option></select>
+        </div>
+        <div class="campo">
+          <label for="peMotivo">Motivo (opcional)</label>
+          <input id="peMotivo" type="text" placeholder="Ex: desrespeito ao regulamento">
+        </div>
+        <button class="primario" id="peAplicar">Aplicar penalidade (-0,5)</button>
+      </div>
+      <p class="aviso" id="peAviso"></p>
+
+      <table>
+        <thead><tr><th>Escola</th><th>Prova</th><th>Valor</th><th>Motivo</th><th>Quando</th><th>Ações</th></tr></thead>
+        <tbody id="peTbody"></tbody>
+      </table>
+    </section>
+
     <!-- HISTÓRICO -->
     <section class="painel" id="painel-historico">
       <h2 class="titulo">Histórico de lançamentos</h2>
@@ -664,6 +693,7 @@
   let schools = [];
   let jurados = [];
   let pontuacoes = [];
+  let penalidades = [];
   let editandoProva = null;
 
   function arredondar(n) { return Math.round(Number(n) * 100) / 100; }
@@ -753,6 +783,7 @@
   // sem isso uma aba já aberta antes podia continuar mostrando algo já apagado.
   function recarregarAba(aba) {
     if (aba === "auditoria") carregarAuditoria();
+    else if (aba === "penalidades") carregarPenalidades();
     else if (aba === "historico") carregarHistorico();
     else if (aba === "escolas") carregarEscolas();
     else if (aba === "provas") carregarProvas();
@@ -1285,6 +1316,92 @@
     }
     await carregarAuditoria();
     await carregarHistorico();
+  }
+
+  /* ----- penalidades administrativas ----- */
+  async function carregarPenalidades() {
+    const r = await adminFetch("/api/admin?resource=penalidades");
+    penalidades = await r.json();
+    montarSelectsPenalidade();
+    renderPenalidades();
+  }
+
+  function montarSelectsPenalidade() {
+    const $esc = document.getElementById("peEscola");
+    const valorEscola = $esc.value;
+    $esc.innerHTML = '<option value="">Selecione</option>';
+    schools.filter((e) => e.ativo).forEach((e) => {
+      const opt = document.createElement("option");
+      opt.value = e.id;
+      opt.textContent = e.nome;
+      $esc.appendChild(opt);
+    });
+    $esc.value = valorEscola;
+
+    const $prova = document.getElementById("peProva");
+    const valorProva = $prova.value;
+    $prova.innerHTML = '<option value="">Selecione</option>';
+    provas.filter((p) => p.ativo).forEach((p) => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = p.numero + " · " + p.nome;
+      $prova.appendChild(opt);
+    });
+    $prova.value = valorProva;
+  }
+
+  function renderPenalidades() {
+    const tbody = document.getElementById("peTbody");
+    tbody.innerHTML = "";
+    if (!penalidades.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="vazio">Nenhuma penalidade aplicada.</td></tr>';
+      return;
+    }
+    penalidades.forEach((p) => {
+      const tr = document.createElement("tr");
+      const quando = new Date(p.criado_em).toLocaleString("pt-BR");
+      tr.innerHTML = `<td>${escapeHtml(p.escola_nome)}</td><td>${escapeHtml(p.prova_nome || "—")}</td><td class="num">-${arredondar(p.valor)}</td><td>${escapeHtml(p.motivo || "—")}</td><td>${escapeHtml(quando)}</td>`;
+      const tdAcoes = document.createElement("td");
+      tdAcoes.className = "acoes-cel";
+      tdAcoes.appendChild(botao("remover", () => removerPenalidade(p.id), true));
+      tr.appendChild(tdAcoes);
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.getElementById("peAplicar").onclick = async () => {
+    const av = document.getElementById("peAviso");
+    av.textContent = "";
+    const escolaId = document.getElementById("peEscola").value;
+    const provaId = document.getElementById("peProva").value;
+    const motivo = document.getElementById("peMotivo").value.trim();
+    if (!escolaId) { av.textContent = "Selecione a escola."; return; }
+    if (!provaId) { av.textContent = "Selecione a prova."; return; }
+    if (!confirm("Aplicar penalidade de -0,5 ponto no total geral desta escola?")) return;
+    try {
+      const r = await adminFetch("/api/admin?resource=penalidades", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ escola_id: escolaId, prova_id: provaId, motivo }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.erro || "Erro ao aplicar penalidade.");
+      document.getElementById("peMotivo").value = "";
+      await carregarPenalidades();
+    } catch (e) {
+      av.textContent = e.message;
+    }
+  };
+
+  async function removerPenalidade(id) {
+    if (!confirm("Remover esta penalidade? A escola recupera o meio ponto no total.")) return;
+    const r = await adminFetch("/api/admin?resource=penalidades&id=" + id, { method: "DELETE" });
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      alert(d.erro || "Erro ao remover.");
+      return;
+    }
+    await carregarPenalidades();
   }
 
   /* ----- histórico (log de auditoria) ----- */

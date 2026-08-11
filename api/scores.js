@@ -62,12 +62,23 @@ async function buildRanking(pool) {
      JOIN schools e ON e.id = pt.escola_id AND e.ativo = true
      GROUP BY pt.escola_id, pt.prova_id`
   );
+  const { rows: penalidades } = await pool.query(
+    `SELECT pa.escola_id, SUM(pa.valor) AS valor
+     FROM penalidades_admin pa
+     JOIN schools e ON e.id = pa.escola_id AND e.ativo = true
+     GROUP BY pa.escola_id`
+  );
 
   const porEscola = {};
   somas.forEach((s) => {
     if (!porEscola[s.escola_id]) porEscola[s.escola_id] = {};
     porEscola[s.escola_id][s.prova_id] = Number(s.pontos);
   });
+
+  // Penalidade do admin: desconta do total geral, não de nenhuma prova específica
+  // (por isso não entra em porProva, só no total abaixo).
+  const penalidadePorEscola = {};
+  penalidades.forEach((p) => { penalidadePorEscola[p.escola_id] = Number(p.valor); });
 
   const provaPorNumero = {};
   provas.forEach((p) => (provaPorNumero[p.numero] = p));
@@ -85,7 +96,7 @@ async function buildRanking(pool) {
   const ranking = schools
     .map((e) => {
       const porProva = porEscola[e.id] || {};
-      const total = Object.values(porProva).reduce((a, b) => a + b, 0);
+      const total = Object.values(porProva).reduce((a, b) => a + b, 0) - (penalidadePorEscola[e.id] || 0);
       return {
         id: e.id,
         nome: e.nome,

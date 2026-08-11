@@ -339,6 +339,45 @@ module.exports = async (req, res) => {
     return bad(res, 405, "Método não permitido.");
   }
 
+  if (resource === "penalidades") {
+    if (req.method === "GET") {
+      const { rows } = await pool.query(
+        `SELECT pa.id, pa.escola_id, pa.prova_id, pa.valor, pa.motivo, pa.autor, pa.criado_em,
+                e.nome AS escola_nome, pv.nome AS prova_nome
+         FROM penalidades_admin pa
+         JOIN schools e ON e.id = pa.escola_id
+         LEFT JOIN provas pv ON pv.id = pa.prova_id
+         ORDER BY pa.criado_em DESC`
+      );
+      return res.status(200).json(rows);
+    }
+    if (req.method === "POST") {
+      const { escola_id, prova_id, motivo } = req.body || {};
+      const escolaId = Number(escola_id);
+      const provaId = Number(prova_id);
+      if (!Number.isInteger(escolaId)) return bad(res, 400, "Escola inválida.");
+      if (!Number.isInteger(provaId)) return bad(res, 400, "Prova inválida.");
+      const { rows: escolaRows } = await pool.query("SELECT id FROM schools WHERE id = $1", [escolaId]);
+      if (!escolaRows.length) return bad(res, 404, "Escola não encontrada.");
+      const { rows: provaRows } = await pool.query("SELECT id FROM provas WHERE id = $1", [provaId]);
+      if (!provaRows.length) return bad(res, 404, "Prova não encontrada.");
+      const { rows } = await pool.query(
+        `INSERT INTO penalidades_admin (escola_id, prova_id, valor, motivo, autor)
+         VALUES ($1, $2, 0.5, $3, $4)
+         RETURNING id, escola_id, prova_id, valor, motivo, autor, criado_em`,
+        [escolaId, provaId, motivo ? String(motivo).trim().slice(0, 300) : null, "admin: " + session.u]
+      );
+      return res.status(201).json(rows[0]);
+    }
+    if (req.method === "DELETE") {
+      if (!Number.isInteger(id)) return bad(res, 400, "Id inválido.");
+      await pool.query("DELETE FROM penalidades_admin WHERE id = $1", [id]);
+      return res.status(204).end();
+    }
+    res.setHeader("Allow", "GET, POST, DELETE");
+    return bad(res, 405, "Método não permitido.");
+  }
+
   if (resource === "configuracao") {
     if (req.method === "GET") {
       const { rows } = await pool.query(

@@ -106,6 +106,21 @@ INSERT INTO configuracao (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
 -- Senha única compartilhada por todos os jurados comuns (não o mestre).
 ALTER TABLE configuracao ADD COLUMN IF NOT EXISTS senha_padrao_jurado TEXT;
 
+-- Penalidade aplicada pelo admin (distinta da penalidade só-observação do jurado,
+-- acima): desconta o valor direto do TOTAL geral da escola no ranking, sem alterar a
+-- pontuação de nenhuma prova especificamente. prova_id só registra em qual prova a
+-- penalidade aconteceu, para contexto/auditoria.
+CREATE TABLE IF NOT EXISTS penalidades_admin (
+  id         SERIAL PRIMARY KEY,
+  escola_id  INTEGER NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  prova_id   INTEGER REFERENCES provas(id) ON DELETE SET NULL,
+  valor      NUMERIC NOT NULL DEFAULT 0.5,
+  motivo     TEXT,
+  autor      TEXT NOT NULL,
+  criado_em  TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_penalidades_admin_escola ON penalidades_admin (escola_id);
+
 -- Trava de força bruta no login do admin (usuário/senha sem mais o link secreto por
 -- cima). Chaveada por IP de origem; zera sozinha quando um login correto acontece.
 CREATE TABLE IF NOT EXISTS login_tentativas (
