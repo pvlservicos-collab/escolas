@@ -96,31 +96,12 @@
 
   /* ---------- cartões (área de interação, branco-gelo) ---------- */
   .card {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
     background: var(--gelo);
     color: var(--texto);
     border-radius: 16px;
     padding: 26px;
     margin-bottom: 22px;
     box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
-  }
-
-  .card-deco {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-    user-select: none;
-  }
-
-  .card-deco span {
-    position: absolute;
-    line-height: 1;
-    font-size: var(--tam);
-    filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.16));
   }
 
   .campo { margin-bottom: 16px; }
@@ -382,7 +363,6 @@
 
   @media (max-width: 480px) {
     .nome-jurado { font-size: 21px; }
-    .card-deco span { font-size: calc(var(--tam) * 0.45); }
   }
 
   footer.creditos {
@@ -499,12 +479,6 @@
   <div id="estado" class="card estado" hidden></div>
 
   <div id="selecao" class="card" hidden>
-    <div class="card-deco" aria-hidden="true">
-      <span style="top:12px; left:-26px; --tam:58px; transform:rotate(-15deg);">⭐</span>
-      <span style="top:12px; right:-24px; --tam:56px; transform:rotate(13deg);">🏆</span>
-      <span style="bottom:12px; left:-22px; --tam:52px; transform:rotate(11deg);">✨</span>
-      <span style="bottom:12px; right:-24px; --tam:54px; transform:rotate(-13deg);">🎉</span>
-    </div>
     <h2 class="titulo-selecao">Selecione o jurado</h2>
     <p class="nota-selecao">Confirme quem está usando este aparelho. Você só precisa fazer isso uma vez neste navegador — depois é só usar "trocar jurado" quando precisar.</p>
     <div id="selecaoLista" class="lista-selecao"></div>
@@ -513,12 +487,6 @@
 
   <div id="conteudo" hidden>
     <div class="card">
-      <div class="card-deco" aria-hidden="true">
-        <span style="top:12px; left:-26px; --tam:58px; transform:rotate(-14deg);">⚡</span>
-        <span style="top:12px; right:-24px; --tam:56px; transform:rotate(15deg);">⭐</span>
-        <span style="bottom:12px; left:-22px; --tam:52px; transform:rotate(16deg);">🥇</span>
-        <span style="bottom:12px; right:-24px; --tam:54px; transform:rotate(-12deg);">🎯</span>
-      </div>
       <p class="aviso-encerrado" id="avisoEncerrado" hidden>🔒 Lançamentos encerrados — a competição já foi homologada. Suas notas continuam listadas abaixo, mas não podem mais ser alteradas por aqui.</p>
       <div class="campo">
         <label for="prova">Prova</label>
@@ -1397,60 +1365,6 @@ Cada equipe poderá acumular no máximo **20 pontos** nesta prova, independentem
 ## Destinação
 A totalidade dos itens arrecadados será destinada exclusivamente à distribuição para **famílias em situação de vulnerabilidade**.
 ` },
-    { titulo: "Regras Gerais da Competição", cor: "var(--vermelho)", corpo: `
-## Horário das provas
-Todas as equipes deverão observar rigorosamente o cronograma e o horário de início de cada prova ou atividade.
-
-Existe uma tolerância máxima de **10 minutos** para que a equipe esteja posicionada e pronta após a convocação oficial do mediador. O esgotamento desse prazo poderá resultar em perda de **0,5 ponto** na pontuação geral ou impedimento de participação na respectiva prova, a critério da Comissão Organizadora.
-
-Nenhuma prova poderá começar sem autorização expressa da Comissão Organizadora ou do mediador.
-
-## Fiscalização
-As provas serão conduzidas e fiscalizadas por coordenadores, árbitros, jurados, monitores e fiscais designados pela Comissão Organizadora.
-
-Todos os participantes deverão acatar prontamente as orientações e decisões dos responsáveis pela execução das atividades.
-
-O descumprimento das normas ou orientações da equipe técnica poderá gerar, na primeira ocorrência, **advertência formal**, e em cada reincidência, dedução de **0,5 ponto** da pontuação geral da equipe.
-
-## Conduta das equipes
-Durante toda a Gincana deverão ser observados respeito, cooperação, ética, inclusão, disciplina, espírito esportivo e convivência harmoniosa.
-
-É proibido utilizar linguagem ofensiva, gestos obscenos ou qualquer conteúdo que incentive violência ou discriminação.
-
-Também é terminantemente proibida qualquer modalidade de manifestação, propaganda ou posicionamento de **cunho político-partidário por parte dos candidatos**.
-
-O descumprimento poderá levar à desclassificação imediata da prova ou do evento, conforme a gravidade.
-` },
-    { titulo: "Identificação e Uniforme", cor: "var(--azul)", corpo: `
-Todos os estudantes, professores, acompanhantes e integrantes da organização deverão utilizar a identificação fornecida pela Comissão Organizadora durante toda a programação oficial.
-
-A identificação poderá ser feita por pulseira, crachá ou outro instrumento oficial definido pela organização, sendo obrigatória para acesso às áreas reservadas às equipes.
-
-Qualquer perda, extravio ou utilização indevida deverá ser comunicada imediatamente à Comissão Organizadora.
-
-Todos os estudantes deverão utilizar o **uniforme oficial da instituição de ensino**. Acessórios serão permitidos desde que não descaracterizem, modifiquem ou ocultem a identificação original do uniforme.
-` },
-    { titulo: "Capitão e Professor Responsável", cor: "var(--azul)", corpo: `
-Cada equipe deverá indicar um estudante como Capitão e um Professor Responsável. Ambos serão os representantes oficiais da equipe perante a Comissão Organizadora.
-
-Somente eles poderão solicitar esclarecimentos, comunicar ocorrências, formular questionamentos sobre as provas e representar oficialmente a equipe perante a organização.
-
-O Capitão e o Professor Responsável deverão utilizar identificação visual de fácil visualização fornecida pela organização.
-
-Não serão admitidas manifestações de outros integrantes perante a Comissão Organizadora ou Comissão Julgadora.
-
-### Penalidade
-Primeira ocorrência: **advertência verbal**. Reincidência: perda de **0,5 ponto**.
-` },
-    { titulo: "Regras de Segurança", cor: "var(--vermelho)", corpo: `
-Todas as atividades deverão ocorrer em ambiente seguro. É proibida a utilização de materiais, equipamentos ou práticas que possam colocar em risco participantes, organização ou público.
-
-A Comissão Organizadora poderá interromper, suspender ou cancelar qualquer prova quando identificar situação que represente risco à segurança, determinando continuidade, substituição ou remarcação da prova.
-
-A Comissão Organizadora também poderá alterar a ordem das provas ou suspender atividades por motivos técnicos, climáticos, estruturais, de segurança, de força maior ou de interesse da Administração Pública.
-
-Essas alterações deverão ser comunicadas às equipes com a maior antecedência possível. Quando justificadas pelo interesse público ou pela segurança dos participantes, não gerarão direito à impugnação da programação.
-` },
     { titulo: "Penalidades Gerais", cor: "var(--vermelho)", corpo: `
 ## Advertência formal
 Será aplicada na primeira ocorrência de descumprimento de normas leves ou orientações técnicas da equipe de apoio.
@@ -1501,35 +1415,6 @@ Persistindo o empate, será realizado **sorteio público** pela Comissão Organi
 ## Desempate de Miss e Mister
 Em caso de empate entre candidatos de Miss e Mister, será realizada uma rodada de perguntas sobre conhecimentos regionais. A banca observará segurança na resposta, domínio do conteúdo, coerência na fala, clareza, coesão, lógica, estruturação do discurso, desenvoltura, postura, oratória, expressividade e capacidade de comunicação com o público e o júri.
 ` },
-    { titulo: "Comissão Julgadora", cor: "var(--azul)", corpo: `
-A Comissão Julgadora será formada por profissionais ou pessoas com reconhecida experiência nas modalidades avaliadas, designados ou contratados pela SEED e SEJUV.
-
-Compete à Comissão Julgadora avaliar tecnicamente as provas, preencher fichas de avaliação, registrar as pontuações, encaminhar resultados à Comissão Organizadora, e atuar com imparcialidade, independência e observância dos critérios estabelecidos no edital.
-
-As decisões técnicas da Comissão Julgadora são **soberanas e irrecorríveis quanto ao mérito da avaliação**. Somente será admitida revisão para correção de erro material na apuração ou registro da pontuação.
-
-São considerados erros materiais: erros aritméticos na soma das notas; troca de nomes entre unidades escolares; erros de digitação ou transcrição de dados para o sistema de apuração.
-` },
-    { titulo: "Organização do Evento", cor: "var(--azul)", corpo: `
-A Gincana é promovida pelo Governo do Estado do Amapá, por intermédio da SEJUV. A coordenação geral será exercida conjuntamente pela Secretaria de Estado da Juventude (SEJUV) e pela Secretaria de Estado da Educação (SEED).
-
-A Comissão Organizadora será composta por representantes da SEJUV e SEED, competindo-lhe acompanhar o planejamento, auxiliar na definição do cronograma, colaborar na comunicação com as escolas, propor melhorias, coordenar a execução, realizar o credenciamento, supervisionar as provas, garantir o cumprimento do regulamento, solucionar questões operacionais, aplicar penalidades previstas e decidir sobre casos omissos e questões administrativas.
-
-A execução operacional poderá contar com apoio de organizações da sociedade civil, instituições públicas ou privadas e demais parceiros formalmente autorizados pela Administração Pública.
-` },
-    { titulo: "Inscrição e Credenciamento", cor: "var(--azul)", corpo: `
-As inscrições ocorreram nos dias **06 e 07 de agosto de 2026**, até as 23h59, e são gratuitas.
-
-A escola deverá apresentar ofício assinado pela direção autorizando o uso do nome da unidade, declaração de matrícula regular dos estudantes, lista nominal dos estudantes e lista nominal dos professores/acompanhantes responsáveis.
-
-Após o encerramento do prazo, não será permitida a inclusão de participantes, salvo casos excepcionais autorizados pela Comissão Organizadora antes do início das competições.
-
-No credenciamento serão entregues as identificações dos competidores ao Professor Responsável, que ficará encarregado da distribuição.
-
-A escola deverá obrigatoriamente formalizar os nomes dos candidatos a Miss e Mister, indicar formalmente o Capitão, e entregar mídia física (pen drive) com os arquivos de áudio no dia do desfile.
-
-Serão entregues **2 braceletes ou identificações de Capitão por escola**.
-` },
     { titulo: "Premiação", cor: "var(--dourado)", corpo: `
 As premiações serão entregues exclusivamente na cerimônia oficial de encerramento, no dia **13 de agosto de 2026**, com base na consolidação final da pontuação acumulada.
 
@@ -1547,24 +1432,6 @@ Troféu; medalhas para todos os integrantes; 1 notebook; 1 Kit Multimídia Escol
 
 ## Miss e Mister Juventude
 A vencedora e o vencedor recebem, cada um: 1 smartphone Apple iPhone e 1 faixa personalizada de cortejo.
-` },
-    { titulo: "Estrutura e Logística", cor: "var(--verde)", corpo: `
-O Governo do Estado garantirá aos participantes credenciados o suporte logístico e a infraestrutura necessária.
-
-### Transporte
-Locação de ônibus de padrão rodoviário para levar as escolas participantes de suas respectivas unidades até o local do evento e realizar o retorno.
-
-### Hidratação
-Água mineral sem gás durante todo o período da programação oficial.
-
-### Alimentação
-Um **Kit Lanche individual diário por participante**.
-
-### Atendimento de saúde
-Equipe de pronto-socorro para suporte e atendimento de primeiros socorros durante as atividades, caso necessário.
-
-### Infraestrutura
-Sonorização, banheiros químicos e controle de acesso, garantindo segurança e conforto às delegações.
 ` },
     { titulo: "Observações Importantes do Edital", cor: "var(--azul)", corpo: `
 A inscrição da escola e a participação dos representantes significam **conhecimento e aceitação integral** de todas as normas e condições estabelecidas no edital.
