@@ -86,6 +86,8 @@
     .nome { font-size: 20px; }
     .municipio { font-size: 15px; }
     .pontos { font-size: 26.3px; }
+    .pontos-col small { font-size: 12.5px; }
+    .pontos-col b { font-size: 26.3px; }
     .detalhe li { font-size: 16.3px; }
     .vazio { font-size: 18.8px; }
     .vazio.oculto { font-size: 21.3px; }
@@ -396,6 +398,24 @@
     color: var(--azul);
   }
 
+  .pontos-dupla { display: flex; gap: 14px; align-items: flex-end; flex-shrink: 0; }
+  .pontos-col { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; }
+  .pontos-col small {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--apagado);
+  }
+  .pontos-col b {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 21px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--apagado);
+  }
+  .pontos-col.final b { color: var(--azul); }
+
   .detalhe {
     max-height: 0;
     opacity: 0;
@@ -465,6 +485,8 @@
 
   @media (max-width: 480px) {
     .pontos { font-size: 18px; }
+    .pontos-col b { font-size: 18px; }
+    .pontos-dupla { gap: 10px; }
     .nome { font-size: 15px; }
     .board { padding: 16px; border-radius: 14px; }
   }
@@ -569,6 +591,9 @@
     "preto": "#333333",
   };
   const MEDALHA = ["🥇", "🥈", "🥉"];
+
+  // Provas com banca de 3 jurados: mostram Total (soma) e Final (média) lado a lado.
+  const NOMES_MEDIA = new Set(["Desfile das Escolas", "Miss e Mister Juventude"]);
 
   function corTurma(nome) {
     if (!nome) return null;
@@ -764,7 +789,7 @@
       animarEntrada(li, i);
 
       const detalheProvas = provas
-        .map((p) => ({ nome: p.numero + " · " + p.nome, pontos: escola.porProva[p.id] || 0 }))
+        .map((p) => ({ nome: p.numero + " · " + p.nome, pontos: escola.porProva[p.id]?.final || 0 }))
         .filter((d) => d.pontos > 0);
 
       li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.total, i < 3 ? MEDALHA[i] : null));
@@ -797,10 +822,14 @@
 
   function renderProva(prova) {
     if (!prova) return vazio("Prova não encontrada.");
+    const ehMedia = NOMES_MEDIA.has(prova.nome);
     const linhas = [...schools]
       .filter((e) => !filtroDia || e.dia_apresentacao === filtroDia)
-      .map((e) => ({ id: e.id, nome: e.nome, municipio: e.municipio, pontos: e.porProva[prova.id] || 0 }))
-      .sort((a, b) => b.pontos - a.pontos);
+      .map((e) => {
+        const dados = e.porProva[prova.id] || { total: 0, final: 0 };
+        return { id: e.id, nome: e.nome, municipio: e.municipio, total: dados.total, final: dados.final };
+      })
+      .sort((a, b) => b.final - a.final);
 
     $contagem.textContent = "";
 
@@ -813,15 +842,16 @@
       const li = document.createElement("li");
       aplicarSombraTurma(li, escola.id);
       animarEntrada(li, i);
-      li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.pontos, null));
+      li.appendChild(
+        ehMedia
+          ? linhaDupla(i, escola.nome, escola.municipio, escola.total, escola.final)
+          : linhaPrincipal(i, escola.nome, escola.municipio, escola.final, null)
+      );
       $lista.appendChild(li);
     });
   }
 
-  function linhaPrincipal(i, nome, municipio, pontos, medalha) {
-    const div = document.createElement("div");
-    div.className = "linha";
-
+  function criarPosInfo(i, nome, municipio, medalha) {
     const pos = document.createElement("span");
     pos.className = "pos";
     pos.textContent = (i + 1) + "º";
@@ -844,12 +874,45 @@
       m.textContent = municipio;
       info.appendChild(m);
     }
+    return { pos, info };
+  }
+
+  function linhaPrincipal(i, nome, municipio, pontos, medalha) {
+    const div = document.createElement("div");
+    div.className = "linha";
+    const { pos, info } = criarPosInfo(i, nome, municipio, medalha);
 
     const pts = document.createElement("span");
     pts.className = "pontos";
     pts.textContent = arredondar(pontos);
 
     div.append(pos, info, pts);
+    return div;
+  }
+
+  // Provas com banca de 3 jurados (Desfile, Miss/Mister): mostra soma bruta (Total) e
+  // média (Final) lado a lado — é a média que conta pro Geral, o total é só informativo.
+  function colunaPontos(rotulo, valor, destaque) {
+    const col = document.createElement("span");
+    col.className = "pontos-col" + (destaque ? " final" : "");
+    const small = document.createElement("small");
+    small.textContent = rotulo;
+    const b = document.createElement("b");
+    b.textContent = arredondar(valor);
+    col.append(small, b);
+    return col;
+  }
+
+  function linhaDupla(i, nome, municipio, total, final) {
+    const div = document.createElement("div");
+    div.className = "linha";
+    const { pos, info } = criarPosInfo(i, nome, municipio, null);
+
+    const dupla = document.createElement("span");
+    dupla.className = "pontos-dupla";
+    dupla.append(colunaPontos("Total", total, false), colunaPontos("Final", final, true));
+
+    div.append(pos, info, dupla);
     return div;
   }
 

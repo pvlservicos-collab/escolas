@@ -48,6 +48,12 @@ async function resolverAlvo(pool, autenticado, alvoId) {
 // `ORDER BY` do SQL, que resolveria empates silenciosamente por ordem alfabética.
 const CASCATA_DESEMPATE = ["1", "2", "7", "4"];
 
+// Provas com banca de 3 jurados avaliando ao vivo (Desfile e Miss/Mister): a nota que
+// conta é a MÉDIA dos jurados, não a soma — somar 3 notas de até 20 pontos cada
+// estouraria o máximo de 150 pontos do Geral (soma de todas as pontuacao_maxima).
+// As outras provas continuam por soma normalmente.
+const NOMES_MEDIA = new Set(["Desfile das Escolas", "Miss e Mister Juventude"]);
+
 async function buildRanking(pool) {
   const { rows: provas } = await pool.query(
     "SELECT id, numero, ordem, nome, pontuacao_maxima FROM provas WHERE ativo = true ORDER BY ordem ASC"
@@ -56,7 +62,7 @@ async function buildRanking(pool) {
     "SELECT id, nome, municipio, ordem_sorteio, ordem_apresentacao, dia_apresentacao, cor_turma FROM schools WHERE ativo = true ORDER BY nome ASC"
   );
   const { rows: somas } = await pool.query(
-    `SELECT pt.escola_id, pt.prova_id, SUM(pt.pontos) AS pontos
+    `SELECT pt.escola_id, pt.prova_id, SUM(pt.pontos) AS soma, COUNT(*) AS n
      FROM pontuacoes pt
      JOIN provas p ON p.id = pt.prova_id AND p.ativo = true
      JOIN schools e ON e.id = pt.escola_id AND e.ativo = true
@@ -69,10 +75,19 @@ async function buildRanking(pool) {
      GROUP BY pa.escola_id`
   );
 
+  const provaEhMedia = {};
+  provas.forEach((p) => { provaEhMedia[p.id] = NOMES_MEDIA.has(p.nome); });
+
+  // porProva[id] = { total, final }: `total` é sempre a soma bruta dos jurados (só
+  // informativo); `final` é o que conta pro Geral — igual ao total nas provas normais,
+  // e a média nas provas de banca (Desfile, Miss/Mister).
   const porEscola = {};
   somas.forEach((s) => {
     if (!porEscola[s.escola_id]) porEscola[s.escola_id] = {};
-    porEscola[s.escola_id][s.prova_id] = Number(s.pontos);
+    const total = Number(s.soma);
+    const n = Number(s.n);
+    const final = provaEhMedia[s.prova_id] ? total / n : total;
+    porEscola[s.escola_id][s.prova_id] = { total, final };
   });
 
   // Penalidade do admin: desconta do total geral, não de nenhuma prova específica
@@ -88,7 +103,7 @@ async function buildRanking(pool) {
     for (const numero of CASCATA_DESEMPATE) {
       const prova = provaPorNumero[numero];
       if (!prova) continue;
-      if ((x.porProva[prova.id] || 0) !== (y.porProva[prova.id] || 0)) return false;
+      if ((x.porProva[prova.id]?.final || 0) !== (y.porProva[prova.id]?.final || 0)) return false;
     }
     return (x.ordem_sorteio ?? null) === (y.ordem_sorteio ?? null);
   }
@@ -106,7 +121,7 @@ async function buildRanking(pool) {
 
   const listaBase = schools.map((e) => {
     const porProva = porEscola[e.id] || {};
-    const total = Object.values(porProva).reduce((a, b) => a + b, 0) - (penalidadePorEscola[e.id] || 0);
+    const total = Object.values(porProva).reduce((a, d) => a + d.final, 0) - (penalidadePorEscola[e.id] || 0);
     return {
       id: e.id,
       nome: e.nome,
@@ -137,7 +152,7 @@ async function buildRanking(pool) {
     for (const numero of CASCATA_DESEMPATE) {
       const prova = provaPorNumero[numero];
       if (!prova) continue;
-      const diff = (b.porProva[prova.id] || 0) - (a.porProva[prova.id] || 0);
+      const diff = (b.porProva[prova.id]?.final || 0) - (a.porProva[prova.id]?.final || 0);
       if (diff !== 0) return diff;
     }
     const sa = a.ordem_sorteio;
