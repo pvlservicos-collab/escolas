@@ -272,15 +272,12 @@
 
   .medalha { font-size: 17px; margin-left: 4px; }
 
-  .sombrinha {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-right: 7px;
-    flex-shrink: 0;
-    box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.15);
-    vertical-align: middle;
+  /* Sombra colorida de acordo com a cor da turma da escola — no mesmo estilo do
+     degradê + contorno usado nas medalhas do pódio (pos-1/2/3), só que mais fraca,
+     aplicada via variáveis inline (--cor-turma-rgb) porque a cor muda por escola. */
+  li.turma {
+    background: linear-gradient(90deg, rgba(var(--cor-turma-rgb), 0.11), transparent 75%);
+    box-shadow: 0 0 0 1.5px rgba(var(--cor-turma-rgb), 0.38), 0 5px 13px rgba(var(--cor-turma-rgb), 0.2);
   }
 
   ol { list-style: none; margin: 0; padding: 0; }
@@ -527,6 +524,19 @@
     return CORES_TURMA[String(nome).trim().toLowerCase()] || null;
   }
 
+  function hexParaRgb(hex) {
+    const h = hex.replace("#", "");
+    const n = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h, 16);
+    return ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255);
+  }
+
+  function aplicarSombraTurma(li, corTurmaNome) {
+    const hex = corTurma(corTurmaNome);
+    if (!hex) return;
+    li.classList.add("turma");
+    li.style.setProperty("--cor-turma-rgb", hexParaRgb(hex));
+  }
+
   const ICONE_OLHO_ABERTO =
     '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
   const ICONE_OLHO_FECHADO =
@@ -652,6 +662,10 @@
     linhas.forEach((escola, i) => {
       const li = document.createElement("li");
       li.className = classePosicao(i);
+      // As 3 primeiras posições já ganham o degradê/contorno de medalha (ouro/prata/
+      // bronze) — a sombra da cor da turma é só para o resto da lista, senão as duas
+      // cores brigam visualmente no mesmo lugar.
+      if (i >= 3) aplicarSombraTurma(li, escola.cor_turma);
       if (!top3Revelado && i < 3) li.className += " borrado";
       if (justRevelado && i < 3) li.className += " revelando";
       if (abertas.has(escola.id)) li.className = (li.className + " aberta").trim();
@@ -661,7 +675,7 @@
         .map((p) => ({ nome: p.numero + " · " + p.nome, pontos: escola.porProva[p.id] || 0 }))
         .filter((d) => d.pontos > 0);
 
-      li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.total, escola.cor_turma, i < 3 ? MEDALHA[i] : null));
+      li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.total, i < 3 ? MEDALHA[i] : null));
 
       if (detalheProvas.length) {
         const ul = document.createElement("ul");
@@ -704,13 +718,14 @@
     // destaque visual de pódio.
     linhas.forEach((escola, i) => {
       const li = document.createElement("li");
+      aplicarSombraTurma(li, escola.cor_turma);
       animarEntrada(li, i);
-      li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.pontos, escola.cor_turma, null));
+      li.appendChild(linhaPrincipal(i, escola.nome, escola.municipio, escola.pontos, null));
       $lista.appendChild(li);
     });
   }
 
-  function linhaPrincipal(i, nome, municipio, pontos, corTurmaNome, medalha) {
+  function linhaPrincipal(i, nome, municipio, pontos, medalha) {
     const div = document.createElement("div");
     div.className = "linha";
 
@@ -722,14 +737,6 @@
     info.className = "info";
     const nomeSpan = document.createElement("span");
     nomeSpan.className = "nome";
-    const cor = corTurma(corTurmaNome);
-    if (cor) {
-      const bolinha = document.createElement("span");
-      bolinha.className = "sombrinha";
-      bolinha.style.background = cor;
-      bolinha.title = corTurmaNome;
-      nomeSpan.appendChild(bolinha);
-    }
     nomeSpan.appendChild(document.createTextNode(nome));
     if (medalha) {
       const m = document.createElement("span");
