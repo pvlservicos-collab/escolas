@@ -53,7 +53,7 @@ async function buildRanking(pool) {
     "SELECT id, numero, ordem, nome, pontuacao_maxima FROM provas WHERE ativo = true ORDER BY ordem ASC"
   );
   const { rows: schools } = await pool.query(
-    "SELECT id, nome, municipio, ordem_sorteio, cor_turma FROM schools WHERE ativo = true ORDER BY nome ASC"
+    "SELECT id, nome, municipio, ordem_sorteio, ordem_apresentacao, dia_apresentacao, cor_turma FROM schools WHERE ativo = true ORDER BY nome ASC"
   );
   const { rows: somas } = await pool.query(
     `SELECT pt.escola_id, pt.prova_id, SUM(pt.pontos) AS pontos
@@ -93,37 +93,62 @@ async function buildRanking(pool) {
     return (x.ordem_sorteio ?? null) === (y.ordem_sorteio ?? null);
   }
 
-  const ranking = schools
-    .map((e) => {
-      const porProva = porEscola[e.id] || {};
-      const total = Object.values(porProva).reduce((a, b) => a + b, 0) - (penalidadePorEscola[e.id] || 0);
-      return {
-        id: e.id,
-        nome: e.nome,
-        municipio: e.municipio,
-        ordem_sorteio: e.ordem_sorteio,
-        cor_turma: e.cor_turma,
-        porProva,
-        total,
-      };
-    })
-    .sort((a, b) => {
-      if (b.total !== a.total) return b.total - a.total;
-      for (const numero of CASCATA_DESEMPATE) {
-        const prova = provaPorNumero[numero];
-        if (!prova) continue;
-        const diff = (b.porProva[prova.id] || 0) - (a.porProva[prova.id] || 0);
-        if (diff !== 0) return diff;
-      }
-      const sa = a.ordem_sorteio;
-      const sb = b.ordem_sorteio;
-      if (sa != null && sb != null && sa !== sb) return sa - sb;
-      if (sa != null && sb == null) return -1;
-      if (sb != null && sa == null) return 1;
-      // Ninguém decidiu: cai para ordem alfabética, mas marcado como `empatada` abaixo
-      // em vez de ficar escondido atrás de um sort estável.
-      return a.nome.localeCompare(b.nome, "pt-BR");
-    });
+  // Menor valor vence, nulo sempre fica depois de quem tem valor definido — usado
+  // tanto no desempate final quanto na ordenação "todos zerados" abaixo.
+  function comparaOrdem(a, b, campo) {
+    const va = a[campo];
+    const vb = b[campo];
+    if (va != null && vb != null && va !== vb) return va - vb;
+    if (va != null && vb == null) return -1;
+    if (vb != null && va == null) return 1;
+    return 0;
+  }
+
+  const listaBase = schools.map((e) => {
+    const porProva = porEscola[e.id] || {};
+    const total = Object.values(porProva).reduce((a, b) => a + b, 0) - (penalidadePorEscola[e.id] || 0);
+    return {
+      id: e.id,
+      nome: e.nome,
+      municipio: e.municipio,
+      ordem_sorteio: e.ordem_sorteio,
+      ordem_apresentacao: e.ordem_apresentacao,
+      dia_apresentacao: e.dia_apresentacao,
+      cor_turma: e.cor_turma,
+      porProva,
+      total,
+    };
+  });
+
+  // Antes de qualquer nota lançada (todo mundo com total 0), a ordem alfabética não diz
+  // nada — melhor mostrar na ordem oficial da lista (sorteio já feito, senão a posição
+  // de apresentação) do que parecer aleatório. Assim que alguém pontua, sai desse modo.
+  const todosZerados = listaBase.every((e) => e.total === 0);
+
+  const ranking = listaBase.sort((a, b) => {
+    if (todosZerados) {
+      return (
+        comparaOrdem(a, b, "ordem_sorteio") ||
+        comparaOrdem(a, b, "ordem_apresentacao") ||
+        a.nome.localeCompare(b.nome, "pt-BR")
+      );
+    }
+    if (b.total !== a.total) return b.total - a.total;
+    for (const numero of CASCATA_DESEMPATE) {
+      const prova = provaPorNumero[numero];
+      if (!prova) continue;
+      const diff = (b.porProva[prova.id] || 0) - (a.porProva[prova.id] || 0);
+      if (diff !== 0) return diff;
+    }
+    const sa = a.ordem_sorteio;
+    const sb = b.ordem_sorteio;
+    if (sa != null && sb != null && sa !== sb) return sa - sb;
+    if (sa != null && sb == null) return -1;
+    if (sb != null && sa == null) return 1;
+    // Ninguém decidiu: cai para ordem alfabética, mas marcado como `empatada` abaixo
+    // em vez de ficar escondido atrás de um sort estável.
+    return a.nome.localeCompare(b.nome, "pt-BR");
+  });
 
   ranking.forEach((e, i) => {
     const anterior = ranking[i - 1];

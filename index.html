@@ -61,11 +61,36 @@
     .layout { display: flex; align-items: flex-start; gap: 48px; }
     .coluna-titulo { flex: 0 0 320px; position: sticky; top: 40px; }
     .coluna-titulo header { text-align: left; padding: 6px 0 0; }
-    .coluna-titulo h1 { font-size: 38px; }
+    .coluna-titulo h1 { font-size: 47.5px; }
     .coluna-titulo .faixa { transform: rotate(-2deg) translateX(0); }
     .coluna-titulo .sticker { display: none; }
     .coluna-titulo .atualizado { justify-content: flex-start; }
     .board-col { flex: 1; min-width: 0; }
+
+    /* Telão/PC: todo texto do quadro 25% maior que o padrão mobile, e as linhas de
+       escola mais baixas verticalmente para caber mais gente na tela apesar da fonte
+       maior. */
+    .faixa { font-size: 15.6px; }
+    header p.sub { font-size: 20px; }
+    .atualizado { font-size: 15px; }
+    .atualizado button { font-size: 15px; }
+    .aviso { font-size: 16.3px; }
+    .chips button { font-size: 15.6px; }
+    .titulo-lista h2 { font-size: 18.8px; }
+    .titulo-lista span { font-size: 15px; }
+    #filtroDia { font-size: 15px; }
+    .medalha { font-size: 21.3px; }
+    li { padding: 8px 4px; }
+    li.top { margin: 4px 0; }
+    .pos { font-size: 25px; }
+    .nome { font-size: 20px; }
+    .municipio { font-size: 15px; }
+    .pontos { font-size: 26.3px; }
+    .detalhe li { font-size: 16.3px; }
+    .vazio { font-size: 18.8px; }
+    .vazio.oculto { font-size: 21.3px; }
+    footer.creditos { font-size: 15px; }
+    .rodape-legal a { font-size: 14.4px; }
   }
 
   /* emoji grandes fixos nos 4 cantos da tela (fundo rosa), não presos ao quadro branco */
@@ -264,6 +289,18 @@
     transition: transform 0.15s ease, color 0.15s ease;
   }
   .botao-olho:hover { transform: scale(1.15); color: var(--azul); }
+
+  #filtroDia {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--apagado);
+    background: #fff;
+    border: 1.5px solid var(--linha);
+    border-radius: 999px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
 
   li.borrado { pointer-events: none; }
   li.borrado .linha { filter: blur(9px); user-select: none; transition: filter 0.3s ease; }
@@ -474,6 +511,11 @@
           <h2 id="rotulo">Classificação geral</h2>
           <div class="titulo-acoes">
             <button type="button" id="olhoTop3" class="botao-olho" hidden></button>
+            <select id="filtroDia" hidden>
+              <option value="">Todos os dias</option>
+              <option value="11">Dia 11</option>
+              <option value="12">Dia 12</option>
+            </select>
             <span id="contagem"></span>
           </div>
         </div>
@@ -497,6 +539,7 @@
   let provas = [];
   let schools = [];
   let filtroProva = "total";
+  let filtroDia = "";
   let abertas = new Set();
   let oculto = false;
   let primeiraCarga = true;
@@ -585,6 +628,7 @@
   const $hora = document.getElementById("hora");
   const $aviso = document.getElementById("aviso");
   const $olhoTop3 = document.getElementById("olhoTop3");
+  const $filtroDia = document.getElementById("filtroDia");
 
   function arredondar(n) {
     return Math.round(n * 100) / 100;
@@ -657,6 +701,17 @@
     $olhoTop3.title = top3Revelado ? "Ocultar o Top 3" : "Revelar o Top 3";
   }
 
+  // Filtro de dia só faz sentido dentro de uma prova específica — na Geral, todas as
+  // escolas (dos dois dias) já disputaram todas as provas na Grande Final.
+  function atualizarFiltroDia() {
+    $filtroDia.hidden = oculto || filtroProva === "total";
+  }
+
+  $filtroDia.onchange = () => {
+    filtroDia = $filtroDia.value;
+    render();
+  };
+
   $olhoTop3.onclick = () => {
     const pergunta = top3Revelado
       ? "Ocultar (borrar) o Top 3 de novo?"
@@ -672,6 +727,7 @@
   function render() {
     $lista.innerHTML = "";
     atualizarOlho();
+    atualizarFiltroDia();
 
     if (oculto) {
       $rotulo.textContent = "Resultado";
@@ -742,6 +798,7 @@
   function renderProva(prova) {
     if (!prova) return vazio("Prova não encontrada.");
     const linhas = [...schools]
+      .filter((e) => !filtroDia || e.dia_apresentacao === filtroDia)
       .map((e) => ({ id: e.id, nome: e.nome, municipio: e.municipio, pontos: e.porProva[prova.id] || 0 }))
       .sort((a, b) => b.pontos - a.pontos);
 
