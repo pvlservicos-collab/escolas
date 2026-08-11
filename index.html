@@ -273,19 +273,19 @@
   .medalha { font-size: 17px; margin-left: 4px; }
 
   /* Brilho colorido de acordo com a cor da turma da escola: só um degradê saindo da
-     esquerda até opacidade 0% na direita, sem contorno nem sombra — com tantas
+     direita até opacidade 0% na esquerda, sem contorno nem sombra — com tantas
      escolas repetindo cor de turma, bordas/sombras empilhadas ficavam poluídas.
      --cor-turma-alpha varia por escola (ver calcularCoresEfetivas): quando duas
      escolas dividem a mesma cor, a força do degradê muda entre elas — clarear só o
      RGB não bastava porque com pouca opacidade a diferença quase não aparecia. */
   li.turma {
-    background: linear-gradient(90deg, rgba(var(--cor-turma-rgb), var(--cor-turma-alpha, 0.13)), rgba(var(--cor-turma-rgb), 0) 100%);
+    background: linear-gradient(270deg, rgba(var(--cor-turma-rgb), var(--cor-turma-alpha, 0.13)), rgba(var(--cor-turma-rgb), 0) 100%);
   }
   /* Especificidade maior que "li:hover" de propósito: sem isso, o hover trocava o
      degradê da turma pelo azul genérico do hover comum. Aqui só escurece um pouco
      em cima da própria cor, em vez de trocar de cor. */
   li.turma:hover {
-    background: linear-gradient(90deg, rgba(var(--cor-turma-rgb), var(--cor-turma-alpha, 0.13)), rgba(var(--cor-turma-rgb), 0) 100%);
+    background: linear-gradient(270deg, rgba(var(--cor-turma-rgb), var(--cor-turma-alpha, 0.13)), rgba(var(--cor-turma-rgb), 0) 100%);
     filter: brightness(0.94);
   }
 
@@ -322,24 +322,17 @@
   }
 
   .pos {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
     width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: rgba(36, 64, 156, 0.1);
     font-family: "Baloo 2", sans-serif;
-    font-size: 15px;
-    font-weight: 800;
+    font-size: 20px;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
-    color: var(--azul);
+    color: var(--apagado);
   }
 
-  li.pos-1 .pos { background: #c99700; color: #fff; }
-  li.pos-2 .pos { background: #8c8c96; color: #fff; }
-  li.pos-3 .pos { background: #a85d23; color: #fff; }
+  li.pos-1 .pos { color: #c99700; }
+  li.pos-2 .pos { color: #8c8c96; }
+  li.pos-3 .pos { color: #a85d23; }
 
   .info { flex: 1; min-width: 0; }
 
@@ -434,7 +427,6 @@
   @media (max-width: 480px) {
     .pontos { font-size: 18px; }
     .nome { font-size: 15px; }
-    .pos { width: 30px; height: 30px; font-size: 13px; }
     .board { padding: 16px; border-radius: 14px; }
   }
 </style>
