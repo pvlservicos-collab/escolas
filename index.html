@@ -494,6 +494,7 @@
   let filtroProva = "total";
   let abertas = new Set();
   let oculto = false;
+  let primeiraCarga = true;
 
   // Escolha pessoal de cada visitante (fica só neste navegador): o Top 3 aparece
   // normal por padrão; clicar no olho borra (e clicar de novo revela), sempre com
@@ -561,6 +562,11 @@
       if (!oculto) {
         provas = dados.provas;
         schools = dados.schools;
+        if (primeiraCarga) {
+          const arrecadacao = provas.find((p) => p.nome === "Arrecadação Solidária") || provas.find((p) => p.numero === "1");
+          if (arrecadacao) filtroProva = String(arrecadacao.id);
+          primeiraCarga = false;
+        }
       }
       $aviso.hidden = true;
       $hora.textContent = "Atualizado às " + new Date().toLocaleTimeString("pt-BR");
