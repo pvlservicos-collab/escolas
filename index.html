@@ -802,7 +802,7 @@
       .map((e) => ({ id: e.id, nome: e.nome, municipio: e.municipio, pontos: e.porProva[prova.id] || 0 }))
       .sort((a, b) => b.pontos - a.pontos);
 
-    $contagem.textContent = "máximo " + arredondar(prova.pontuacao_maxima) + " pontos";
+    $contagem.textContent = "";
 
     if (!linhas.length) return vazio("Nenhuma escola cadastrada ainda.");
 
