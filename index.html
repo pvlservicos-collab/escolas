@@ -726,10 +726,8 @@
     $olhoTop3.title = top3Revelado ? "Ocultar o Top 3" : "Revelar o Top 3";
   }
 
-  // Filtro de dia só faz sentido dentro de uma prova específica — na Geral, todas as
-  // escolas (dos dois dias) já disputaram todas as provas na Grande Final.
   function atualizarFiltroDia() {
-    $filtroDia.hidden = oculto || filtroProva === "total";
+    $filtroDia.hidden = oculto;
   }
 
   $filtroDia.onchange = () => {
@@ -772,7 +770,9 @@
   }
 
   function renderTotal() {
-    const linhas = [...schools].sort((a, b) => b.total - a.total);
+    const linhas = [...schools]
+      .filter((e) => !filtroDia || e.dia_apresentacao === filtroDia)
+      .sort((a, b) => b.total - a.total);
     $contagem.textContent = linhas.length + (linhas.length === 1 ? " escola" : " escolas");
 
     if (!linhas.length) return vazio("Nenhuma escola cadastrada ainda.");
