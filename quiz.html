@@ -26,12 +26,7 @@
   body {
     margin: 0;
     padding: 30px 16px 90px;
-    background:
-      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(79, 124, 255, 0.22), transparent 55%),
-      radial-gradient(ellipse 800px 500px at 100% 15%, rgba(255, 207, 77, 0.14), transparent 50%),
-      radial-gradient(ellipse 700px 600px at 0% 100%, rgba(47, 191, 113, 0.12), transparent 50%),
-      var(--fundo);
-    background-attachment: fixed;
+    background: var(--fundo);
     color: var(--texto);
     font-family: "Nunito", "Helvetica Neue", Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -225,7 +220,37 @@
   }
   .botao-quadrado:hover { filter: brightness(1.08); }
   .botao-quadrado:active { transform: translateY(5px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3); }
-  .botao-quadrado.selecionado { outline: 3px solid rgba(255, 255, 255, 0.75); transform: translateY(3px); }
+
+  /* Depois de marcar, os 2 botões somem e viram este único card na cor do resultado. */
+  .resultado-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 18px;
+    border-radius: 14px;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .resultado-card.certo { background: linear-gradient(150deg, #58e79c, #219c5b); box-shadow: 0 10px 22px rgba(47, 191, 113, 0.3); }
+  .resultado-card.errado { background: linear-gradient(150deg, #ff7a7e, #d8383d); box-shadow: 0 10px 22px rgba(229, 72, 77, 0.3); }
+
+  .botao-mudar-resposta {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--apagado);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .botao-mudar-resposta:hover { color: #fff; }
 
   /* ---------- aviso de empate (desempate por tempo) ---------- */
   .aviso-desempate {
@@ -760,6 +785,27 @@
     render();
   }
 
+  // Reabre uma pergunta já respondida. Como isso pode mudar os acertos da escola,
+  // qualquer classificação/chaveamento já gerado a partir do estado antigo fica
+  // desatualizado — descarta e deixa processarAutoChaveamento() gerar tudo de novo
+  // quando (e se) a Fase 1 voltar a ficar 100% completa.
+  function mudarRespostaFase1(escolaId, posicao) {
+    if (estado.fase2 && !confirm("Mudar essa resposta vai reiniciar o chaveamento da Fase 2 (ele será gerado de novo do zero). Continuar?")) {
+      return;
+    }
+    const dados = perguntasDaEscola(escolaId);
+    dados.respostas[posicao] = null;
+    dados.fim = null;
+    estado.fase1.concluida = ESCOLAS.every((e) => escolaCompletaFase1(e.id));
+    if (!estado.fase1.concluida) {
+      estado.classificadas = null;
+      estado.fase2 = null;
+      estado.fase1.desempateConfirmado = false;
+    }
+    salvarEstado();
+    render();
+  }
+
   /* ---------------- Chaveamento (Fase 2) ---------------- */
 
   // Puramente estado — não chama render() porque é disparada de dentro de
@@ -895,23 +941,29 @@
       card.appendChild(elemento("p", "pergunta-texto-mini", pergunta));
       card.appendChild(elemento("span", "resposta-visivel", resposta));
 
-      const botoes = elemento("div", "botoes-quadrados");
-      const bErrado = elemento(
-        "button",
-        "botao-quadrado errado-3d" + (respondida === false ? " selecionado" : ""),
-        '<span class="emoji-btn">✗</span>Errou'
-      );
-      bErrado.type = "button";
-      bErrado.onclick = () => marcarRespostaFase1(escola.id, pos, false);
-      const bCerto = elemento(
-        "button",
-        "botao-quadrado certo-3d" + (respondida === true ? " selecionado" : ""),
-        '<span class="emoji-btn">✓</span>Acertou'
-      );
-      bCerto.type = "button";
-      bCerto.onclick = () => marcarRespostaFase1(escola.id, pos, true);
-      botoes.append(bErrado, bCerto);
-      card.appendChild(botoes);
+      if (respondida === null) {
+        const botoes = elemento("div", "botoes-quadrados");
+        const bErrado = elemento("button", "botao-quadrado errado-3d", '<span class="emoji-btn">✗</span>Errou');
+        bErrado.type = "button";
+        bErrado.onclick = () => marcarRespostaFase1(escola.id, pos, false);
+        const bCerto = elemento("button", "botao-quadrado certo-3d", '<span class="emoji-btn">✓</span>Acertou');
+        bCerto.type = "button";
+        bCerto.onclick = () => marcarRespostaFase1(escola.id, pos, true);
+        botoes.append(bErrado, bCerto);
+        card.appendChild(botoes);
+      } else {
+        card.appendChild(
+          elemento(
+            "div",
+            "resultado-card " + (respondida ? "certo" : "errado"),
+            respondida ? "✓ Acertou" : "✗ Errou"
+          )
+        );
+        const bMudar = elemento("button", "botao-mudar-resposta", "Mudar resposta");
+        bMudar.type = "button";
+        bMudar.onclick = () => mudarRespostaFase1(escola.id, pos);
+        card.appendChild(bMudar);
+      }
 
       grade.appendChild(card);
     });
