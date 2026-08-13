@@ -26,7 +26,12 @@
   body {
     margin: 0;
     padding: 30px 16px 90px;
-    background: var(--fundo);
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(79, 124, 255, 0.22), transparent 55%),
+      radial-gradient(ellipse 800px 500px at 100% 15%, rgba(255, 207, 77, 0.14), transparent 50%),
+      radial-gradient(ellipse 700px 600px at 0% 100%, rgba(47, 191, 113, 0.12), transparent 50%),
+      var(--fundo);
+    background-attachment: fixed;
     color: var(--texto);
     font-family: "Nunito", "Helvetica Neue", Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -93,75 +98,83 @@
     align-items: center;
     justify-content: center;
     gap: 16px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
   .seta-slide {
     flex-shrink: 0;
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    border: 1.5px solid var(--linha);
-    background: var(--card);
+    border: 1.5px solid rgba(255, 255, 255, 0.14);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+    backdrop-filter: blur(8px);
     color: #fff;
     font-size: 20px;
     font-weight: 800;
     cursor: pointer;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   }
-  .seta-slide:hover:not(:disabled) { border-color: var(--azul); background: var(--card-2); }
-  .seta-slide:disabled { opacity: 0.3; cursor: not-allowed; }
+  .seta-slide:hover:not(:disabled) { border-color: var(--azul); box-shadow: 0 6px 20px rgba(79, 124, 255, 0.4); transform: translateY(-1px); }
+  .seta-slide:active:not(:disabled) { transform: translateY(1px); }
+  .seta-slide:disabled { opacity: 0.25; cursor: not-allowed; }
 
   .slide-titulo {
     font-family: "Baloo 2", sans-serif;
-    font-size: 18px;
+    font-size: 19px;
     font-weight: 800;
     color: #fff;
+    text-shadow: 0 2px 12px rgba(79, 124, 255, 0.5);
   }
-  .slide-titulo small { font-size: 12px; font-weight: 700; color: var(--apagado); margin-left: 4px; }
+  .slide-titulo small { font-size: 12px; font-weight: 700; color: var(--apagado); margin-left: 4px; text-shadow: none; }
 
-  .slide-pontos { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 16px; }
+  .slide-pontos { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-bottom: 22px; }
   .ponto-slide {
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
     border: none;
     background: var(--linha);
     cursor: pointer;
     padding: 0;
+    transition: all 0.2s ease;
   }
-  .ponto-slide.completo { background: var(--verde); }
-  .ponto-slide.ativo { width: 14px; height: 14px; background: var(--azul); }
+  .ponto-slide.completo { background: var(--verde); box-shadow: 0 0 8px rgba(47, 191, 113, 0.7); }
+  .ponto-slide.ativo { width: 15px; height: 15px; background: var(--azul); box-shadow: 0 0 10px rgba(79, 124, 255, 0.8); }
 
-  .slide-card {
-    background: var(--card);
-    border-radius: 16px;
-    padding: 10px 18px;
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
-    margin-bottom: 14px;
-    animation: entrarSlide 0.3s ease both;
+  .perguntas-grade {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 16px;
+    animation: entrarSlide 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
   @keyframes entrarSlide {
-    from { opacity: 0; transform: perspective(600px) rotateY(6deg) translateX(14px); }
-    to { opacity: 1; transform: perspective(600px) rotateY(0) translateX(0); }
+    from { opacity: 0; transform: perspective(800px) rotateY(8deg) translateX(24px) scale(0.97); }
+    to { opacity: 1; transform: perspective(800px) rotateY(0) translateX(0) scale(1); }
   }
 
-  .linha-pergunta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--linha);
+  .pergunta-card {
+    position: relative;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.015));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 18px;
+    padding: 18px 20px 20px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
   }
-  .linha-pergunta:last-child { border-bottom: none; }
-  .linha-pergunta.certa { background: rgba(47, 191, 113, 0.07); }
-  .linha-pergunta.errada { background: rgba(229, 72, 77, 0.07); }
+  .pergunta-card.certa { border-color: rgba(47, 191, 113, 0.55); box-shadow: 0 18px 40px rgba(47, 191, 113, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
+  .pergunta-card.errada { border-color: rgba(229, 72, 77, 0.55); box-shadow: 0 18px 40px rgba(229, 72, 77, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
 
-  .pergunta-corpo { display: flex; align-items: flex-start; gap: 10px; flex: 1; min-width: 0; }
+  .pergunta-card-cabecalho { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .pergunta-numero {
     flex-shrink: 0;
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    background: var(--card-2);
+    background: rgba(255, 255, 255, 0.08);
     color: var(--apagado);
     font-size: 12px;
     font-weight: 800;
@@ -169,102 +182,92 @@
     align-items: center;
     justify-content: center;
   }
-  .pergunta-textos { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-  .pergunta-texto-mini { font-size: 14.5px; font-weight: 700; color: #fff; line-height: 1.35; }
-  .resposta-texto-mini { font-size: 13px; font-weight: 700; color: var(--dourado); }
+  .pergunta-card.certa .pergunta-numero { background: var(--verde); color: #06301a; }
+  .pergunta-card.errada .pergunta-numero { background: var(--vermelho); color: #3a0709; }
 
-  .botoes-mini { flex-shrink: 0; display: flex; gap: 6px; }
-  .mini-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 1.5px solid var(--linha);
-    background: var(--card-2);
-    color: var(--apagado);
-    font-size: 16px;
-    font-weight: 800;
-    cursor: pointer;
-  }
-  .mini-errado.selecionado { background: var(--vermelho); border-color: var(--vermelho); color: #fff; }
-  .mini-certo.selecionado { background: var(--verde); border-color: var(--verde); color: #fff; }
-
-  .pergunta-texto {
-    font-size: 24px;
-    font-weight: 800;
-    line-height: 1.35;
-    color: #fff;
-    margin: 0 0 16px;
-  }
-
-  .resposta-linha { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
-
-  .resposta-caixa {
-    flex: 1;
-    min-width: 0;
-    border-radius: 10px;
-    padding: 11px 13px;
-    background: var(--card-2);
-    transition: background 0.25s ease;
-  }
-  .resposta-caixa span {
-    display: block;
-    font-size: 14.5px;
+  .pergunta-texto-mini { font-size: 16.5px; font-weight: 800; color: #fff; line-height: 1.4; margin: 0 0 8px; }
+  .resposta-visivel {
+    display: inline-block;
+    font-size: 13.5px;
     font-weight: 700;
-    color: var(--card-2);
-    transition: color 0.25s ease;
+    color: #1b1206;
+    background: linear-gradient(135deg, #ffe08a, var(--dourado));
+    padding: 5px 12px;
+    border-radius: 999px;
+    margin: 0 0 14px;
   }
-  .resposta-caixa.revelada { background: #2a3e2f; }
-  .resposta-caixa.revelada span { color: #7de3a0; }
 
-  .botao-olho {
-    flex-shrink: 0;
+  .botoes-quadrados { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 320px; margin: 0 auto; }
+  .botao-quadrado {
+    aspect-ratio: 1 / 1;
+    border-radius: 14px;
+    border: none;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    cursor: pointer;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: var(--card-2);
-    color: var(--apagado);
-    cursor: pointer;
-    padding: 0;
+    gap: 4px;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
   }
-  .botao-olho:hover { color: #fff; }
+  .botao-quadrado .emoji-btn { font-size: 24px; }
+  .botao-quadrado.errado-3d {
+    background: linear-gradient(150deg, #ff7a7e, #d8383d);
+    box-shadow: 0 6px 0 #8f2226, 0 12px 22px rgba(229, 72, 77, 0.35);
+  }
+  .botao-quadrado.certo-3d {
+    background: linear-gradient(150deg, #58e79c, #219c5b);
+    box-shadow: 0 6px 0 #12653a, 0 12px 22px rgba(47, 191, 113, 0.35);
+  }
+  .botao-quadrado:hover { filter: brightness(1.08); }
+  .botao-quadrado:active { transform: translateY(5px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3); }
+  .botao-quadrado.selecionado { outline: 3px solid rgba(255, 255, 255, 0.75); transform: translateY(3px); }
 
-  .botoes-resultado { display: flex; gap: 12px; }
-  .botao-resultado {
-    flex: 1;
+  /* ---------- aviso de empate (desempate por tempo) ---------- */
+  .aviso-desempate {
+    background: linear-gradient(160deg, rgba(255, 207, 77, 0.14), rgba(255, 207, 77, 0.04));
+    border: 1.5px solid rgba(255, 207, 77, 0.4);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+  }
+  .aviso-desempate h3 {
     font-family: "Baloo 2", sans-serif;
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 800;
-    padding: 18px 10px;
-    border-radius: 12px;
-    border: none;
-    color: #fff;
-    cursor: pointer;
+    color: var(--dourado);
+    margin: 0 0 8px;
   }
-  .botao-resultado:active { transform: scale(0.97); }
-
-  .botoes-resultado.duas-escolas { flex-direction: column; }
-  @media (min-width: 480px) {
-    .botoes-resultado.duas-escolas { flex-direction: row; }
+  .aviso-desempate p { font-size: 13px; font-weight: 600; color: #e6dcc2; line-height: 1.5; margin: 0 0 12px; }
+  .lista-empate { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .item-empate {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13.5px;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
   }
-  .botao-resultado.escola-a { background: var(--azul); }
-  .botao-resultado.escola-b { background: var(--laranja); }
+  .item-empate .tempo { color: var(--dourado); font-variant-numeric: tabular-nums; }
 
-  .sortear-pergunta {
+  .botao-confirmar-desempate {
     display: block;
     width: 100%;
     font-family: "Baloo 2", sans-serif;
     font-size: 15px;
     font-weight: 800;
-    padding: 14px;
+    padding: 15px;
     border-radius: 12px;
     border: none;
-    background: var(--azul);
-    color: #fff;
+    background: linear-gradient(150deg, #ffe08a, var(--dourado));
+    color: #3a2c00;
     cursor: pointer;
+    box-shadow: 0 8px 20px rgba(255, 207, 77, 0.3);
   }
 
   /* ---------- ranking final do quiz ---------- */
@@ -281,8 +284,8 @@
     font-weight: 800;
     padding: 16px;
     border-radius: 12px;
-    border: 1.5px dashed var(--linha);
-    background: #262b3a;
+    border: 1.5px dashed rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.03);
     color: #7b8296;
     cursor: not-allowed;
     margin-top: 6px;
@@ -291,16 +294,18 @@
   .lancar-nota-nota { font-size: 12.5px; font-weight: 600; color: var(--apagado); text-align: center; margin: 10px 0 0; }
 
   /* ---------- classificação fase 1 ---------- */
-  .tabela-classificacao { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .tabela-classificacao { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
   .linha-classificacao {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 14px;
-    border-radius: 10px;
-    background: var(--card);
+    padding: 12px 15px;
+    border-radius: 12px;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
   }
-  .linha-classificacao.classificada { background: #1c3226; }
+  .linha-classificacao.classificada { border-color: rgba(47, 191, 113, 0.35); box-shadow: 0 8px 18px rgba(47, 191, 113, 0.14); }
   .linha-classificacao .pos { font-family: "Baloo 2", sans-serif; font-weight: 800; color: var(--apagado); width: 26px; }
   .linha-classificacao .nome { flex: 1; font-weight: 700; }
   .linha-classificacao .acertos { font-family: "Baloo 2", sans-serif; font-weight: 800; color: var(--dourado); }
@@ -315,21 +320,6 @@
   .linha-classificacao.classificada .selo { background: rgba(47, 191, 113, 0.22); color: #7de3a0; }
   .linha-classificacao:not(.classificada) .selo { background: rgba(229, 72, 77, 0.18); color: #f3999b; }
 
-  .botao-gerar-chave {
-    display: block;
-    width: 100%;
-    font-family: "Baloo 2", sans-serif;
-    font-size: 16px;
-    font-weight: 800;
-    padding: 16px;
-    border-radius: 12px;
-    border: none;
-    background: var(--dourado);
-    color: #3a2c00;
-    cursor: pointer;
-    margin-top: 6px;
-  }
-
   /* ---------- chaveamento fase 2 ---------- */
   .rodada-titulo {
     font-family: "Baloo 2", sans-serif;
@@ -342,11 +332,17 @@
   }
 
   .confronto-card {
-    background: var(--card);
-    border-radius: 14px;
-    padding: 16px 18px;
-    margin-bottom: 12px;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    transition: box-shadow 0.25s ease;
   }
+  .confronto-card:has(.confronto-vencedor) { border-color: rgba(255, 207, 77, 0.4); box-shadow: 0 16px 32px rgba(255, 207, 77, 0.14); }
 
   .confronto-cabecalho {
     display: flex;
@@ -363,23 +359,78 @@
   .confronto-cabecalho .nome-b { color: var(--laranja); }
 
   .confronto-vencedor {
-    font-size: 13.5px;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 800;
     color: #7de3a0;
     margin-top: 10px;
   }
 
   .confronto-aguardando { font-size: 13px; font-weight: 600; color: var(--apagado); }
 
-  .campeao-card {
-    text-align: center;
-    padding: 34px 20px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #3a2c00, #5a4400);
-    margin-top: 20px;
+  .botoes-resultado { display: flex; gap: 12px; margin-top: 14px; }
+  .botao-resultado {
+    flex: 1;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 18px 12px;
+    border-radius: 14px;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.1s ease, filter 0.15s ease;
   }
-  .campeao-card .titulo { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--dourado); margin: 0 0 8px; }
-  .campeao-card .nome { font-family: "Baloo 2", sans-serif; font-size: 28px; font-weight: 800; color: #fff; margin: 0; }
+  .botao-resultado:hover { filter: brightness(1.08); }
+  .botao-resultado:active { transform: translateY(3px); }
+
+  .botoes-resultado.duas-escolas { flex-direction: column; }
+  @media (min-width: 480px) {
+    .botoes-resultado.duas-escolas { flex-direction: row; }
+  }
+  .botao-resultado.escola-a { background: linear-gradient(150deg, #7b9dff, var(--azul)); box-shadow: 0 6px 0 #2c4fb8, 0 12px 22px rgba(79, 124, 255, 0.35); }
+  .botao-resultado.escola-b { background: linear-gradient(150deg, #ffb54f, var(--laranja)); box-shadow: 0 6px 0 #b8650a, 0 12px 22px rgba(247, 148, 29, 0.35); }
+
+  .sortear-pergunta {
+    display: block;
+    width: 100%;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    padding: 15px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(150deg, #7b9dff, var(--azul));
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #2c4fb8, 0 12px 22px rgba(79, 124, 255, 0.3);
+    transition: transform 0.1s ease;
+  }
+  .sortear-pergunta:active { transform: translateY(3px); box-shadow: 0 2px 0 #2c4fb8; }
+
+  .campeao-card {
+    position: relative;
+    text-align: center;
+    padding: 40px 24px;
+    border-radius: 20px;
+    background: linear-gradient(150deg, #4a3800, #6b5200 60%, #3a2c00);
+    border: 1px solid rgba(255, 207, 77, 0.4);
+    box-shadow: 0 0 60px rgba(255, 207, 77, 0.25), 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .campeao-card::before {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background: radial-gradient(circle, rgba(255, 224, 138, 0.25), transparent 60%);
+    animation: brilhoCampea 3.5s ease-in-out infinite;
+  }
+  @keyframes brilhoCampea {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.08); }
+  }
+  .campeao-card .titulo { position: relative; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--dourado); margin: 0 0 10px; }
+  .campeao-card .nome { position: relative; font-family: "Baloo 2", sans-serif; font-size: 30px; font-weight: 800; color: #fff; margin: 0; text-shadow: 0 2px 20px rgba(255, 207, 77, 0.6); }
 
   @media (max-width: 480px) {
     .pergunta-texto { font-size: 20px; }
@@ -399,11 +450,6 @@
 </div>
 
 <script>
-  const ICONE_OLHO_ABERTO =
-    '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-  const ICONE_OLHO_FECHADO =
-    '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
-
   // 16 escolas de teste (sem integração com o cadastro real ainda) — a ordem da
   // lista já funciona como "ordem de sorteio" para este teste.
   const ESCOLAS = Array.from({ length: 16 }, (_, i) => ({ id: i + 1, nome: "Escola " + (i + 1) }));
@@ -576,8 +622,9 @@
       filaFase2: embaralhar(BANCO_FASE2.map((_, i) => i)),
       fase1: {
         atual: 0, // índice do slide (escola) mostrado agora, 0 a 15
-        porEscola: {}, // preenchido sob demanda: { [escolaId]: { perguntas: [5 índices], respostas: [true/false/null x5] } }
+        porEscola: {}, // preenchido sob demanda: { [escolaId]: { perguntas, respostas, inicio, fim } }
         concluida: false,
+        desempateConfirmado: false, // host já revisou o empate na fronteira do top 8?
       },
       classificadas: null,
       fase2: null,
@@ -615,12 +662,14 @@
   /* ---------------- Fase 1 (slide com as 5 perguntas da escola de uma vez) ---------------- */
 
   // Sorteia as 5 perguntas da escola na primeira vez que o slide dela é aberto, e
-  // guarda — assim elas não mudam se o host voltar pra essa escola depois.
+  // guarda — assim elas não mudam se o host voltar pra essa escola depois. O
+  // relógio começa a contar aqui (Art. 43: desempate da Fase 1 é por tempo total
+  // de resposta) e para quando a 5ª pergunta é marcada, em marcarRespostaFase1.
   function perguntasDaEscola(escolaId) {
     if (!estado.fase1.porEscola[escolaId]) {
       const perguntas = [];
       for (let i = 0; i < 5; i++) perguntas.push(proximaPerguntaFase1());
-      estado.fase1.porEscola[escolaId] = { perguntas, respostas: [null, null, null, null, null] };
+      estado.fase1.porEscola[escolaId] = { perguntas, respostas: [null, null, null, null, null], inicio: Date.now(), fim: null };
       salvarEstado();
     }
     return estado.fase1.porEscola[escolaId];
@@ -634,6 +683,43 @@
   function acertosDaEscola(escolaId) {
     const dados = estado.fase1.porEscola[escolaId];
     return dados ? dados.respostas.filter((r) => r === true).length : 0;
+  }
+
+  function tempoDaEscolaMs(escolaId) {
+    const dados = estado.fase1.porEscola[escolaId];
+    return dados && dados.fim ? dados.fim - dados.inicio : null;
+  }
+
+  function formatarTempo(ms) {
+    if (ms == null) return "—";
+    return (ms / 1000).toFixed(1) + "s";
+  }
+
+  // Ranking oficial da Fase 1: mais acertos primeiro; empatado, quem respondeu mais
+  // rápido (Art. 43). Isso já resolve a ordem sozinho — o aviso de empate só entra
+  // quando dois ou mais times têm acertos E tempo idênticos na fronteira do top 8.
+  function rankingFase1() {
+    return ESCOLAS.map((e) => ({
+      id: e.id,
+      nome: e.nome,
+      acertos: acertosDaEscola(e.id),
+      tempo: tempoDaEscolaMs(e.id),
+    })).sort((a, b) => b.acertos - a.acertos || (a.tempo ?? Infinity) - (b.tempo ?? Infinity) || a.id - b.id);
+  }
+
+  // Mesmo com o tempo já decidindo a ordem sozinho, sempre que duas ou mais
+  // escolas empatam em ACERTOS bem na fronteira do top 8 (uma dentro, outra fora),
+  // o host precisa revisar e confirmar antes do chaveamento sair — o cronômetro do
+  // navegador é só uma referência, não é oficial o bastante pra decidir sozinho.
+  function grupoEmpatadoNaFronteira() {
+    const ranking = rankingFase1();
+    if (ranking.length < 9) return [];
+    const valorFronteira = ranking[7].acertos;
+    const melhores = ranking.filter((e) => e.acertos > valorFronteira).length;
+    const empatados = ranking.filter((e) => e.acertos === valorFronteira);
+    if (melhores + empatados.length <= 8) return []; // grupo empatado cabe inteiro no top 8
+    if (melhores >= 8) return []; // grupo empatado fica inteiro fora do top 8
+    return empatados;
   }
 
   function navegarFase1(delta) {
@@ -656,6 +742,7 @@
     dados.respostas[posicao] = correto;
 
     if (dados.respostas.every((r) => r !== null)) {
+      dados.fim = Date.now();
       if (ESCOLAS.every((e) => escolaCompletaFase1(e.id))) {
         estado.fase1.concluida = true;
       } else if (estado.fase1.atual < 15) {
@@ -667,19 +754,24 @@
     render();
   }
 
+  function confirmarDesempateFase1() {
+    estado.fase1.desempateConfirmado = true;
+    salvarEstado();
+    render();
+  }
+
   /* ---------------- Chaveamento (Fase 2) ---------------- */
 
+  // Puramente estado — não chama render() porque é disparada de dentro de
+  // processarAutoChaveamento(), no começo do próprio render().
   function gerarChaveamento() {
-    const ranking = ESCOLAS
-      .map((e) => ({ id: e.id, acertos: acertosDaEscola(e.id) }))
-      .sort((a, b) => b.acertos - a.acertos || a.id - b.id);
-    const top8 = ranking.slice(0, 8).map((e) => e.id);
+    const top8 = rankingFase1().slice(0, 8).map((e) => e.id);
     estado.classificadas = top8;
 
     // Seed padrão de chave (1º x 8º, 4º x 5º, 3º x 6º, 2º x 7º) para que os dois
     // melhores colocados só possam se encontrar na final.
     const seed = [top8[0], top8[7], top8[3], top8[4], top8[2], top8[5], top8[1], top8[6]];
-    const confrontoVazio = () => ({ a: null, b: null, perguntaIndice: null, revelado: false, vencedor: null });
+    const confrontoVazio = () => ({ a: null, b: null, perguntaIndice: null, vencedor: null });
 
     const quartas = [0, 2, 4, 6].map((i) => Object.assign(confrontoVazio(), { a: seed[i], b: seed[i + 1] }));
     const semi = [confrontoVazio(), confrontoVazio()];
@@ -695,14 +787,20 @@
     };
 
     salvarEstado();
-    render();
+  }
+
+  // Chamada no topo de render(): gera a chave sozinho assim que a Fase 1 termina,
+  // a menos que haja empate na fronteira do top 8 ainda não confirmado pelo host.
+  function processarAutoChaveamento() {
+    if (!estado.fase1.concluida || estado.fase2) return;
+    if (grupoEmpatadoNaFronteira().length && !estado.fase1.desempateConfirmado) return;
+    gerarChaveamento();
   }
 
   function sortearPerguntaFase2(rIdx, cIdx) {
     const confronto = estado.fase2.rodadas[rIdx].confrontos[cIdx];
     if (confronto.a == null || confronto.b == null || confronto.vencedor) return;
     confronto.perguntaIndice = proximaPerguntaFase2();
-    confronto.revelado = false;
     salvarEstado();
     render();
   }
@@ -743,24 +841,6 @@
     return el;
   }
 
-  function criarCaixaResposta(resposta) {
-    const linha = elemento("div", "resposta-linha");
-    const caixa = elemento("div", "resposta-caixa");
-    const span = document.createElement("span");
-    span.textContent = resposta;
-    caixa.appendChild(span);
-    const botao = elemento("button", "botao-olho", ICONE_OLHO_FECHADO);
-    botao.type = "button";
-    botao.title = "Revelar resposta";
-    botao.onclick = () => {
-      const revelada = caixa.classList.toggle("revelada");
-      botao.innerHTML = revelada ? ICONE_OLHO_ABERTO : ICONE_OLHO_FECHADO;
-      botao.title = revelada ? "Ocultar resposta" : "Revelar resposta";
-    };
-    linha.append(caixa, botao);
-    return linha;
-  }
-
   function renderFase1(raiz) {
     raiz.appendChild(elemento("h2", "fase-titulo", "Fase 1 — Seletiva"));
     raiz.appendChild(elemento("p", "fase-sub", "5 perguntas por escola, todas de uma vez. As 8 melhores avançam para o chaveamento."));
@@ -795,44 +875,78 @@
     });
     raiz.appendChild(pontos);
 
-    const card = elemento("div", "slide-card");
+    // Cada pergunta é o seu próprio card (não uma lista de linhas finas) — resposta
+    // já vem visível, sem esconder nada, pra ser rápido e direto.
+    const grade = elemento("div", "perguntas-grade");
     dados.perguntas.forEach((perguntaIdx, pos) => {
       const [pergunta, resposta] = BANCO_FASE1[perguntaIdx];
       const respondida = dados.respostas[pos];
-      const linha = elemento(
+      const card = elemento(
         "div",
-        "linha-pergunta" + (respondida === true ? " certa" : respondida === false ? " errada" : "")
+        "pergunta-card" + (respondida === true ? " certa" : respondida === false ? " errada" : "")
       );
-      linha.appendChild(
+      card.appendChild(
         elemento(
           "div",
-          "pergunta-corpo",
-          '<span class="pergunta-numero">' + (pos + 1) + "</span>" +
-            '<span class="pergunta-textos"><span class="pergunta-texto-mini">' + pergunta + "</span>" +
-            '<span class="resposta-texto-mini">' + resposta + "</span></span>"
+          "pergunta-card-cabecalho",
+          '<span class="pergunta-numero">' + (pos + 1) + "</span>"
         )
       );
+      card.appendChild(elemento("p", "pergunta-texto-mini", pergunta));
+      card.appendChild(elemento("span", "resposta-visivel", resposta));
 
-      const botoes = elemento("div", "botoes-mini");
-      const bErrado = elemento("button", "mini-btn mini-errado" + (respondida === false ? " selecionado" : ""), "✗");
+      const botoes = elemento("div", "botoes-quadrados");
+      const bErrado = elemento(
+        "button",
+        "botao-quadrado errado-3d" + (respondida === false ? " selecionado" : ""),
+        '<span class="emoji-btn">✗</span>Errou'
+      );
       bErrado.type = "button";
       bErrado.onclick = () => marcarRespostaFase1(escola.id, pos, false);
-      const bCerto = elemento("button", "mini-btn mini-certo" + (respondida === true ? " selecionado" : ""), "✓");
+      const bCerto = elemento(
+        "button",
+        "botao-quadrado certo-3d" + (respondida === true ? " selecionado" : ""),
+        '<span class="emoji-btn">✓</span>Acertou'
+      );
       bCerto.type = "button";
       bCerto.onclick = () => marcarRespostaFase1(escola.id, pos, true);
       botoes.append(bErrado, bCerto);
-      linha.appendChild(botoes);
+      card.appendChild(botoes);
 
-      card.appendChild(linha);
+      grade.appendChild(card);
     });
-    raiz.appendChild(card);
+    raiz.appendChild(grade);
 
     if (estado.fase1.concluida) {
       raiz.appendChild(elemento("h2", "fase-titulo", "Classificação da Fase 1"));
-      const ranking = ESCOLAS
-        .map((e) => ({ id: e.id, nome: e.nome, acertos: acertosDaEscola(e.id) }))
-        .sort((a, b) => b.acertos - a.acertos || a.id - b.id);
 
+      const empatados = grupoEmpatadoNaFronteira();
+      if (empatados.length && !estado.fase1.desempateConfirmado) {
+        const aviso = elemento(
+          "div",
+          "aviso-desempate",
+          "<h3>⏱️ Empate na fronteira do Top 8</h3>" +
+            "<p>Estas escolas empataram em acertos na 8ª posição. O desempate é pelo tempo total de resposta (Art. 43) — confira os tempos abaixo antes de gerar o chaveamento.</p>"
+        );
+        const lista = elemento("div", "lista-empate");
+        empatados.forEach((e) => {
+          lista.appendChild(
+            elemento(
+              "div",
+              "item-empate",
+              "<span>" + e.nome + '</span><span class="tempo">' + formatarTempo(e.tempo) + "</span>"
+            )
+          );
+        });
+        aviso.appendChild(lista);
+        const btnConfirmar = elemento("button", "botao-confirmar-desempate", "Confirmar e gerar chaveamento →");
+        btnConfirmar.type = "button";
+        btnConfirmar.onclick = confirmarDesempateFase1;
+        aviso.appendChild(btnConfirmar);
+        raiz.appendChild(aviso);
+      }
+
+      const ranking = rankingFase1();
       const jaClassificado = Boolean(estado.classificadas);
       const tabela = elemento("div", "tabela-classificacao");
       ranking.forEach((e, i) => {
@@ -842,19 +956,12 @@
           "linha-classificacao" + (classificada ? " classificada" : ""),
           '<span class="pos">' + (i + 1) + "º</span>" +
             '<span class="nome">' + e.nome + "</span>" +
-            '<span class="acertos">' + e.acertos + "/5</span>" +
+            '<span class="acertos">' + e.acertos + "/5 · " + formatarTempo(e.tempo) + "</span>" +
             '<span class="selo">' + (classificada ? "Classificada" : "Eliminada") + "</span>"
         );
         tabela.appendChild(linha);
       });
       raiz.appendChild(tabela);
-
-      if (!estado.fase2) {
-        const btn = elemento("button", "botao-gerar-chave", "Gerar chaveamento da Fase 2 →");
-        btn.type = "button";
-        btn.onclick = gerarChaveamento;
-        raiz.appendChild(btn);
-      }
     }
   }
 
@@ -894,7 +1001,7 @@
 
     const [pergunta, resposta] = BANCO_FASE2[confronto.perguntaIndice];
     card.appendChild(elemento("p", "pergunta-texto", pergunta));
-    card.appendChild(criarCaixaResposta(resposta));
+    card.appendChild(elemento("span", "resposta-visivel", resposta));
 
     const botoes = elemento("div", "botoes-resultado duas-escolas");
     const bA = elemento("button", "botao-resultado escola-a", nomeA + " acertou");
@@ -918,16 +1025,6 @@
       raiz.appendChild(elemento("h3", "rodada-titulo", rodada.nome));
       rodada.confrontos.forEach((confronto, cIdx) => renderConfronto(raiz, rIdx, cIdx, confronto));
     });
-
-    if (estado.fase2.campeaoId != null) {
-      raiz.appendChild(
-        elemento(
-          "div",
-          "campeao-card",
-          '<p class="titulo">Campeã do Torta na Cara</p><p class="nome">🏆 ' + ESCOLA_POR_ID[estado.fase2.campeaoId].nome + "</p>"
-        )
-      );
-    }
   }
 
   // Tabela de pontuação do Art. 43: quem não se classifica na Fase 1 leva 5 pontos
@@ -968,6 +1065,14 @@
     raiz.appendChild(elemento("h2", "fase-titulo", "Ranking do Quiz"));
     raiz.appendChild(elemento("p", "fase-sub", "Pontuação conforme a tabela de colocação do Art. 43 — revise antes de lançar."));
 
+    raiz.appendChild(
+      elemento(
+        "div",
+        "campeao-card",
+        '<p class="titulo">Campeã do Torta na Cara</p><p class="nome">🏆 ' + ESCOLA_POR_ID[estado.fase2.campeaoId].nome + "</p>"
+      )
+    );
+
     const pontosPorEscola = calcularPontuacaoFinal();
     const ranking = ESCOLAS
       .map((e) => ({ id: e.id, nome: e.nome, acertosFase1: acertosDaEscola(e.id), pontos: pontosPorEscola[e.id] }))
@@ -994,6 +1099,7 @@
   }
 
   function render() {
+    processarAutoChaveamento();
     const raiz = document.getElementById("conteudo");
     raiz.innerHTML = "";
     renderFase1(raiz);
