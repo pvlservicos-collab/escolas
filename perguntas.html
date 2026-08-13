@@ -222,19 +222,31 @@
   .sorteador-acoes { display: flex; gap: 10px; flex-wrap: wrap; }
 
   .botao-sortear {
+    flex: 1 1 100%;
     font-family: inherit;
-    font-size: 15px;
+    font-size: 21px;
     font-weight: 800;
     color: #fff;
     background: var(--azul);
     border: none;
-    border-radius: 999px;
-    padding: 12px 22px;
+    border-radius: 14px;
+    padding: 20px 22px;
     cursor: pointer;
     transition: transform 0.12s ease, background 0.18s ease;
   }
   .botao-sortear:hover { background: var(--azul-2); }
-  .botao-sortear:active { transform: scale(0.96); }
+  .botao-sortear:active { transform: scale(0.97); }
+
+  .sorteador-resposta {
+    border-radius: 10px;
+    padding: 13px 14px;
+    background: #eef1fb;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.4;
+    color: var(--azul);
+    margin: 0 0 14px;
+  }
 
   .botao-respondida,
   .botao-repetida {
@@ -560,7 +572,7 @@
     faseObj.categorias.forEach((cat) => {
       cat.perguntas.forEach(([pergunta, resposta]) => {
         numero++;
-        faseObj.pool.push({ pergunta, resposta, numero, estado: null, cardEl: null, faseObj });
+        faseObj.pool.push({ pergunta, resposta, numero, categoria: cat.titulo, estado: null, cardEl: null, faseObj });
       });
     });
   });
@@ -601,29 +613,14 @@
     const perguntaEl = document.createElement("p");
     perguntaEl.className = "sorteador-pergunta";
 
-    const respostaWrap = document.createElement("div");
-    respostaWrap.className = "resposta";
-    const caixa = document.createElement("div");
-    caixa.className = "resposta-caixa";
-    const respostaSpan = document.createElement("span");
-    caixa.appendChild(respostaSpan);
-    const botaoOlho = document.createElement("button");
-    botaoOlho.type = "button";
-    botaoOlho.className = "botao-olho-resposta";
-    botaoOlho.innerHTML = ICONE_OLHO_FECHADO;
-    botaoOlho.title = "Revelar resposta";
-    botaoOlho.onclick = () => {
-      const revelada = caixa.classList.toggle("revelada");
-      botaoOlho.innerHTML = revelada ? ICONE_OLHO_ABERTO : ICONE_OLHO_FECHADO;
-      botaoOlho.title = revelada ? "Ocultar resposta" : "Revelar resposta";
-    };
-    respostaWrap.append(caixa, botaoOlho);
+    const respostaEl = document.createElement("p");
+    respostaEl.className = "sorteador-resposta";
 
     const tag = document.createElement("p");
     tag.className = "tag-status";
     tag.hidden = true;
 
-    resultado.append(numeroEl, perguntaEl, respostaWrap, tag);
+    resultado.append(numeroEl, perguntaEl, respostaEl, tag);
 
     const aviso = document.createElement("p");
     aviso.className = "sorteador-aviso";
@@ -653,6 +650,7 @@
     acoes.append(botaoSortear, botaoRespondida, botaoRepetida, botaoResetar);
 
     let atual = null;
+    let ultimaCategoria = null;
 
     function atualizarContagem() {
       const restantes = faseObj.pool.filter((p) => !p.estado).length;
@@ -677,14 +675,17 @@
         return;
       }
       aviso.hidden = true;
-      atual = disponiveis[Math.floor(Math.random() * disponiveis.length)];
+
+      // Evita categoria repetida (ex: 2 de "Plurais" seguidas) — só cai na mesma
+      // categoria de novo se não sobrar mais nenhuma pergunta de outra.
+      const semCategoriaRepetida = disponiveis.filter((p) => p.categoria !== ultimaCategoria);
+      const candidatas = semCategoriaRepetida.length ? semCategoriaRepetida : disponiveis;
+      atual = candidatas[Math.floor(Math.random() * candidatas.length)];
+      ultimaCategoria = atual.categoria;
 
       numeroEl.textContent = "Nº " + atual.numero;
       perguntaEl.textContent = atual.pergunta;
-      respostaSpan.textContent = "R= " + atual.resposta;
-      caixa.classList.remove("revelada");
-      botaoOlho.innerHTML = ICONE_OLHO_FECHADO;
-      botaoOlho.title = "Revelar resposta";
+      respostaEl.textContent = "R= " + atual.resposta;
       atualizarTagResultado();
       resultado.hidden = false;
       botaoRespondida.disabled = false;
@@ -722,6 +723,7 @@
 
     atualizarContagem();
     box.append(cabecalho, resultado, aviso, acoes);
+    sortear(); // já mostra uma pergunta sorteada assim que a página carrega
     return box;
   }
 
@@ -781,13 +783,15 @@
 
   function montarPagina() {
     const raiz = document.getElementById("conteudo");
+
+    // Os 2 sorteadores ficam juntos, empilhados, antes de qualquer lista de perguntas.
+    DADOS.forEach((faseObj) => raiz.appendChild(criarSorteador(faseObj)));
+
     DADOS.forEach((faseObj) => {
       const h2 = document.createElement("h2");
       h2.className = "fase-titulo";
       h2.textContent = faseObj.fase;
       raiz.appendChild(h2);
-
-      raiz.appendChild(criarSorteador(faseObj));
 
       let poolIdx = 0;
       faseObj.categorias.forEach((cat) => {
