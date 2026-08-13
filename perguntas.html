@@ -170,6 +170,165 @@
     font-weight: 700;
     color: rgba(255, 255, 255, 0.85);
   }
+
+  /* ---------- sorteador ---------- */
+  .sorteador {
+    background: var(--gelo);
+    border-radius: 16px;
+    padding: 20px 20px 18px;
+    margin-bottom: 26px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+  }
+
+  .sorteador-cabecalho {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .sorteador-titulo {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--texto);
+  }
+
+  .sorteador-contagem {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--apagado);
+  }
+
+  .sorteador-resultado { margin-bottom: 14px; }
+
+  .sorteador-pergunta {
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.45;
+    color: var(--texto);
+    margin: 0 0 14px;
+  }
+
+  .sorteador-aviso {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--apagado);
+    margin: 0 0 14px;
+  }
+
+  .sorteador-acoes { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .botao-sortear {
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--azul);
+    border: none;
+    border-radius: 999px;
+    padding: 12px 22px;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.18s ease;
+  }
+  .botao-sortear:hover { background: var(--azul-2); }
+  .botao-sortear:active { transform: scale(0.96); }
+
+  .botao-respondida,
+  .botao-repetida {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.18s ease;
+  }
+  .botao-respondida { background: #2e9e44; }
+  .botao-respondida:hover { background: #257a35; }
+  .botao-repetida { background: #d98216; }
+  .botao-repetida:hover { background: #b96c0f; }
+  .botao-respondida:active, .botao-repetida:active { transform: scale(0.96); }
+  .botao-respondida:disabled, .botao-repetida:disabled { background: #cfcfcf; cursor: not-allowed; }
+
+  .botao-reiniciar-sorteio {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--apagado);
+    background: none;
+    border: 1.5px solid var(--linha);
+    border-radius: 999px;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .botao-reiniciar-sorteio:hover { color: var(--texto); border-color: var(--texto); }
+
+  .numero-pergunta {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--apagado);
+    background: #fff;
+    border: 1px solid var(--linha);
+    border-radius: 999px;
+    padding: 3px 10px;
+    margin-bottom: 8px;
+  }
+
+  /* pequena tag cinza-escura: "Respondida" ou "essa já foi" (repetida) */
+  .tag-status {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #fff;
+    background: #6e6e6e;
+    border-radius: 6px;
+    padding: 4px 9px;
+  }
+
+  .sorteador-resultado .numero-pergunta { display: block; width: fit-content; }
+  .sorteador-resultado .tag-status { margin-top: 10px; }
+
+  .card-rodape {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .botao-voltar-pergunta {
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--apagado);
+    background: none;
+    border: 1px solid #b8b8b8;
+    border-radius: 999px;
+    padding: 5px 11px;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .botao-voltar-pergunta:hover { color: var(--texto); border-color: var(--texto); }
+
+  /* Pergunta já marcada (respondida ou repetida) fica escura na lista, pra não
+     repetir sem perceber — "voltar pergunta" desfaz e libera pro sorteio de novo. */
+  .card-pergunta.ja-sorteada { background: #d4d4d4; box-shadow: none; }
+  .card-pergunta.ja-sorteada .texto-pergunta { color: #8a8a8a; }
+  .card-pergunta.ja-sorteada .resposta-caixa { background: #bcbcbc; }
+  .card-pergunta.ja-sorteada .resposta-caixa span { color: #bcbcbc; }
+  .card-pergunta.ja-sorteada .resposta-caixa.revelada { background: #cfd4e8; }
+  .card-pergunta.ja-sorteada .resposta-caixa.revelada span { color: var(--azul); }
+  .card-pergunta.ja-sorteada .botao-voltar-pergunta { color: #f0f0f0; border-color: #a0a0a0; }
+  .card-pergunta.ja-sorteada .botao-voltar-pergunta:hover { color: #fff; border-color: #f0f0f0; }
 </style>
 
 <div class="container">
@@ -390,13 +549,193 @@
     },
   ];
 
-  function criarCard(pergunta, resposta) {
+  // Pool plano de cada fase (todas as categorias juntas, numeradas em sequência), pra
+  // sortear. `estado` só muda quando o host clica Respondida/Repetida no sorteador ou
+  // "voltar pergunta" no card — sortear de novo pode repetir a mesma enquanto ela não
+  // for marcada (é assim que dá pra cair 2x seguidas na mesma e o host clicar Repetida).
+  // `cardEl` é preenchido em montarPagina() assim que o card correspondente existe.
+  DADOS.forEach((faseObj) => {
+    faseObj.pool = [];
+    let numero = 0;
+    faseObj.categorias.forEach((cat) => {
+      cat.perguntas.forEach(([pergunta, resposta]) => {
+        numero++;
+        faseObj.pool.push({ pergunta, resposta, numero, estado: null, cardEl: null, faseObj });
+      });
+    });
+  });
+
+  // Reflete o estado (null | "respondida" | "repetida") de um item no card dele na
+  // lista abaixo: escurece, mostra a tag e o botão "voltar pergunta". Compartilhada
+  // entre o sorteador (ao marcar) e o próprio botão "voltar pergunta" do card.
+  function atualizarCardVisual(card, item) {
+    const marcado = Boolean(item.estado);
+    card.classList.toggle("ja-sorteada", marcado);
+    const tagEl = card.querySelector(".tag-status");
+    const botaoVoltar = card.querySelector(".botao-voltar-pergunta");
+    tagEl.hidden = !marcado;
+    botaoVoltar.hidden = !marcado;
+    if (marcado) tagEl.textContent = item.estado === "repetida" ? "essa já foi" : "Respondida";
+  }
+
+  function criarSorteador(faseObj) {
+    const box = document.createElement("div");
+    box.className = "sorteador";
+
+    const cabecalho = document.createElement("div");
+    cabecalho.className = "sorteador-cabecalho";
+    const titulo = document.createElement("span");
+    titulo.className = "sorteador-titulo";
+    titulo.textContent = "🎲 Sorteador — " + faseObj.fase;
+    const contagem = document.createElement("span");
+    contagem.className = "sorteador-contagem";
+    cabecalho.append(titulo, contagem);
+
+    const resultado = document.createElement("div");
+    resultado.className = "sorteador-resultado";
+    resultado.hidden = true;
+
+    const numeroEl = document.createElement("span");
+    numeroEl.className = "numero-pergunta";
+
+    const perguntaEl = document.createElement("p");
+    perguntaEl.className = "sorteador-pergunta";
+
+    const respostaWrap = document.createElement("div");
+    respostaWrap.className = "resposta";
+    const caixa = document.createElement("div");
+    caixa.className = "resposta-caixa";
+    const respostaSpan = document.createElement("span");
+    caixa.appendChild(respostaSpan);
+    const botaoOlho = document.createElement("button");
+    botaoOlho.type = "button";
+    botaoOlho.className = "botao-olho-resposta";
+    botaoOlho.innerHTML = ICONE_OLHO_FECHADO;
+    botaoOlho.title = "Revelar resposta";
+    botaoOlho.onclick = () => {
+      const revelada = caixa.classList.toggle("revelada");
+      botaoOlho.innerHTML = revelada ? ICONE_OLHO_ABERTO : ICONE_OLHO_FECHADO;
+      botaoOlho.title = revelada ? "Ocultar resposta" : "Revelar resposta";
+    };
+    respostaWrap.append(caixa, botaoOlho);
+
+    const tag = document.createElement("p");
+    tag.className = "tag-status";
+    tag.hidden = true;
+
+    resultado.append(numeroEl, perguntaEl, respostaWrap, tag);
+
+    const aviso = document.createElement("p");
+    aviso.className = "sorteador-aviso";
+    aviso.hidden = true;
+    aviso.textContent = "Todas as perguntas desta fase já foram marcadas.";
+
+    const acoes = document.createElement("div");
+    acoes.className = "sorteador-acoes";
+    const botaoSortear = document.createElement("button");
+    botaoSortear.type = "button";
+    botaoSortear.className = "botao-sortear";
+    botaoSortear.textContent = "🎲 Sortear novamente";
+    const botaoRespondida = document.createElement("button");
+    botaoRespondida.type = "button";
+    botaoRespondida.className = "botao-respondida";
+    botaoRespondida.textContent = "✅ Respondida";
+    botaoRespondida.disabled = true;
+    const botaoRepetida = document.createElement("button");
+    botaoRepetida.type = "button";
+    botaoRepetida.className = "botao-repetida";
+    botaoRepetida.textContent = "♻️ Repetida";
+    botaoRepetida.disabled = true;
+    const botaoResetar = document.createElement("button");
+    botaoResetar.type = "button";
+    botaoResetar.className = "botao-reiniciar-sorteio";
+    botaoResetar.textContent = "Resetar todas";
+    acoes.append(botaoSortear, botaoRespondida, botaoRepetida, botaoResetar);
+
+    let atual = null;
+
+    function atualizarContagem() {
+      const restantes = faseObj.pool.filter((p) => !p.estado).length;
+      contagem.textContent = restantes + " de " + faseObj.pool.length + " restantes";
+    }
+    faseObj.atualizarContagem = atualizarContagem;
+
+    function atualizarTagResultado() {
+      const marcado = Boolean(atual && atual.estado);
+      tag.hidden = !marcado;
+      if (marcado) tag.textContent = atual.estado === "repetida" ? "essa já foi" : "Respondida";
+    }
+
+    function sortear() {
+      const disponiveis = faseObj.pool.filter((p) => !p.estado);
+      if (!disponiveis.length) {
+        atual = null;
+        resultado.hidden = true;
+        aviso.hidden = false;
+        botaoRespondida.disabled = true;
+        botaoRepetida.disabled = true;
+        return;
+      }
+      aviso.hidden = true;
+      atual = disponiveis[Math.floor(Math.random() * disponiveis.length)];
+
+      numeroEl.textContent = "Nº " + atual.numero;
+      perguntaEl.textContent = atual.pergunta;
+      respostaSpan.textContent = "R= " + atual.resposta;
+      caixa.classList.remove("revelada");
+      botaoOlho.innerHTML = ICONE_OLHO_FECHADO;
+      botaoOlho.title = "Revelar resposta";
+      atualizarTagResultado();
+      resultado.hidden = false;
+      botaoRespondida.disabled = false;
+      botaoRepetida.disabled = false;
+    }
+
+    function marcar(estado) {
+      if (!atual) return;
+      atual.estado = estado;
+      if (atual.cardEl) atualizarCardVisual(atual.cardEl, atual);
+      atualizarTagResultado();
+      botaoRespondida.disabled = true;
+      botaoRepetida.disabled = true;
+      atualizarContagem();
+    }
+
+    function resetarTodas() {
+      if (!confirm("Resetar o sorteio da " + faseObj.fase + "? Todas as perguntas voltam a ficar disponíveis.")) return;
+      faseObj.pool.forEach((p) => {
+        p.estado = null;
+        if (p.cardEl) atualizarCardVisual(p.cardEl, p);
+      });
+      atual = null;
+      resultado.hidden = true;
+      aviso.hidden = true;
+      botaoRespondida.disabled = true;
+      botaoRepetida.disabled = true;
+      atualizarContagem();
+    }
+
+    botaoSortear.onclick = sortear;
+    botaoRespondida.onclick = () => marcar("respondida");
+    botaoRepetida.onclick = () => marcar("repetida");
+    botaoResetar.onclick = resetarTodas;
+
+    atualizarContagem();
+    box.append(cabecalho, resultado, aviso, acoes);
+    return box;
+  }
+
+  function criarCard(item) {
     const card = document.createElement("div");
     card.className = "card-pergunta";
 
+    const numero = document.createElement("span");
+    numero.className = "numero-pergunta";
+    numero.textContent = "Nº " + item.numero;
+
     const p = document.createElement("p");
     p.className = "texto-pergunta";
-    p.textContent = pergunta;
+    p.textContent = item.pergunta;
 
     const respostaWrap = document.createElement("div");
     respostaWrap.className = "resposta";
@@ -404,7 +743,7 @@
     const caixa = document.createElement("div");
     caixa.className = "resposta-caixa";
     const span = document.createElement("span");
-    span.textContent = "R= " + resposta;
+    span.textContent = "R= " + item.resposta;
     caixa.appendChild(span);
 
     const botao = document.createElement("button");
@@ -417,9 +756,26 @@
       botao.innerHTML = revelada ? ICONE_OLHO_ABERTO : ICONE_OLHO_FECHADO;
       botao.title = revelada ? "Ocultar resposta" : "Revelar resposta";
     };
-
     respostaWrap.append(caixa, botao);
-    card.append(p, respostaWrap);
+
+    const rodape = document.createElement("div");
+    rodape.className = "card-rodape";
+    const tagStatus = document.createElement("span");
+    tagStatus.className = "tag-status";
+    tagStatus.hidden = true;
+    const botaoVoltar = document.createElement("button");
+    botaoVoltar.type = "button";
+    botaoVoltar.className = "botao-voltar-pergunta";
+    botaoVoltar.textContent = "↺ Voltar pergunta";
+    botaoVoltar.hidden = true;
+    botaoVoltar.onclick = () => {
+      item.estado = null;
+      atualizarCardVisual(card, item);
+      if (item.faseObj.atualizarContagem) item.faseObj.atualizarContagem();
+    };
+    rodape.append(tagStatus, botaoVoltar);
+
+    card.append(numero, p, respostaWrap, rodape);
     return card;
   }
 
@@ -431,6 +787,9 @@
       h2.textContent = faseObj.fase;
       raiz.appendChild(h2);
 
+      raiz.appendChild(criarSorteador(faseObj));
+
+      let poolIdx = 0;
       faseObj.categorias.forEach((cat) => {
         const catDiv = document.createElement("div");
         catDiv.className = "categoria";
@@ -442,7 +801,12 @@
 
         const grid = document.createElement("div");
         grid.className = "grid-perguntas";
-        cat.perguntas.forEach(([pergunta, resposta]) => grid.appendChild(criarCard(pergunta, resposta)));
+        cat.perguntas.forEach(() => {
+          const item = faseObj.pool[poolIdx++];
+          const card = criarCard(item);
+          item.cardEl = card;
+          grid.appendChild(card);
+        });
         catDiv.appendChild(grid);
 
         raiz.appendChild(catDiv);
