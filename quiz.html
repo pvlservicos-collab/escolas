@@ -907,7 +907,7 @@
     ["Qual é o plural de \"fóssil\"?", "Fósseis"],
     ["Qual é o plural de \"hambúrguer\"?", "Hambúrgueres"],
     ["Qual é o plural de \"réptil\"?", "Répteis"],
-    ["Qual é o plural de \"lápis\"?", "Lápis (invariável — muda só o artigo: \"os lápis\")"],
+    ["Qual é o plural de \"lápis\"?", "Lápis (a palavra é invariável, o que muda é o artigo: \"os lápis\")"],
     ["Qual é o plural de \"escrivão\"?", "Escrivães"],
     ["Qual é o plural de \"gravidez\"?", "Gravidezes"],
     ["Qual é o plural de \"pastel\"?", "Pastéis"],
@@ -921,7 +921,7 @@
     ["Qual é o plural de \"caráter\"?", "Caracteres"],
     ["Qual é o plural de \"limão\"?", "Limões"],
     ["Qual é o plural de \"cônsul\"?", "Cônsules"],
-    ["Qual é o plural de \"óculos\"?", "Óculos (já é plural: \"os óculos\")"],
+    ["Qual é o plural de \"óculos\"?", "Óculos (a palavra já é plural, diz-se \"os óculos\")"],
     ["Qual é o plural de \"abdômen\"?", "Abdômenes (ou abdomens)"],
     ["Qual é o coletivo de lobos?", "Alcateia"],
     ["Qual é o coletivo de ilhas?", "Arquipélago"],
@@ -1481,7 +1481,7 @@
         )
       );
       card.appendChild(elemento("p", "pergunta-texto-mini", pergunta));
-      card.appendChild(elemento("span", "resposta-visivel", resposta));
+      card.appendChild(elemento("span", "resposta-visivel", "R= " + resposta));
 
       if (respondida === null) {
         const botoes = elemento("div", "botoes-quadrados");
@@ -1661,7 +1661,7 @@
 
     const [pergunta, resposta] = BANCO_FASE2[confronto.perguntaIndice];
     card.appendChild(elemento("p", "pergunta-texto", pergunta));
-    card.appendChild(elemento("span", "resposta-visivel", resposta));
+    card.appendChild(elemento("span", "resposta-visivel", "R= " + resposta));
 
     const botoes = elemento("div", "botoes-resultado duas-escolas");
     const bA = elemento("button", "botao-resultado escola-a", nomeA + " acertou");
