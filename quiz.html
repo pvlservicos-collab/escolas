@@ -87,52 +87,106 @@
   .fase-titulo:first-of-type { margin-top: 4px; }
   .fase-sub { font-size: 13px; font-weight: 600; color: var(--apagado); margin: 0 0 16px; }
 
-  /* ---------- seleção de escola (Fase 1) ---------- */
-  .escolas-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
-
-  .chip-escola {
-    font-family: inherit;
-    font-size: 12.5px;
-    font-weight: 700;
-    padding: 8px 13px;
-    border-radius: 999px;
+  /* ---------- slide da escola (Fase 1) ---------- */
+  .slide-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 10px;
+  }
+  .seta-slide {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
     border: 1.5px solid var(--linha);
     background: var(--card);
-    color: var(--texto);
+    color: #fff;
+    font-size: 20px;
+    font-weight: 800;
     cursor: pointer;
   }
-  .chip-escola:hover { border-color: var(--azul); }
-  .chip-escola.ativa { background: var(--azul); border-color: var(--azul); color: #fff; }
-  .chip-escola.concluida { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
-  .chip-escola .marca { opacity: 0.75; font-weight: 600; margin-left: 4px; }
+  .seta-slide:hover:not(:disabled) { border-color: var(--azul); background: var(--card-2); }
+  .seta-slide:disabled { opacity: 0.3; cursor: not-allowed; }
 
-  /* ---------- card da pergunta ---------- */
-  .card-quiz {
+  .slide-titulo {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .slide-titulo small { font-size: 12px; font-weight: 700; color: var(--apagado); margin-left: 4px; }
+
+  .slide-pontos { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 16px; }
+  .ponto-slide {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: none;
+    background: var(--linha);
+    cursor: pointer;
+    padding: 0;
+  }
+  .ponto-slide.completo { background: var(--verde); }
+  .ponto-slide.ativo { width: 14px; height: 14px; background: var(--azul); }
+
+  .slide-card {
     background: var(--card);
     border-radius: 16px;
-    padding: 22px;
+    padding: 10px 18px;
     box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
     margin-bottom: 14px;
+    animation: entrarSlide 0.3s ease both;
+  }
+  @keyframes entrarSlide {
+    from { opacity: 0; transform: perspective(600px) rotateY(6deg) translateX(14px); }
+    to { opacity: 1; transform: perspective(600px) rotateY(0) translateX(0); }
   }
 
-  .card-idle {
-    text-align: center;
-    padding: 30px 10px;
-    filter: blur(5px);
-    opacity: 0.45;
-    user-select: none;
+  .linha-pergunta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--linha);
   }
-  .card-idle p { font-size: 17px; font-weight: 700; margin: 0; color: var(--apagado); }
+  .linha-pergunta:last-child { border-bottom: none; }
+  .linha-pergunta.certa { background: rgba(47, 191, 113, 0.07); }
+  .linha-pergunta.errada { background: rgba(229, 72, 77, 0.07); }
 
-  .rotulo-vez {
-    font-family: "Baloo 2", sans-serif;
-    font-size: 12.5px;
+  .pergunta-corpo { display: flex; align-items: flex-start; gap: 10px; flex: 1; min-width: 0; }
+  .pergunta-numero {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--card-2);
+    color: var(--apagado);
+    font-size: 12px;
     font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--dourado);
-    margin: 0 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
+  .pergunta-textos { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .pergunta-texto-mini { font-size: 14.5px; font-weight: 700; color: #fff; line-height: 1.35; }
+  .resposta-texto-mini { font-size: 13px; font-weight: 700; color: var(--dourado); }
+
+  .botoes-mini { flex-shrink: 0; display: flex; gap: 6px; }
+  .mini-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--linha);
+    background: var(--card-2);
+    color: var(--apagado);
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .mini-errado.selecionado { background: var(--vermelho); border-color: var(--vermelho); color: #fff; }
+  .mini-certo.selecionado { background: var(--verde); border-color: var(--verde); color: #fff; }
 
   .pergunta-texto {
     font-size: 24px;
@@ -191,8 +245,6 @@
     cursor: pointer;
   }
   .botao-resultado:active { transform: scale(0.97); }
-  .botao-errou { background: var(--vermelho); }
-  .botao-acertou { background: var(--verde); }
 
   .botoes-resultado.duas-escolas { flex-direction: column; }
   @media (min-width: 480px) {
@@ -523,11 +575,8 @@
       filaFase1: embaralhar(BANCO_FASE1.map((_, i) => i)),
       filaFase2: embaralhar(BANCO_FASE2.map((_, i) => i)),
       fase1: {
-        turnos: Object.fromEntries(ESCOLAS.map((e) => [e.id, 0])),
-        acertos: Object.fromEntries(ESCOLAS.map((e) => [e.id, 0])),
-        escolaAtivaId: null,
-        perguntaIndice: null,
-        revelado: false,
+        atual: 0, // índice do slide (escola) mostrado agora, 0 a 15
+        porEscola: {}, // preenchido sob demanda: { [escolaId]: { perguntas: [5 índices], respostas: [true/false/null x5] } }
         concluida: false,
       },
       classificadas: null,
@@ -538,7 +587,11 @@
   function carregarEstado() {
     try {
       const bruto = localStorage.getItem(CHAVE_ESTADO);
-      if (bruto) return JSON.parse(bruto);
+      if (bruto) {
+        const dados = JSON.parse(bruto);
+        // formato antigo (uma pergunta por vez) não é compatível — recomeça limpo
+        if (dados && dados.fase1 && dados.fase1.porEscola) return dados;
+      }
     } catch (e) { /* estado corrompido, começa do zero */ }
     return estadoPadrao();
   }
@@ -559,28 +612,55 @@
     return estado.filaFase2.pop();
   }
 
-  /* ---------------- Fase 1 ---------------- */
+  /* ---------------- Fase 1 (slide com as 5 perguntas da escola de uma vez) ---------------- */
 
-  function selecionarEscolaFase1(id) {
-    if (estado.fase1.turnos[id] >= 5) return;
-    estado.fase1.escolaAtivaId = id;
-    estado.fase1.perguntaIndice = proximaPerguntaFase1();
-    estado.fase1.revelado = false;
+  // Sorteia as 5 perguntas da escola na primeira vez que o slide dela é aberto, e
+  // guarda — assim elas não mudam se o host voltar pra essa escola depois.
+  function perguntasDaEscola(escolaId) {
+    if (!estado.fase1.porEscola[escolaId]) {
+      const perguntas = [];
+      for (let i = 0; i < 5; i++) perguntas.push(proximaPerguntaFase1());
+      estado.fase1.porEscola[escolaId] = { perguntas, respostas: [null, null, null, null, null] };
+      salvarEstado();
+    }
+    return estado.fase1.porEscola[escolaId];
+  }
+
+  function escolaCompletaFase1(escolaId) {
+    const dados = estado.fase1.porEscola[escolaId];
+    return Boolean(dados) && dados.respostas.every((r) => r !== null);
+  }
+
+  function acertosDaEscola(escolaId) {
+    const dados = estado.fase1.porEscola[escolaId];
+    return dados ? dados.respostas.filter((r) => r === true).length : 0;
+  }
+
+  function navegarFase1(delta) {
+    const novo = estado.fase1.atual + delta;
+    if (novo < 0 || novo > 15) return;
+    estado.fase1.atual = novo;
     salvarEstado();
     render();
   }
 
-  function marcarResultadoFase1(correto) {
-    const id = estado.fase1.escolaAtivaId;
-    if (id == null) return;
-    estado.fase1.turnos[id] += 1;
-    if (correto) estado.fase1.acertos[id] += 1;
-    estado.fase1.escolaAtivaId = null;
-    estado.fase1.perguntaIndice = null;
-    estado.fase1.revelado = false;
+  function irParaEscolaFase1(indice) {
+    if (indice < 0 || indice > 15 || indice === estado.fase1.atual) return;
+    estado.fase1.atual = indice;
+    salvarEstado();
+    render();
+  }
 
-    if (ESCOLAS.every((e) => estado.fase1.turnos[e.id] >= 5)) {
-      estado.fase1.concluida = true;
+  function marcarRespostaFase1(escolaId, posicao, correto) {
+    const dados = perguntasDaEscola(escolaId);
+    dados.respostas[posicao] = correto;
+
+    if (dados.respostas.every((r) => r !== null)) {
+      if (ESCOLAS.every((e) => escolaCompletaFase1(e.id))) {
+        estado.fase1.concluida = true;
+      } else if (estado.fase1.atual < 15) {
+        estado.fase1.atual += 1; // flui direto pra próxima escola, sem precisar clicar de novo
+      }
     }
 
     salvarEstado();
@@ -591,7 +671,7 @@
 
   function gerarChaveamento() {
     const ranking = ESCOLAS
-      .map((e) => ({ id: e.id, acertos: estado.fase1.acertos[e.id] }))
+      .map((e) => ({ id: e.id, acertos: acertosDaEscola(e.id) }))
       .sort((a, b) => b.acertos - a.acertos || a.id - b.id);
     const top8 = ranking.slice(0, 8).map((e) => e.id);
     estado.classificadas = top8;
@@ -683,50 +763,74 @@
 
   function renderFase1(raiz) {
     raiz.appendChild(elemento("h2", "fase-titulo", "Fase 1 — Seletiva"));
-    raiz.appendChild(elemento("p", "fase-sub", "Cada escola responde 5 perguntas. As 8 melhores avançam para o chaveamento."));
+    raiz.appendChild(elemento("p", "fase-sub", "5 perguntas por escola, todas de uma vez. As 8 melhores avançam para o chaveamento."));
 
-    const chips = elemento("div", "escolas-chips");
-    ESCOLAS.forEach((e) => {
-      const turnos = estado.fase1.turnos[e.id];
-      const concluida = turnos >= 5;
-      const chip = elemento(
+    const idx = estado.fase1.atual;
+    const escola = ESCOLAS[idx];
+    const dados = perguntasDaEscola(escola.id);
+
+    const nav = elemento("div", "slide-nav");
+    const setaEsq = elemento("button", "seta-slide", "‹");
+    setaEsq.type = "button";
+    setaEsq.disabled = idx === 0;
+    setaEsq.onclick = () => navegarFase1(-1);
+    const titulo = elemento("span", "slide-titulo", escola.nome + " <small>(" + (idx + 1) + " de 16)</small>");
+    const setaDir = elemento("button", "seta-slide", "›");
+    setaDir.type = "button";
+    setaDir.disabled = idx === 15;
+    setaDir.onclick = () => navegarFase1(1);
+    nav.append(setaEsq, titulo, setaDir);
+    raiz.appendChild(nav);
+
+    const pontos = elemento("div", "slide-pontos");
+    ESCOLAS.forEach((e, i) => {
+      const ponto = elemento(
         "button",
-        "chip-escola" + (e.id === estado.fase1.escolaAtivaId ? " ativa" : "") + (concluida ? " concluida" : ""),
-        e.nome + '<span class="marca">' + turnos + "/5</span>"
+        "ponto-slide" + (i === idx ? " ativo" : "") + (escolaCompletaFase1(e.id) ? " completo" : "")
       );
-      chip.type = "button";
-      chip.disabled = concluida;
-      chip.onclick = () => selecionarEscolaFase1(e.id);
-      chips.appendChild(chip);
+      ponto.type = "button";
+      ponto.title = e.nome;
+      ponto.onclick = () => irParaEscolaFase1(i);
+      pontos.appendChild(ponto);
     });
-    raiz.appendChild(chips);
+    raiz.appendChild(pontos);
 
-    const card = elemento("div", "card-quiz");
-    if (estado.fase1.escolaAtivaId == null) {
-      card.appendChild(elemento("div", "card-idle", "<p>Selecione uma escola acima para sortear a próxima pergunta</p>"));
-    } else {
-      const escola = ESCOLA_POR_ID[estado.fase1.escolaAtivaId];
-      const [pergunta, resposta] = BANCO_FASE1[estado.fase1.perguntaIndice];
-      card.appendChild(elemento("p", "rotulo-vez", "Vez de: " + escola.nome));
-      card.appendChild(elemento("p", "pergunta-texto", pergunta));
-      card.appendChild(criarCaixaResposta(resposta));
+    const card = elemento("div", "slide-card");
+    dados.perguntas.forEach((perguntaIdx, pos) => {
+      const [pergunta, resposta] = BANCO_FASE1[perguntaIdx];
+      const respondida = dados.respostas[pos];
+      const linha = elemento(
+        "div",
+        "linha-pergunta" + (respondida === true ? " certa" : respondida === false ? " errada" : "")
+      );
+      linha.appendChild(
+        elemento(
+          "div",
+          "pergunta-corpo",
+          '<span class="pergunta-numero">' + (pos + 1) + "</span>" +
+            '<span class="pergunta-textos"><span class="pergunta-texto-mini">' + pergunta + "</span>" +
+            '<span class="resposta-texto-mini">' + resposta + "</span></span>"
+        )
+      );
 
-      const botoes = elemento("div", "botoes-resultado");
-      const bErrou = elemento("button", "botao-resultado botao-errou", "❌ Errou");
-      bErrou.type = "button";
-      bErrou.onclick = () => marcarResultadoFase1(false);
-      const bAcertou = elemento("button", "botao-resultado botao-acertou", "✅ Acertou");
-      bAcertou.type = "button";
-      bAcertou.onclick = () => marcarResultadoFase1(true);
-      botoes.append(bErrou, bAcertou);
-      card.appendChild(botoes);
-    }
+      const botoes = elemento("div", "botoes-mini");
+      const bErrado = elemento("button", "mini-btn mini-errado" + (respondida === false ? " selecionado" : ""), "✗");
+      bErrado.type = "button";
+      bErrado.onclick = () => marcarRespostaFase1(escola.id, pos, false);
+      const bCerto = elemento("button", "mini-btn mini-certo" + (respondida === true ? " selecionado" : ""), "✓");
+      bCerto.type = "button";
+      bCerto.onclick = () => marcarRespostaFase1(escola.id, pos, true);
+      botoes.append(bErrado, bCerto);
+      linha.appendChild(botoes);
+
+      card.appendChild(linha);
+    });
     raiz.appendChild(card);
 
     if (estado.fase1.concluida) {
       raiz.appendChild(elemento("h2", "fase-titulo", "Classificação da Fase 1"));
       const ranking = ESCOLAS
-        .map((e) => ({ id: e.id, nome: e.nome, acertos: estado.fase1.acertos[e.id] }))
+        .map((e) => ({ id: e.id, nome: e.nome, acertos: acertosDaEscola(e.id) }))
         .sort((a, b) => b.acertos - a.acertos || a.id - b.id);
 
       const jaClassificado = Boolean(estado.classificadas);
@@ -866,7 +970,7 @@
 
     const pontosPorEscola = calcularPontuacaoFinal();
     const ranking = ESCOLAS
-      .map((e) => ({ id: e.id, nome: e.nome, acertosFase1: estado.fase1.acertos[e.id], pontos: pontosPorEscola[e.id] }))
+      .map((e) => ({ id: e.id, nome: e.nome, acertosFase1: acertosDaEscola(e.id), pontos: pontosPorEscola[e.id] }))
       .sort((a, b) => (b.pontos ?? -1) - (a.pontos ?? -1) || a.id - b.id);
 
     const tabela = elemento("div", "tabela-classificacao");
