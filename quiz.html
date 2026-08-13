@@ -87,6 +87,22 @@
   .fase-titulo:first-of-type { margin-top: 4px; }
   .fase-sub { font-size: 13px; font-weight: 600; color: var(--apagado); margin: 0 0 16px; }
 
+  .instrucao {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: linear-gradient(160deg, rgba(79, 124, 255, 0.13), rgba(79, 124, 255, 0.03));
+    border: 1px solid rgba(79, 124, 255, 0.3);
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin: 0 0 18px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.55;
+    color: #dbe3ff;
+  }
+  .instrucao strong { color: #fff; }
+
   /* ---------- slide da escola (Fase 1) ---------- */
   .slide-nav {
     display: flex;
@@ -485,7 +501,186 @@
     .pergunta-texto { font-size: 20px; }
     h1 { font-size: 22px; }
   }
+
+  /* ---------- botão + popup "Ver edital" ---------- */
+  .botao-ver-edital {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 200;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+    backdrop-filter: blur(10px);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  }
+  .botao-ver-edital:hover { border-color: var(--azul); }
+
+  .edital-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 70px 16px 30px;
+    overflow-y: auto;
+  }
+
+  .edital-painel {
+    width: 100%;
+    max-width: 620px;
+    background: linear-gradient(160deg, #1b1f2c, #14161f);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
+    animation: entrarEdital 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  @keyframes entrarEdital {
+    from { opacity: 0; transform: translateY(-14px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .edital-cabecalho {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: inherit;
+    border-radius: 18px 18px 0 0;
+  }
+  .edital-cabecalho h2 { font-family: "Baloo 2", sans-serif; font-size: 16px; font-weight: 800; color: #fff; margin: 0; }
+  .edital-fechar {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .edital-fechar:hover { background: var(--vermelho); }
+
+  .edital-corpo { padding: 8px 22px 26px; }
+  .edital-corpo h3 { font-family: "Baloo 2", sans-serif; font-size: 15px; font-weight: 800; color: var(--dourado); margin: 22px 0 8px; }
+  .edital-corpo h3:first-child { margin-top: 6px; }
+  .edital-corpo h4 { font-family: "Baloo 2", sans-serif; font-size: 13.5px; font-weight: 800; color: #fff; margin: 16px 0 6px; }
+  .edital-corpo h4 span { font-size: 11px; font-weight: 600; color: var(--apagado); text-transform: none; }
+  .edital-corpo p { font-size: 13.5px; line-height: 1.6; color: #d5d9e4; margin: 0 0 10px; }
+  .edital-corpo strong { color: #fff; }
+  .edital-corpo ul { margin: 0 0 10px; padding-left: 20px; }
+  .edital-corpo li { font-size: 13.5px; line-height: 1.6; color: #d5d9e4; margin-bottom: 5px; }
+
+  .edital-tabela { width: 100%; border-collapse: collapse; margin: 4px 0 14px; font-size: 13px; }
+  .edital-tabela th, .edital-tabela td { text-align: left; padding: 9px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+  .edital-tabela th { color: var(--apagado); font-weight: 800; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.04em; }
+  .edital-tabela td { color: #fff; font-weight: 700; }
+  .edital-tabela td:last-child { color: var(--dourado); }
+
+  @media (max-width: 480px) {
+    .botao-ver-edital { top: 10px; right: 10px; font-size: 12px; padding: 8px 13px; }
+  }
+
+  /* ---------- confete/brilho ao acertar ---------- */
+  .brilho-acerto {
+    position: fixed;
+    z-index: 999;
+    pointer-events: none;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(88, 231, 156, 0.55), transparent 70%);
+    animation: brilhoAcertoAnim 0.55s ease-out forwards;
+  }
+  @keyframes brilhoAcertoAnim {
+    from { transform: scale(0.3); opacity: 1; }
+    to { transform: scale(2.4); opacity: 0; }
+  }
+  .confete {
+    position: fixed;
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 999;
+    animation: confeteVoo 0.7s ease-out forwards;
+  }
+  @keyframes confeteVoo {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(300deg); opacity: 0; }
+  }
 </style>
+
+<button type="button" class="botao-ver-edital" id="btnVerEdital">📜 Ver edital</button>
+
+<div class="edital-overlay" id="editalOverlay" hidden>
+  <div class="edital-painel">
+    <div class="edital-cabecalho">
+      <h2>Art. 43 — Prova 7 · Quiz "Torta na Cara"</h2>
+      <button type="button" class="edital-fechar" id="btnFecharEdital">✕</button>
+    </div>
+    <div class="edital-corpo">
+      <h3>Do Objetivo</h3>
+      <p>Estimular o domínio de conhecimentos gerais, a agilidade do raciocínio e o espírito de cooperação e trabalho em equipe entre os estudantes.</p>
+
+      <h3>Da Participação e Formação das Equipes</h3>
+      <p>Cada escola terá uma equipe composta por exatamente 10 (dez) estudantes.</p>
+      <p>A prova será dividida em duas fases, e cada estudante poderá ter apenas 1 (uma) participação ativa ao longo de toda a prova, sendo vedada a repetição de competidores em rodadas distintas.</p>
+
+      <h3>Da Dinâmica da Competição</h3>
+
+      <h4>Fase I — Seletiva e Chaveamento <span>(sem pontuação de classificação)</span></h4>
+      <p>Para a Fase Seletiva, cada escola indicará 5 (cinco) estudantes de sua equipe para responderem a um bloco de 5 (cinco) perguntas. Os conteúdos desta fase abrangerão temas de conhecimentos rápidos: capitais geográficas, plurais, coletivos e gentílicos. O critério de classificação para a fase seguinte será o número de acertos.</p>
+      <p><strong>Critério de desempate:</strong> em caso de igualdade no número de acertos entre duas ou mais escolas, o critério de desempate será o menor tempo totalizado para as respostas.</p>
+      <p>As escolas eliminadas nesta Fase Seletiva não avançam para o chaveamento do "Torta na Cara", recebendo individualmente 5 (cinco) pontos fixos por participação.</p>
+
+      <h4>Fase II — O Torneio "Torta na Cara" <span>(chaveamento)</span></h4>
+      <p>As escolas classificadas serão organizadas em um cronograma de chaveamento com o limite de 8 (oito) escolas por dia.</p>
+      <p>Os confrontos diretos ocorrerão no formato "1 contra 1" (estudante contra estudante), utilizando os 5 (cinco) componentes restantes da equipe que não jogaram a Fase I.</p>
+      <p>Cada estudante terá o tempo limite de 10 (dez) segundos para responder à pergunta formulada pelo mediador, contados a partir da autorização do cronometrista e posteriormente após ser o primeiro a apertar o botão de resposta.</p>
+      <p>Os conteúdos desta fase abrangerão temas de conhecimentos gerais, geografia, história, português (gramática e literatura), cultura regional (Amapá) e nacional, atualidades e ciências.</p>
+
+      <h3>Dos Critérios de Avaliação e Pontuação</h3>
+      <p>A validação dos pontos de cada confronto da Fase II observará cumulativamente:</p>
+      <ul>
+        <li>A exatidão da resposta apresentada;</li>
+        <li>O estrito cumprimento do tempo limite de 10 segundos para resposta;</li>
+        <li>O respeito integral às regras de postura e acionamento dos botões/pulsadores.</li>
+      </ul>
+      <p>De modo a valorizar o desempenho integral e evitar prejuízos às escolas eliminadas nos confrontos, a pontuação oficial da prova será distribuída de forma progressiva:</p>
+      <table class="edital-tabela">
+        <thead><tr><th>Colocação / Fase atingida</th><th>Pontuação</th></tr></thead>
+        <tbody>
+          <tr><td>🥇 Campeã (1º lugar)</td><td>30 pontos</td></tr>
+          <tr><td>🥈 Vice-campeã (2º lugar)</td><td>25 pontos</td></tr>
+          <tr><td>Semifinalistas</td><td>20 pontos</td></tr>
+          <tr><td>Demais</td><td>10 pontos (participação)</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Das Infrações e Penalidades</h3>
+      <p>Será aplicada a penalidade de perda da vez de resposta, com direito a repasse da pergunta à equipe adversária, nos seguintes casos:</p>
+      <ul>
+        <li>Manifestação ou resposta emitida após o esgotamento dos 10 segundos regulamentares;</li>
+        <li>Auxílio externo: intervenção verbal, gestual ou por qualquer outro meio vinda da torcida, professores ou colegas de equipe;</li>
+        <li>Conduta antidesportiva: ofensas verbais, provocações, simulações ou desrespeito aos adversários e à banca examinadora.</li>
+      </ul>
+      <p>Casos graves de conduta antidesportiva ou reincidência de auxílio externo deliberado poderão resultar na desclassificação sumária da escola na prova, por decisão soberana da Comissão Julgadora.</p>
+    </div>
+  </div>
+</div>
 
 <div class="container">
   <header>
@@ -950,6 +1145,13 @@
     render();
   };
 
+  /* ---------------- popup "Ver edital" ---------------- */
+  const $editalOverlay = document.getElementById("editalOverlay");
+  document.getElementById("btnVerEdital").onclick = () => { $editalOverlay.hidden = false; };
+  document.getElementById("btnFecharEdital").onclick = () => { $editalOverlay.hidden = true; };
+  $editalOverlay.onclick = (e) => { if (e.target === $editalOverlay) $editalOverlay.hidden = true; };
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") $editalOverlay.hidden = true; });
+
   /* ---------------- renderização ---------------- */
 
   function elemento(tag, className, html) {
@@ -959,9 +1161,51 @@
     return el;
   }
 
+  function criarInstrucao(texto) {
+    return elemento("p", "instrucao", "<span>👉</span><span>" + texto + "</span>");
+  }
+
+  // Brilho verde + confete saindo do botão clicado, só decoração — não tem estado,
+  // as partículas se removem sozinhas depois da animação.
+  function comemorarAcerto(origemEl) {
+    const rect = origemEl.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    const brilho = document.createElement("div");
+    brilho.className = "brilho-acerto";
+    const tam = Math.max(rect.width, rect.height) * 1.6;
+    brilho.style.width = tam + "px";
+    brilho.style.height = tam + "px";
+    brilho.style.left = cx - tam / 2 + "px";
+    brilho.style.top = cy - tam / 2 + "px";
+    document.body.appendChild(brilho);
+    setTimeout(() => brilho.remove(), 600);
+
+    const cores = ["#58e79c", "#2fbf71", "#ffe08a", "#ffcf4d", "#7b9dff"];
+    for (let i = 0; i < 14; i++) {
+      const p = document.createElement("span");
+      p.className = "confete";
+      const ang = Math.random() * Math.PI * 2;
+      const dist = 55 + Math.random() * 65;
+      p.style.setProperty("--dx", Math.cos(ang) * dist + "px");
+      p.style.setProperty("--dy", Math.sin(ang) * dist + "px");
+      p.style.left = cx + "px";
+      p.style.top = cy + "px";
+      p.style.background = cores[Math.floor(Math.random() * cores.length)];
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 720);
+    }
+  }
+
   function renderFase1(raiz) {
     raiz.appendChild(elemento("h2", "fase-titulo", "Fase 1 — Seletiva"));
     raiz.appendChild(elemento("p", "fase-sub", "5 perguntas por escola, todas de uma vez. As 8 melhores avançam para o chaveamento."));
+    raiz.appendChild(
+      criarInstrucao(
+        "Nessa fase, <strong>role a página para baixo</strong> e responda as 5 perguntas em sequência para a escola aberta, marcando Acertou ou Errou em cada uma. Quando terminar as 5, <strong>clique na seta pro lado</strong> (ou numa bolinha abaixo) pra passar pra próxima escola."
+      )
+    );
 
     const idx = estado.fase1.atual;
     const escola = ESCOLAS[idx];
@@ -1020,7 +1264,7 @@
         bErrado.onclick = () => marcarRespostaFase1(escola.id, pos, false);
         const bCerto = elemento("button", "botao-quadrado certo-3d", '<span class="emoji-btn">✓</span>Acertou');
         bCerto.type = "button";
-        bCerto.onclick = () => marcarRespostaFase1(escola.id, pos, true);
+        bCerto.onclick = (ev) => { comemorarAcerto(ev.currentTarget); marcarRespostaFase1(escola.id, pos, true); };
         botoes.append(bErrado, bCerto);
         card.appendChild(botoes);
       } else {
@@ -1057,6 +1301,11 @@
 
     if (estado.fase1.concluida) {
       raiz.appendChild(elemento("h2", "fase-titulo", "Classificação da Fase 1"));
+      raiz.appendChild(
+        criarInstrucao(
+          "Essa tabela é gerada sozinha assim que as 16 escolas terminam. Se der empate bem na 8ª posição, resolva o confronto que aparece no lugar da linha, clicando em quem foi mais rápida — depois disso o chaveamento da Fase 2 sai <strong>automaticamente</strong>, sem precisar clicar em nada."
+        )
+      );
 
       const ranking = rankingFase1();
       const jaClassificado = Boolean(estado.classificadas);
@@ -1150,10 +1399,10 @@
     const botoes = elemento("div", "botoes-resultado duas-escolas");
     const bA = elemento("button", "botao-resultado escola-a", nomeA + " acertou");
     bA.type = "button";
-    bA.onclick = () => marcarVencedorFase2(rIdx, cIdx, confronto.a);
+    bA.onclick = (ev) => { comemorarAcerto(ev.currentTarget); marcarVencedorFase2(rIdx, cIdx, confronto.a); };
     const bB = elemento("button", "botao-resultado escola-b", nomeB + " acertou");
     bB.type = "button";
-    bB.onclick = () => marcarVencedorFase2(rIdx, cIdx, confronto.b);
+    bB.onclick = (ev) => { comemorarAcerto(ev.currentTarget); marcarVencedorFase2(rIdx, cIdx, confronto.b); };
     botoes.append(bA, bB);
     card.appendChild(botoes);
 
@@ -1164,6 +1413,11 @@
     if (!estado.fase2) return;
     raiz.appendChild(elemento("h2", "fase-titulo", "Fase 2 — Chaveamento"));
     raiz.appendChild(elemento("p", "fase-sub", "Cada confronto vale uma pergunta — quem acertar primeiro avança na chave."));
+    raiz.appendChild(
+      criarInstrucao(
+        "Role a página para baixo pelas rodadas (Quartas, Semifinal, Final). Em cada confronto, clique em <strong>\"Sortear pergunta\"</strong>, leia pras duas escolas e depois clique em <strong>qual delas acertou primeiro</strong> — a vencedora já avança sozinha pra próxima chave."
+      )
+    );
 
     estado.fase2.rodadas.forEach((rodada, rIdx) => {
       raiz.appendChild(elemento("h3", "rodada-titulo", rodada.nome));
@@ -1208,6 +1462,11 @@
 
     raiz.appendChild(elemento("h2", "fase-titulo", "Ranking do Quiz"));
     raiz.appendChild(elemento("p", "fase-sub", "Pontuação conforme a tabela de colocação do Art. 43 — revise antes de lançar."));
+    raiz.appendChild(
+      criarInstrucao(
+        "Essa é a pontuação final do quiz pra cada escola, já seguindo a tabela de colocação do Art. 43. <strong>Revise linha por linha</strong> antes de qualquer coisa — o botão de lançar nota ainda está travado, então por enquanto essa etapa é só conferência."
+      )
+    );
 
     raiz.appendChild(
       elemento(
