@@ -581,6 +581,14 @@
         <p class="max" style="margin-top:8px;">Esconde a classificação da página pública (que atualiza sozinha a cada 20s) até a Grande Final revelar o resultado no palco. Os jurados continuam lançando notas normalmente.</p>
       </div>
 
+      <div class="regra-card">
+        <div class="checkbox-linha">
+          <input type="checkbox" id="cfQuizIntegrado">
+          <label for="cfQuizIntegrado" style="margin:0;">Integrar quiz ao sistema</label>
+        </div>
+        <p class="max" style="margin-top:8px;">Desligado, o <code>/quiz</code> (Prova 7 "Torta na Cara") usa 16 escolas fictícias de teste. Ligado, ele passa a usar a lista real de escolas e libera o botão de lançar a nota final no ranking oficial. Afeta o <code>/quiz</code> em qualquer dispositivo assim que salvar.</p>
+      </div>
+
       <button class="primario" id="cfSalvar">Salvar</button>
       <p class="aviso" id="cfAviso"></p>
       <p class="sucesso" id="cfSucesso" hidden>Configuração salva.</p>
@@ -1241,6 +1249,7 @@
         body: JSON.stringify({
           encerrada: document.getElementById("cfEncerrada").checked,
           ranking_oculto: document.getElementById("cfOculto").checked,
+          quiz_integrado: document.getElementById("cfQuizIntegrado").checked,
           regenerar_senha_padrao: true,
         }),
       });
@@ -1449,6 +1458,7 @@
     const cfg = await r.json();
     document.getElementById("cfEncerrada").checked = Boolean(cfg.encerrada);
     document.getElementById("cfOculto").checked = Boolean(cfg.ranking_oculto);
+    document.getElementById("cfQuizIntegrado").checked = Boolean(cfg.quiz_integrado);
   }
 
   document.getElementById("cfSalvar").onclick = async () => {
@@ -1463,10 +1473,16 @@
         body: JSON.stringify({
           encerrada: document.getElementById("cfEncerrada").checked,
           ranking_oculto: document.getElementById("cfOculto").checked,
+          quiz_integrado: document.getElementById("cfQuizIntegrado").checked,
         }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.erro || "Erro ao salvar.");
+      // Confirma com o valor que voltou do servidor (não o que a gente acabou de
+      // mandar) — é a prova de que realmente ficou salvo, não só "parece" salvo.
+      document.getElementById("cfEncerrada").checked = Boolean(d.encerrada);
+      document.getElementById("cfOculto").checked = Boolean(d.ranking_oculto);
+      document.getElementById("cfQuizIntegrado").checked = Boolean(d.quiz_integrado);
       suc.hidden = false;
       setTimeout(() => (suc.hidden = true), 2500);
     } catch (e) {

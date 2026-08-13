@@ -381,26 +381,29 @@ module.exports = async (req, res) => {
   if (resource === "configuracao") {
     if (req.method === "GET") {
       const { rows } = await pool.query(
-        "SELECT encerrada, ranking_oculto, senha_padrao_jurado FROM configuracao WHERE id = 1"
+        "SELECT encerrada, ranking_oculto, senha_padrao_jurado, quiz_integrado FROM configuracao WHERE id = 1"
       );
-      return res.status(200).json(rows[0] || { encerrada: false, ranking_oculto: false, senha_padrao_jurado: null });
+      return res.status(200).json(
+        rows[0] || { encerrada: false, ranking_oculto: false, senha_padrao_jurado: null, quiz_integrado: false }
+      );
     }
     if (req.method === "PUT") {
-      const { encerrada, ranking_oculto, senha_padrao_jurado, regenerar_senha_padrao } = req.body || {};
+      const { encerrada, ranking_oculto, senha_padrao_jurado, regenerar_senha_padrao, quiz_integrado } = req.body || {};
       if (regenerar_senha_padrao) {
         const nova = newToken().slice(0, 8);
         const { rows } = await pool.query(
-          `UPDATE configuracao SET encerrada = $1, ranking_oculto = $2, senha_padrao_jurado = $3, atualizado_em = now()
-           WHERE id = 1 RETURNING encerrada, ranking_oculto, senha_padrao_jurado`,
-          [Boolean(encerrada), Boolean(ranking_oculto), nova]
+          `UPDATE configuracao SET encerrada = $1, ranking_oculto = $2, senha_padrao_jurado = $3,
+             quiz_integrado = $4, atualizado_em = now()
+           WHERE id = 1 RETURNING encerrada, ranking_oculto, senha_padrao_jurado, quiz_integrado`,
+          [Boolean(encerrada), Boolean(ranking_oculto), nova, Boolean(quiz_integrado)]
         );
         return res.status(200).json(rows[0]);
       }
       const { rows } = await pool.query(
         `UPDATE configuracao SET encerrada = $1, ranking_oculto = $2,
-           senha_padrao_jurado = COALESCE($3, senha_padrao_jurado), atualizado_em = now()
-         WHERE id = 1 RETURNING encerrada, ranking_oculto, senha_padrao_jurado`,
-        [Boolean(encerrada), Boolean(ranking_oculto), senha_padrao_jurado ? String(senha_padrao_jurado).trim() : null]
+           senha_padrao_jurado = COALESCE($3, senha_padrao_jurado), quiz_integrado = $4, atualizado_em = now()
+         WHERE id = 1 RETURNING encerrada, ranking_oculto, senha_padrao_jurado, quiz_integrado`,
+        [Boolean(encerrada), Boolean(ranking_oculto), senha_padrao_jurado ? String(senha_padrao_jurado).trim() : null, Boolean(quiz_integrado)]
       );
       return res.status(200).json(rows[0]);
     }

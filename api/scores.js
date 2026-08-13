@@ -198,9 +198,14 @@ module.exports = async (req, res) => {
       "SELECT id, numero, ordem, nome, pontuacao_maxima FROM provas WHERE ativo = true ORDER BY ordem ASC"
     );
     const { rows: schools } = await pool.query(
-      "SELECT id, nome, municipio, dia_apresentacao, ordem_apresentacao, cor_turma FROM schools WHERE ativo = true ORDER BY nome ASC"
+      `SELECT id, nome, municipio, dia_apresentacao, ordem_apresentacao, cor_turma FROM schools
+       WHERE ativo = true ORDER BY ordem_apresentacao ASC NULLS LAST, nome ASC`
     );
-    return res.status(200).json({ provas, schools });
+    // quiz_integrado: liga o /quiz na lista real de escolas e destrava o envio pro
+    // ranking oficial. Rota pública (sem login) porque o /quiz não tem sessão de
+    // jurado nem de admin — só precisa saber se está ligado ou não.
+    const config = await getConfiguracao(pool);
+    return res.status(200).json({ provas, schools, quiz_integrado: Boolean(config.quiz_integrado) });
   }
 
   if (req.method === "GET" && resource === "mine") {

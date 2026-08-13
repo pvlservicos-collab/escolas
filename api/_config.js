@@ -3,9 +3,9 @@
 
 async function getConfiguracao(pool) {
   const { rows } = await pool.query(
-    "SELECT encerrada, ranking_oculto, senha_padrao_jurado FROM configuracao WHERE id = 1"
+    "SELECT encerrada, ranking_oculto, senha_padrao_jurado, quiz_integrado FROM configuracao WHERE id = 1"
   );
-  return rows[0] || { encerrada: false, ranking_oculto: false, senha_padrao_jurado: null };
+  return rows[0] || { encerrada: false, ranking_oculto: false, senha_padrao_jurado: null, quiz_integrado: false };
 }
 
 async function registrarLog(pool, { pontuacaoId, juradoId, escolaId, provaId, acao, valorAntigo, valorNovo, autor, motivo }) {

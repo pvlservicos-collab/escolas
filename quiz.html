@@ -411,6 +411,65 @@
 
   .lancar-nota-nota { font-size: 12.5px; font-weight: 600; color: var(--apagado); text-align: center; margin: 10px 0 0; }
 
+  .botao-lancar-nota.destravado {
+    border-style: solid;
+    border-color: var(--verde);
+    background: linear-gradient(150deg, #58e79c, #219c5b);
+    color: #06301a;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #12653a, 0 12px 22px rgba(47, 191, 113, 0.35);
+  }
+  .botao-lancar-nota.destravado:active { transform: translateY(4px); box-shadow: 0 2px 0 #12653a; }
+
+  .envio-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    background: rgba(47, 191, 113, 0.08);
+    border: 1.5px solid var(--verde);
+    border-radius: 14px;
+    margin-top: 6px;
+  }
+  .envio-form p { font-size: 13px; font-weight: 600; color: #d5f5e3; line-height: 1.5; margin: 0; }
+  .envio-input {
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    background: var(--card-2);
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+  }
+  .envio-botoes { display: flex; gap: 10px; }
+  .envio-cancelar, .envio-confirmar {
+    flex: 1;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+  }
+  .envio-cancelar { background: rgba(255, 255, 255, 0.08); color: #fff; }
+  .envio-confirmar { background: linear-gradient(150deg, #58e79c, #219c5b); color: #06301a; }
+  .envio-cancelar:disabled, .envio-confirmar:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .envio-resultado {
+    margin-top: 10px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: rgba(47, 191, 113, 0.1);
+    border: 1.5px solid var(--verde);
+    font-size: 13px;
+    font-weight: 600;
+    color: #d5f5e3;
+    line-height: 1.5;
+  }
+  .envio-resultado.com-erro { background: rgba(229, 72, 77, 0.1); border-color: var(--vermelho); color: #f3d9da; }
+
   /* ---------- classificação fase 1 ---------- */
   .tabela-classificacao { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
   .linha-classificacao {
@@ -744,10 +803,16 @@
 </div>
 
 <script>
-  // 16 escolas de teste (sem integração com o cadastro real ainda) — a ordem da
-  // lista já funciona como "ordem de sorteio" para este teste.
-  const ESCOLAS = Array.from({ length: 16 }, (_, i) => ({ id: i + 1, nome: "Escola " + (i + 1) }));
-  const ESCOLA_POR_ID = Object.fromEntries(ESCOLAS.map((e) => [e.id, e]));
+  // Por padrão usa 16 escolas de teste (sem integração com o cadastro real). Quando
+  // a config "Integrar quiz ao sistema" está ligada no admin, inicializarEscolas()
+  // troca isso pela lista real antes do primeiro render — ver o fim do arquivo.
+  let ESCOLAS = Array.from({ length: 16 }, (_, i) => ({ id: i + 1, nome: "Escola " + (i + 1) }));
+  let ESCOLA_POR_ID = Object.fromEntries(ESCOLAS.map((e) => [e.id, e]));
+  let quizIntegrado = false;
+  let provaQuizId = null; // id real da Prova 7 "Quiz Torta na Cara", só existe com a integração ligada
+  let envioAberto = false;
+  let enviando = false;
+  let ultimoEnvioResultado = null; // { sucesso, erro, mensagens } depois de tentar lançar
 
   // Mesmo banco de perguntas da página /perguntas, só que aqui é usado para sortear
   // (não para consulta). Fase 1: capitais, plurais, coletivos, gentílicos. Fase 2:
@@ -912,11 +977,12 @@
 
   function estadoPadrao() {
     return {
+      integrado: quizIntegrado, // pra qual roster (teste ou real) esse estado foi montado
       filaFase1: embaralhar(BANCO_FASE1.map((_, i) => i)),
       filaFase2: embaralhar(BANCO_FASE2.map((_, i) => i)),
       fase1: {
-        atual: 0, // índice do slide (escola) mostrado agora, 0 a 15
-        porEscola: {}, // preenchido sob demanda: { [escolaId]: { perguntas, respostas, inicio, fim, penalidade } }
+        atual: 0, // índice do slide (escola) mostrado agora, 0 a ESCOLAS.length-1
+        porEscola: {}, // preenchido sob demanda: { [escolaId]: { perguntas, respostas, inicio, fim, penalidades } }
         concluida: false,
         desempateResolvido: [], // ids na ordem que o host escolheu no confronto de tempo, mais rápida primeiro
       },
@@ -1051,14 +1117,14 @@
 
   function navegarFase1(delta) {
     const novo = estado.fase1.atual + delta;
-    if (novo < 0 || novo > 15) return;
+    if (novo < 0 || novo > ESCOLAS.length - 1) return;
     estado.fase1.atual = novo;
     salvarEstado();
     render();
   }
 
   function irParaEscolaFase1(indice) {
-    if (indice < 0 || indice > 15 || indice === estado.fase1.atual) return;
+    if (indice < 0 || indice > ESCOLAS.length - 1 || indice === estado.fase1.atual) return;
     estado.fase1.atual = indice;
     salvarEstado();
     render();
@@ -1287,10 +1353,10 @@
     setaEsq.type = "button";
     setaEsq.disabled = idx === 0;
     setaEsq.onclick = () => navegarFase1(-1);
-    const titulo = elemento("span", "slide-titulo", escola.nome + " <small>(" + (idx + 1) + " de 16)</small>");
+    const titulo = elemento("span", "slide-titulo", escola.nome + " <small>(" + (idx + 1) + " de " + ESCOLAS.length + ")</small>");
     const setaDir = elemento("button", "seta-slide", "›");
     setaDir.type = "button";
-    setaDir.disabled = idx === 15;
+    setaDir.disabled = idx === ESCOLAS.length - 1;
     setaDir.onclick = () => navegarFase1(1);
     nav.append(setaEsq, titulo, setaDir);
     raiz.appendChild(nav);
@@ -1578,7 +1644,9 @@
     raiz.appendChild(elemento("p", "fase-sub", "Pontuação conforme a tabela de colocação do Art. 43 — revise antes de lançar."));
     raiz.appendChild(
       criarInstrucao(
-        "Essa é a pontuação final do quiz pra cada escola, já seguindo a tabela de colocação do Art. 43. <strong>Revise linha por linha</strong> antes de qualquer coisa — o botão de lançar nota ainda está travado, então por enquanto essa etapa é só conferência."
+        quizIntegrado
+          ? "Essa é a pontuação final do quiz pra cada escola, já seguindo a tabela de colocação do Art. 43. <strong>Revise linha por linha</strong> antes de clicar em lançar — essa ação grava as notas de verdade na Prova 7 do ranking oficial."
+          : "Essa é a pontuação final do quiz pra cada escola, já seguindo a tabela de colocação do Art. 43. <strong>Revise linha por linha</strong> antes de qualquer coisa — o botão de lançar nota ainda está travado, então por enquanto essa etapa é só conferência."
       )
     );
 
@@ -1608,11 +1676,92 @@
     });
     raiz.appendChild(tabela);
 
-    const btn = elemento("button", "botao-lancar-nota", "🔒 Lançar nota no ranking geral");
-    btn.type = "button";
-    btn.disabled = true;
-    raiz.appendChild(btn);
-    raiz.appendChild(elemento("p", "lancar-nota-nota", "Em breve: essa ação envia a pontuação do quiz direto para o ranking oficial."));
+    if (!quizIntegrado || provaQuizId == null) {
+      const btn = elemento("button", "botao-lancar-nota", "🔒 Lançar nota no ranking geral");
+      btn.type = "button";
+      btn.disabled = true;
+      raiz.appendChild(btn);
+      raiz.appendChild(
+        elemento(
+          "p",
+          "lancar-nota-nota",
+          "Ligue \"Integrar quiz ao sistema\" na aba Configurações do painel admin pra liberar esse envio."
+        )
+      );
+      return;
+    }
+
+    if (!envioAberto) {
+      const btn = elemento("button", "botao-lancar-nota destravado", "🚀 Lançar nota no ranking geral");
+      btn.type = "button";
+      btn.onclick = () => { envioAberto = true; render(); };
+      raiz.appendChild(btn);
+    } else {
+      const form = elemento(
+        "div",
+        "envio-form",
+        "<p>Confirme a senha do jurado mestre (Jure) pra lançar essas " +
+          ranking.length +
+          ' pontuações na Prova 7 "Quiz Torta na Cara" do ranking oficial.</p>'
+      );
+      const inputSenha = document.createElement("input");
+      inputSenha.type = "password";
+      inputSenha.className = "envio-input";
+      inputSenha.placeholder = "Senha do jurado mestre";
+      inputSenha.autocomplete = "off";
+      const linhaBotoes = elemento("div", "envio-botoes");
+      const btnCancelar = elemento("button", "envio-cancelar", "Cancelar");
+      btnCancelar.type = "button";
+      btnCancelar.disabled = enviando;
+      btnCancelar.onclick = () => { envioAberto = false; render(); };
+      const btnConfirmar = elemento("button", "envio-confirmar", enviando ? "Enviando…" : "Confirmar envio");
+      btnConfirmar.type = "button";
+      btnConfirmar.disabled = enviando;
+      btnConfirmar.onclick = () => enviarNotasQuiz(inputSenha.value, pontosPorEscola);
+      linhaBotoes.append(btnCancelar, btnConfirmar);
+      form.append(inputSenha, linhaBotoes);
+      raiz.appendChild(form);
+    }
+
+    if (ultimoEnvioResultado) {
+      const r = ultimoEnvioResultado;
+      const resumo = elemento(
+        "div",
+        "envio-resultado" + (r.erro ? " com-erro" : ""),
+        "<p><strong>" + r.sucesso + "</strong> nota(s) lançada(s) com sucesso" + (r.erro ? ", <strong>" + r.erro + "</strong> com erro." : ".") + "</p>" +
+          (r.mensagens.length ? "<p>" + r.mensagens.join("<br>") + "</p>" : "")
+      );
+      raiz.appendChild(resumo);
+    }
+  }
+
+  async function enviarNotasQuiz(senha, pontosPorEscola) {
+    if (!senha) { alert("Digite a senha do jurado mestre."); return; }
+    enviando = true;
+    render();
+
+    const resultado = { sucesso: 0, erro: 0, mensagens: [] };
+    const alvos = ESCOLAS.filter((e) => pontosPorEscola[e.id] != null);
+    for (const e of alvos) {
+      try {
+        const r = await fetch("/api/scores", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: "jure", senha, escola_id: e.id, prova_id: provaQuizId, pontos: pontosPorEscola[e.id] }),
+        });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.erro || "erro ao enviar");
+        resultado.sucesso++;
+      } catch (err) {
+        resultado.erro++;
+        resultado.mensagens.push(e.nome + ": " + (err.message || "erro"));
+      }
+    }
+
+    enviando = false;
+    envioAberto = false;
+    ultimoEnvioResultado = resultado;
+    render();
   }
 
   function render() {
@@ -1624,5 +1773,37 @@
     renderRankingFinal(raiz);
   }
 
-  render();
+  // Busca a config pública (sem login) antes do primeiro render: se "Integrar quiz
+  // ao sistema" estiver ligado no admin, troca as 16 escolas de teste pelas reais e
+  // guarda o id da Prova 7 pra liberar o envio. Se o estado salvo no navegador foi
+  // montado pro outro roster (teste <-> real), descarta e começa limpo — misturar
+  // ids de um roster com nomes do outro ia quebrar tudo silenciosamente.
+  async function inicializarEscolas() {
+    try {
+      const r = await fetch("/api/scores?resource=meta");
+      if (r.ok) {
+        const meta = await r.json();
+        quizIntegrado = Boolean(meta.quiz_integrado);
+        if (quizIntegrado && Array.isArray(meta.schools) && meta.schools.length) {
+          ESCOLAS = meta.schools.map((s) => ({ id: s.id, nome: s.nome }));
+          ESCOLA_POR_ID = Object.fromEntries(ESCOLAS.map((e) => [e.id, e]));
+        }
+        if (Array.isArray(meta.provas)) {
+          const provaQuiz = meta.provas.find((p) => p.numero === "7");
+          provaQuizId = provaQuiz ? provaQuiz.id : null;
+        }
+      }
+    } catch (e) {
+      /* sem rede — segue com as 16 escolas de teste */
+    }
+
+    if (Boolean(estado.integrado) !== quizIntegrado) {
+      estado = estadoPadrao();
+    }
+    estado.integrado = quizIntegrado;
+    salvarEstado();
+    render();
+  }
+
+  inicializarEscolas();
 </script>
