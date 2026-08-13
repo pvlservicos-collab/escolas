@@ -1,0 +1,901 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz Torta na Cara — Gincana Estadual da Juventude 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --fundo: #0d0f16;
+    --card: #1b1f2c;
+    --card-2: #232838;
+    --linha: #313749;
+    --texto: #f5f6fa;
+    --apagado: #8b93a9;
+    --azul: #4f7cff;
+    --laranja: #f7941d;
+    --verde: #2fbf71;
+    --vermelho: #e5484d;
+    --dourado: #ffcf4d;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+
+  body {
+    margin: 0;
+    padding: 30px 16px 90px;
+    background: var(--fundo);
+    color: var(--texto);
+    font-family: "Nunito", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 760px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 26px; }
+
+  .faixa {
+    display: inline-block;
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #fff;
+    background: var(--azul);
+    padding: 7px 16px;
+    border-radius: 7px;
+    transform: rotate(-2deg);
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    font-size: 26px;
+    color: #fff;
+    margin: 0 0 6px;
+  }
+
+  header p.sub { margin: 0; font-size: 13.5px; font-weight: 700; color: var(--apagado); }
+
+  .reiniciar {
+    display: block;
+    margin: 14px auto 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--apagado);
+    background: none;
+    border: 1px solid var(--linha);
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .reiniciar:hover { color: #fff; border-color: var(--apagado); }
+
+  .fase-titulo {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 19px;
+    font-weight: 800;
+    color: #fff;
+    margin: 40px 0 4px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--linha);
+  }
+  .fase-titulo:first-of-type { margin-top: 4px; }
+  .fase-sub { font-size: 13px; font-weight: 600; color: var(--apagado); margin: 0 0 16px; }
+
+  /* ---------- seleção de escola (Fase 1) ---------- */
+  .escolas-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+
+  .chip-escola {
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 8px 13px;
+    border-radius: 999px;
+    border: 1.5px solid var(--linha);
+    background: var(--card);
+    color: var(--texto);
+    cursor: pointer;
+  }
+  .chip-escola:hover { border-color: var(--azul); }
+  .chip-escola.ativa { background: var(--azul); border-color: var(--azul); color: #fff; }
+  .chip-escola.concluida { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
+  .chip-escola .marca { opacity: 0.75; font-weight: 600; margin-left: 4px; }
+
+  /* ---------- card da pergunta ---------- */
+  .card-quiz {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+    margin-bottom: 14px;
+  }
+
+  .card-idle {
+    text-align: center;
+    padding: 30px 10px;
+    filter: blur(5px);
+    opacity: 0.45;
+    user-select: none;
+  }
+  .card-idle p { font-size: 17px; font-weight: 700; margin: 0; color: var(--apagado); }
+
+  .rotulo-vez {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 12.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--dourado);
+    margin: 0 0 10px;
+  }
+
+  .pergunta-texto {
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.35;
+    color: #fff;
+    margin: 0 0 16px;
+  }
+
+  .resposta-linha { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+
+  .resposta-caixa {
+    flex: 1;
+    min-width: 0;
+    border-radius: 10px;
+    padding: 11px 13px;
+    background: var(--card-2);
+    transition: background 0.25s ease;
+  }
+  .resposta-caixa span {
+    display: block;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--card-2);
+    transition: color 0.25s ease;
+  }
+  .resposta-caixa.revelada { background: #2a3e2f; }
+  .resposta-caixa.revelada span { color: #7de3a0; }
+
+  .botao-olho {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: var(--card-2);
+    color: var(--apagado);
+    cursor: pointer;
+    padding: 0;
+  }
+  .botao-olho:hover { color: #fff; }
+
+  .botoes-resultado { display: flex; gap: 12px; }
+  .botao-resultado {
+    flex: 1;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    padding: 18px 10px;
+    border-radius: 12px;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+  }
+  .botao-resultado:active { transform: scale(0.97); }
+  .botao-errou { background: var(--vermelho); }
+  .botao-acertou { background: var(--verde); }
+
+  .botoes-resultado.duas-escolas { flex-direction: column; }
+  @media (min-width: 480px) {
+    .botoes-resultado.duas-escolas { flex-direction: row; }
+  }
+  .botao-resultado.escola-a { background: var(--azul); }
+  .botao-resultado.escola-b { background: var(--laranja); }
+
+  .sortear-pergunta {
+    display: block;
+    width: 100%;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: var(--azul);
+    color: #fff;
+    cursor: pointer;
+  }
+
+  /* ---------- ranking final do quiz ---------- */
+  .linha-classificacao .acertos-fase1 { font-size: 12px; font-weight: 600; color: var(--apagado); margin-left: 6px; }
+
+  .botao-lancar-nota {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1.5px dashed var(--linha);
+    background: #262b3a;
+    color: #7b8296;
+    cursor: not-allowed;
+    margin-top: 6px;
+  }
+
+  .lancar-nota-nota { font-size: 12.5px; font-weight: 600; color: var(--apagado); text-align: center; margin: 10px 0 0; }
+
+  /* ---------- classificação fase 1 ---------- */
+  .tabela-classificacao { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .linha-classificacao {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--card);
+  }
+  .linha-classificacao.classificada { background: #1c3226; }
+  .linha-classificacao .pos { font-family: "Baloo 2", sans-serif; font-weight: 800; color: var(--apagado); width: 26px; }
+  .linha-classificacao .nome { flex: 1; font-weight: 700; }
+  .linha-classificacao .acertos { font-family: "Baloo 2", sans-serif; font-weight: 800; color: var(--dourado); }
+  .linha-classificacao .selo {
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+  .linha-classificacao.classificada .selo { background: rgba(47, 191, 113, 0.22); color: #7de3a0; }
+  .linha-classificacao:not(.classificada) .selo { background: rgba(229, 72, 77, 0.18); color: #f3999b; }
+
+  .botao-gerar-chave {
+    display: block;
+    width: 100%;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    background: var(--dourado);
+    color: #3a2c00;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+
+  /* ---------- chaveamento fase 2 ---------- */
+  .rodada-titulo {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 15.5px;
+    font-weight: 800;
+    color: var(--apagado);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 26px 0 12px;
+  }
+
+  .confronto-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+
+  .confronto-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .confronto-cabecalho .vs { color: var(--apagado); font-size: 12px; }
+  .confronto-cabecalho .nome-a { color: var(--azul); }
+  .confronto-cabecalho .nome-b { color: var(--laranja); }
+
+  .confronto-vencedor {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #7de3a0;
+    margin-top: 10px;
+  }
+
+  .confronto-aguardando { font-size: 13px; font-weight: 600; color: var(--apagado); }
+
+  .campeao-card {
+    text-align: center;
+    padding: 34px 20px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #3a2c00, #5a4400);
+    margin-top: 20px;
+  }
+  .campeao-card .titulo { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--dourado); margin: 0 0 8px; }
+  .campeao-card .nome { font-family: "Baloo 2", sans-serif; font-size: 28px; font-weight: 800; color: #fff; margin: 0; }
+
+  @media (max-width: 480px) {
+    .pergunta-texto { font-size: 20px; }
+    h1 { font-size: 22px; }
+  }
+</style>
+
+<div class="container">
+  <header>
+    <div class="faixa">Comissão Organizadora · Sistema de teste</div>
+    <h1>Quiz "Torta na Cara"</h1>
+    <p class="sub">Art. 43 do Edital 005/2026 — Fase 1 (seletiva) e Fase 2 (chaveamento)</p>
+    <button class="reiniciar" id="btnReiniciar">Reiniciar teste</button>
+  </header>
+
+  <div id="conteudo"></div>
+</div>
+
+<script>
+  const ICONE_OLHO_ABERTO =
+    '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const ICONE_OLHO_FECHADO =
+    '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+  // 16 escolas de teste (sem integração com o cadastro real ainda) — a ordem da
+  // lista já funciona como "ordem de sorteio" para este teste.
+  const ESCOLAS = Array.from({ length: 16 }, (_, i) => ({ id: i + 1, nome: "Escola " + (i + 1) }));
+  const ESCOLA_POR_ID = Object.fromEntries(ESCOLAS.map((e) => [e.id, e]));
+
+  // Mesmo banco de perguntas da página /perguntas, só que aqui é usado para sortear
+  // (não para consulta). Fase 1: capitais, plurais, coletivos, gentílicos. Fase 2:
+  // conhecimentos gerais, geografia, história, português, expofeira/cultura regional.
+  const BANCO_FASE1 = [
+    ["Qual é a capital do estado do Tocantins?", "Palmas"],
+    ["Qual é a capital do Piauí?", "Teresina"],
+    ["Qual é a capital de Roraima?", "Boa Vista"],
+    ["Qual é a capital de Rondônia?", "Porto Velho"],
+    ["Qual é a capital da Argentina?", "Buenos Aires"],
+    ["Qual é a capital de Santa Catarina?", "Florianópolis"],
+    ["Qual é a capital do Japão?", "Tóquio"],
+    ["Qual é a capital de Sergipe?", "Aracaju"],
+    ["Qual é a capital do Acre?", "Rio Branco"],
+    ["Qual é a capital da França?", "Paris"],
+    ["Qual é a capital de Mato Grosso do Sul?", "Campo Grande"],
+    ["Qual é a capital da Paraíba?", "João Pessoa"],
+    ["Qual é a capital da Espanha?", "Madri"],
+    ["Qual é a capital do Amapá?", "Macapá"],
+    ["Qual é a capital do Espírito Santo?", "Vitória"],
+    ["Qual é a capital do Maranhão?", "São Luís"],
+    ["Qual é o plural de \"cidadão\"?", "Cidadãos"],
+    ["Qual é o plural de \"troféu\"?", "Troféus (e não troféis)"],
+    ["Qual é o plural de \"girassol\"?", "Girassóis"],
+    ["Qual é o plural de \"degrau\"?", "Degraus"],
+    ["Qual é o plural de \"alemão\"?", "Alemães"],
+    ["Qual é o plural de \"capitão\"?", "Capitães"],
+    ["Qual é o plural de \"fóssil\"?", "Fósseis"],
+    ["Qual é o plural de \"hambúrguer\"?", "Hambúrgueres"],
+    ["Qual é o plural de \"réptil\"?", "Répteis"],
+    ["Qual é o plural de \"lápis\"?", "Lápis (invariável — muda só o artigo: \"os lápis\")"],
+    ["Qual é o plural de \"escrivão\"?", "Escrivães"],
+    ["Qual é o plural de \"gravidez\"?", "Gravidezes"],
+    ["Qual é o plural de \"pastel\"?", "Pastéis"],
+    ["Qual é o plural de \"tórax\"?", "Tórax (invariável)"],
+    ["Qual é o plural de \"guarda-chuva\"?", "Guarda-chuvas"],
+    ["Qual é o plural de \"amor-perfeito\"?", "Amores-perfeitos"],
+    ["Qual é o plural de \"pão\"?", "Pães"],
+    ["Qual é o plural de \"mel\"?", "Méis (ou meles)"],
+    ["Qual é o plural de \"túnel\"?", "Túneis"],
+    ["Qual é o plural de \"vírus\"?", "Vírus (invariável)"],
+    ["Qual é o plural de \"caráter\"?", "Caracteres"],
+    ["Qual é o plural de \"limão\"?", "Limões"],
+    ["Qual é o plural de \"cônsul\"?", "Cônsules"],
+    ["Qual é o plural de \"óculos\"?", "Óculos (já é plural: \"os óculos\")"],
+    ["Qual é o plural de \"abdômen\"?", "Abdômenes (ou abdomens)"],
+    ["Qual é o coletivo de lobos?", "Alcateia"],
+    ["Qual é o coletivo de ilhas?", "Arquipélago"],
+    ["Qual é o coletivo de estrelas?", "Constelação"],
+    ["Qual é o coletivo de abelhas?", "Enxame"],
+    ["Qual é o coletivo de cães de caça?", "Matilha"],
+    ["Qual é o coletivo de peixes?", "Cardume"],
+    ["Qual é o coletivo de elefantes?", "Manada"],
+    ["Qual é o coletivo de aviões?", "Esquadrilha"],
+    ["Qual é o coletivo de navios ou ônibus?", "Frota"],
+    ["Qual é o coletivo de mapas?", "Atlas"],
+    ["Qual é o coletivo de atores?", "Elenco"],
+    ["Qual é o coletivo de plantas de uma região?", "Flora"],
+    ["Qual é o coletivo de animais de uma região?", "Fauna"],
+    ["Qual é o coletivo de obras de arte, quadros?", "Pinacoteca"],
+    ["Qual é o coletivo de chaves?", "Molho"],
+    ["Qual é o coletivo de porcos?", "Vara"],
+    ["Qual é o coletivo de gafanhotos?", "Nuvem"],
+    ["Qual é o coletivo de 500 folhas de papel?", "Resma"],
+    ["Qual é o coletivo de músicos tocando instrumentos?", "Banda (ou orquestra)"],
+    ["Qual é o coletivo de ladrões ou bandidos?", "Quadrilha (ou bando)"],
+    ["Qual é o coletivo de alhos ou cebolas?", "Réstea"],
+    ["Qual é o coletivo de pássaros?", "Bando"],
+    ["Qual é o coletivo de livros organizados?", "Biblioteca"],
+    ["Qual é o coletivo de uvas ou bananas?", "Cacho"],
+    ["Qual é o coletivo de ovelhas?", "Rebanho"],
+    ["Quem nasce na cidade do Rio de Janeiro é?", "Carioca"],
+    ["Quem nasce no estado do Rio de Janeiro é?", "Fluminense"],
+    ["Quem nasce no estado do Espírito Santo é?", "Capixaba (ou Espírito-santense)"],
+    ["Quem nasce no estado do Rio Grande do Norte é?", "Potiguar (ou Norte-rio-grandense)"],
+    ["Quem nasce no estado do Rio Grande do Sul é?", "Gaúcho (ou Sul-rio-grandense)"],
+    ["Quem nasce na cidade de Salvador é?", "Soteropolitano"],
+    ["Quem nasce na cidade de São Paulo é?", "Paulistano"],
+    ["Quem nasce no estado de São Paulo é?", "Paulista"],
+    ["Quem nasce em Brasília é?", "Brasiliense"],
+    ["Quem nasce na cidade de Florianópolis é?", "Florianopolitano (ou manezinho da ilha)"],
+    ["Quem nasce no Japão é?", "Japonês (ou nipônico)"],
+    ["Quem nasce na cidade de Manaus é?", "Manauara (ou manauense)"],
+    ["Quem nasce no estado de Mato Grosso é?", "Mato-grossense"],
+    ["Quem nasce na cidade de Goiânia é?", "Goianiense"],
+    ["Quem nasce no estado de Goiás é?", "Goiano"],
+    ["Quem nasce na cidade de Belém é?", "Belenense"],
+    ["Quem nasce em Moçambique é?", "Moçambicano"],
+    ["Quem nasce na Costa Rica é?", "Costarriquenho"],
+    ["Quem nasce em Israel é?", "Israelense"],
+    ["Quem nasce na Bélgica é?", "Belga"],
+    ["Quem nasce na Nova Zelândia é?", "Neozelandês"],
+    ["Quem nasce na Croácia é?", "Croata"],
+    ["Quem nasce nos Países Baixos (Holanda) é?", "Neerlandês (ou Holandês)"],
+    ["Quem nasce em El Salvador é?", "Salvadorenho"],
+    ["Quem nasce na cidade de Macapá é?", "Macapaense"],
+  ];
+
+  const BANCO_FASE2 = [
+    ["Qual é o maior oceano do planeta Terra?", "Oceano Pacífico"],
+    ["Como se chama a linha imaginária que divide a Terra em Hemisfério Norte e Hemisfério Sul?", "Linha do Equador"],
+    ["Quantos continentes existem no modelo tradicional ensinado no Brasil?", "Seis (América, Europa, África, Ásia, Oceania e Antártida)"],
+    ["Qual é o metal precioso cujo símbolo químico é \"Au\"?", "Ouro"],
+    ["Qual é o idioma mais falado do mundo em número de falantes nativos?", "Mandarim"],
+    ["Quem pintou a famosa obra de arte \"Monalisa\"?", "Leonardo da Vinci"],
+    ["Em qual esporte o Brasil é o maior campeão mundial masculino, com cinco títulos?", "Futebol"],
+    ["Qual é o maior estado do Brasil em extensão territorial?", "Amazonas"],
+    ["Qual é o menor estado do Brasil em extensão territorial?", "Sergipe"],
+    ["Em qual continente fica localizado o Deserto do Saara?", "Continente Africano (África)"],
+    ["Qual rio corta a região Norte do Brasil e é considerado o maior do mundo em volume de água?", "Rio Amazonas"],
+    ["Qual é a cadeia de montanhas que atravessa a América do Sul de norte a sul?", "Cordilheira dos Andes"],
+    ["Qual é o bioma predominante na região Centro-Oeste do Brasil?", "Cerrado"],
+    ["Qual território faz fronteira com o Amapá ao Norte?", "Guiana Francesa (pertencente à França)"],
+    ["Quem foi o primeiro presidente da República do Brasil?", "Marechal Deodoro da Fonseca"],
+    ["Qual evento, ocorrido em 1789, marcou o início da Idade Contemporânea e a queda da monarquia absolutista na Europa?", "Revolução Francesa"],
+    ["Quem assinou a Lei Áurea, em 1888, abolindo a escravidão no Brasil?", "Princesa Isabel"],
+    ["Em que país europeu teve início a Revolução Industrial no século XVIII?", "Inglaterra (ou Reino Unido)"],
+    ["Qual foi o país responsável por lançar as bombas atômicas sobre as cidades de Hiroshima e Nagasaki em 1945?", "Estados Unidos"],
+    ["Qual líder sul-africano ficou preso por 27 anos e depois se tornou presidente do país, lutando contra o Apartheid?", "Nelson Mandela"],
+    ["A capital do Brasil foi transferida do Rio de Janeiro para Brasília durante o governo de qual presidente?", "Juscelino Kubitschek (JK)"],
+    ["Na frase \"O choro é livre\", qual é o sujeito da oração?", "O choro"],
+    ["Quando dizemos \"Estou morrendo de fome\", usamos um exagero intencional. Qual é essa figura de linguagem?", "Hipérbole"],
+    ["Atribuir características humanas a seres inanimados, como em \"O vento sussurrava nas árvores\", é qual figura de linguagem?", "Personificação (ou Prosopopeia)"],
+    ["Como se chama a classe de palavras usada para dar nome aos seres, objetos, lugares e sentimentos?", "Substantivo"],
+    ["Na frase \"Ele é um leão em campo\", ocorre uso de qual figura de linguagem?", "Metáfora"],
+    ["Qual é o antônimo de \"efêmero\"?", "Duradouro (ou permanente / eterno)"],
+    ["Qual é a figura de linguagem usada para suavizar ideias?", "Eufemismo"],
+    ["Na frase \"Que inteligente! Errou a resposta\", qual figura de linguagem está em uso?", "Ironia"],
+    ["Qual título recebe a mulher que é eleita representante da expofeira em cada edição?", "Rainha da expofeira"],
+    ["Qual número da edição da expofeira que está sendo realizada em 2026?", "55ª expofeira / ed. 55"],
+    ["Em qual semestre ocorre a realização da expofeira?", "2º semestre"],
+    ["Como é chamado o tradicional desfile de cavaleiros e amazonas nas ruas da cidade que costuma anunciar a abertura da Expofeira?", "Cavalgada"],
+    ["Como é chamada a competição de montaria em touro que ocorre anualmente na expofeira?", "Rodeio"],
+    ["Qual o nome do espaço em que é realizada a expofeira?", "Parque de exposições da fazendinha"],
+    ["Qual artista nacional se apresentou no primeiro dia da expofeira 2026?", "Léo Santana"],
+    ["Em qual bairro ou distrito de Macapá acontece tradicionalmente a Expofeira?", "Fazendinha"],
+    ["Como é chamado o espaço em que tem exposição especial do açaí?", "Açaiódromo"],
+    ["Qual o nome da área em que ficam localizados os brinquedos, como a roda gigante?", "Parque de diversões"],
+    ["Qual parte da programação da Expofeira atrai maior público?", "Shows"],
+    ["Como é chamado o espaço da expofeira em que se concentram restaurantes e lanchonetes?", "Praça de alimentação"],
+    ["Na expofeira, o dia cuja programação é voltada para pais, filhos e parentes aproveitarem juntos é...?", "O dia da família"],
+    ["Durante a expofeira, em qual animal é possível fazer um passeio de montaria?", "Cavalo"],
+    ["Para compor o \"look ideal\" para a expofeira, qual calçado é mais utilizado?", "Botas"],
+    ["A Rodovia Josmar Chaves, principal via de acesso para a Expofeira, também é conhecida por qual nome?", "Rod. Juscelino Kubitscheck"],
+    ["Qual ritmo musical e dança de roda é a maior expressão cultural do Amapá, reconhecido como Patrimônio Cultural Imaterial do Brasil?", "Marabaixo"],
+    ["Onde fica localizado o monumento Marco Zero do Equador no estado do Amapá?", "Macapá"],
+    ["Na culinária amapaense e paraense, qual prato típico quente é feito com tucupi, goma de mandioca, jambu e camarão seco?", "Tacacá"],
+    ["A Fortaleza de São José de Macapá foi construída pelos portugueses principalmente para proteger o território das invasões de qual país?", "França"],
+    ["A festa de São Tiago, que encena a batalha entre mouros e cristãos, acontece em qual município do Amapá?", "Mazagão (Mazagão Velho)"],
+  ];
+
+  const CHAVE_ESTADO = "gincana_quiz_estado_v1";
+
+  function embaralhar(lista) {
+    const copia = [...lista];
+    for (let i = copia.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copia[i], copia[j]] = [copia[j], copia[i]];
+    }
+    return copia;
+  }
+
+  function estadoPadrao() {
+    return {
+      filaFase1: embaralhar(BANCO_FASE1.map((_, i) => i)),
+      filaFase2: embaralhar(BANCO_FASE2.map((_, i) => i)),
+      fase1: {
+        turnos: Object.fromEntries(ESCOLAS.map((e) => [e.id, 0])),
+        acertos: Object.fromEntries(ESCOLAS.map((e) => [e.id, 0])),
+        escolaAtivaId: null,
+        perguntaIndice: null,
+        revelado: false,
+        concluida: false,
+      },
+      classificadas: null,
+      fase2: null,
+    };
+  }
+
+  function carregarEstado() {
+    try {
+      const bruto = localStorage.getItem(CHAVE_ESTADO);
+      if (bruto) return JSON.parse(bruto);
+    } catch (e) { /* estado corrompido, começa do zero */ }
+    return estadoPadrao();
+  }
+
+  let estado = carregarEstado();
+
+  function salvarEstado() {
+    localStorage.setItem(CHAVE_ESTADO, JSON.stringify(estado));
+  }
+
+  function proximaPerguntaFase1() {
+    if (!estado.filaFase1.length) estado.filaFase1 = embaralhar(BANCO_FASE1.map((_, i) => i));
+    return estado.filaFase1.pop();
+  }
+
+  function proximaPerguntaFase2() {
+    if (!estado.filaFase2.length) estado.filaFase2 = embaralhar(BANCO_FASE2.map((_, i) => i));
+    return estado.filaFase2.pop();
+  }
+
+  /* ---------------- Fase 1 ---------------- */
+
+  function selecionarEscolaFase1(id) {
+    if (estado.fase1.turnos[id] >= 5) return;
+    estado.fase1.escolaAtivaId = id;
+    estado.fase1.perguntaIndice = proximaPerguntaFase1();
+    estado.fase1.revelado = false;
+    salvarEstado();
+    render();
+  }
+
+  function marcarResultadoFase1(correto) {
+    const id = estado.fase1.escolaAtivaId;
+    if (id == null) return;
+    estado.fase1.turnos[id] += 1;
+    if (correto) estado.fase1.acertos[id] += 1;
+    estado.fase1.escolaAtivaId = null;
+    estado.fase1.perguntaIndice = null;
+    estado.fase1.revelado = false;
+
+    if (ESCOLAS.every((e) => estado.fase1.turnos[e.id] >= 5)) {
+      estado.fase1.concluida = true;
+    }
+
+    salvarEstado();
+    render();
+  }
+
+  /* ---------------- Chaveamento (Fase 2) ---------------- */
+
+  function gerarChaveamento() {
+    const ranking = ESCOLAS
+      .map((e) => ({ id: e.id, acertos: estado.fase1.acertos[e.id] }))
+      .sort((a, b) => b.acertos - a.acertos || a.id - b.id);
+    const top8 = ranking.slice(0, 8).map((e) => e.id);
+    estado.classificadas = top8;
+
+    // Seed padrão de chave (1º x 8º, 4º x 5º, 3º x 6º, 2º x 7º) para que os dois
+    // melhores colocados só possam se encontrar na final.
+    const seed = [top8[0], top8[7], top8[3], top8[4], top8[2], top8[5], top8[1], top8[6]];
+    const confrontoVazio = () => ({ a: null, b: null, perguntaIndice: null, revelado: false, vencedor: null });
+
+    const quartas = [0, 2, 4, 6].map((i) => Object.assign(confrontoVazio(), { a: seed[i], b: seed[i + 1] }));
+    const semi = [confrontoVazio(), confrontoVazio()];
+    const final = [confrontoVazio()];
+
+    estado.fase2 = {
+      rodadas: [
+        { nome: "Quartas de Final", confrontos: quartas },
+        { nome: "Semifinal", confrontos: semi },
+        { nome: "Final", confrontos: final },
+      ],
+      campeaoId: null,
+    };
+
+    salvarEstado();
+    render();
+  }
+
+  function sortearPerguntaFase2(rIdx, cIdx) {
+    const confronto = estado.fase2.rodadas[rIdx].confrontos[cIdx];
+    if (confronto.a == null || confronto.b == null || confronto.vencedor) return;
+    confronto.perguntaIndice = proximaPerguntaFase2();
+    confronto.revelado = false;
+    salvarEstado();
+    render();
+  }
+
+  function marcarVencedorFase2(rIdx, cIdx, vencedorId) {
+    const rodada = estado.fase2.rodadas[rIdx];
+    const confronto = rodada.confrontos[cIdx];
+    if (confronto.perguntaIndice == null || confronto.vencedor) return;
+    confronto.vencedor = vencedorId;
+
+    const proximaRodada = estado.fase2.rodadas[rIdx + 1];
+    if (proximaRodada) {
+      const proximoIdx = Math.floor(cIdx / 2);
+      const proximo = proximaRodada.confrontos[proximoIdx];
+      if (cIdx % 2 === 0) proximo.a = vencedorId;
+      else proximo.b = vencedorId;
+    } else {
+      estado.fase2.campeaoId = vencedorId;
+    }
+
+    salvarEstado();
+    render();
+  }
+
+  document.getElementById("btnReiniciar").onclick = () => {
+    if (!confirm("Reiniciar o teste do zero? Todo o progresso do quiz será perdido.")) return;
+    estado = estadoPadrao();
+    salvarEstado();
+    render();
+  };
+
+  /* ---------------- renderização ---------------- */
+
+  function elemento(tag, className, html) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (html !== undefined) el.innerHTML = html;
+    return el;
+  }
+
+  function criarCaixaResposta(resposta) {
+    const linha = elemento("div", "resposta-linha");
+    const caixa = elemento("div", "resposta-caixa");
+    const span = document.createElement("span");
+    span.textContent = resposta;
+    caixa.appendChild(span);
+    const botao = elemento("button", "botao-olho", ICONE_OLHO_FECHADO);
+    botao.type = "button";
+    botao.title = "Revelar resposta";
+    botao.onclick = () => {
+      const revelada = caixa.classList.toggle("revelada");
+      botao.innerHTML = revelada ? ICONE_OLHO_ABERTO : ICONE_OLHO_FECHADO;
+      botao.title = revelada ? "Ocultar resposta" : "Revelar resposta";
+    };
+    linha.append(caixa, botao);
+    return linha;
+  }
+
+  function renderFase1(raiz) {
+    raiz.appendChild(elemento("h2", "fase-titulo", "Fase 1 — Seletiva"));
+    raiz.appendChild(elemento("p", "fase-sub", "Cada escola responde 5 perguntas. As 8 melhores avançam para o chaveamento."));
+
+    const chips = elemento("div", "escolas-chips");
+    ESCOLAS.forEach((e) => {
+      const turnos = estado.fase1.turnos[e.id];
+      const concluida = turnos >= 5;
+      const chip = elemento(
+        "button",
+        "chip-escola" + (e.id === estado.fase1.escolaAtivaId ? " ativa" : "") + (concluida ? " concluida" : ""),
+        e.nome + '<span class="marca">' + turnos + "/5</span>"
+      );
+      chip.type = "button";
+      chip.disabled = concluida;
+      chip.onclick = () => selecionarEscolaFase1(e.id);
+      chips.appendChild(chip);
+    });
+    raiz.appendChild(chips);
+
+    const card = elemento("div", "card-quiz");
+    if (estado.fase1.escolaAtivaId == null) {
+      card.appendChild(elemento("div", "card-idle", "<p>Selecione uma escola acima para sortear a próxima pergunta</p>"));
+    } else {
+      const escola = ESCOLA_POR_ID[estado.fase1.escolaAtivaId];
+      const [pergunta, resposta] = BANCO_FASE1[estado.fase1.perguntaIndice];
+      card.appendChild(elemento("p", "rotulo-vez", "Vez de: " + escola.nome));
+      card.appendChild(elemento("p", "pergunta-texto", pergunta));
+      card.appendChild(criarCaixaResposta(resposta));
+
+      const botoes = elemento("div", "botoes-resultado");
+      const bErrou = elemento("button", "botao-resultado botao-errou", "❌ Errou");
+      bErrou.type = "button";
+      bErrou.onclick = () => marcarResultadoFase1(false);
+      const bAcertou = elemento("button", "botao-resultado botao-acertou", "✅ Acertou");
+      bAcertou.type = "button";
+      bAcertou.onclick = () => marcarResultadoFase1(true);
+      botoes.append(bErrou, bAcertou);
+      card.appendChild(botoes);
+    }
+    raiz.appendChild(card);
+
+    if (estado.fase1.concluida) {
+      raiz.appendChild(elemento("h2", "fase-titulo", "Classificação da Fase 1"));
+      const ranking = ESCOLAS
+        .map((e) => ({ id: e.id, nome: e.nome, acertos: estado.fase1.acertos[e.id] }))
+        .sort((a, b) => b.acertos - a.acertos || a.id - b.id);
+
+      const jaClassificado = Boolean(estado.classificadas);
+      const tabela = elemento("div", "tabela-classificacao");
+      ranking.forEach((e, i) => {
+        const classificada = jaClassificado ? estado.classificadas.includes(e.id) : i < 8;
+        const linha = elemento(
+          "div",
+          "linha-classificacao" + (classificada ? " classificada" : ""),
+          '<span class="pos">' + (i + 1) + "º</span>" +
+            '<span class="nome">' + e.nome + "</span>" +
+            '<span class="acertos">' + e.acertos + "/5</span>" +
+            '<span class="selo">' + (classificada ? "Classificada" : "Eliminada") + "</span>"
+        );
+        tabela.appendChild(linha);
+      });
+      raiz.appendChild(tabela);
+
+      if (!estado.fase2) {
+        const btn = elemento("button", "botao-gerar-chave", "Gerar chaveamento da Fase 2 →");
+        btn.type = "button";
+        btn.onclick = gerarChaveamento;
+        raiz.appendChild(btn);
+      }
+    }
+  }
+
+  function renderConfronto(raiz, rIdx, cIdx, confronto) {
+    const card = elemento("div", "confronto-card");
+    const nomeA = confronto.a != null ? ESCOLA_POR_ID[confronto.a].nome : "?";
+    const nomeB = confronto.b != null ? ESCOLA_POR_ID[confronto.b].nome : "?";
+
+    card.appendChild(
+      elemento(
+        "div",
+        "confronto-cabecalho",
+        '<span class="nome-a">' + nomeA + "</span><span class=\"vs\">vs</span><span class=\"nome-b\">" + nomeB + "</span>"
+      )
+    );
+
+    if (confronto.a == null || confronto.b == null) {
+      card.appendChild(elemento("p", "confronto-aguardando", "Aguardando classificação dos confrontos anteriores…"));
+      raiz.appendChild(card);
+      return;
+    }
+
+    if (confronto.vencedor) {
+      card.appendChild(elemento("p", "confronto-vencedor", "🏆 Vencedora: " + ESCOLA_POR_ID[confronto.vencedor].nome));
+      raiz.appendChild(card);
+      return;
+    }
+
+    if (confronto.perguntaIndice == null) {
+      const btn = elemento("button", "sortear-pergunta", "🎲 Sortear pergunta");
+      btn.type = "button";
+      btn.onclick = () => sortearPerguntaFase2(rIdx, cIdx);
+      card.appendChild(btn);
+      raiz.appendChild(card);
+      return;
+    }
+
+    const [pergunta, resposta] = BANCO_FASE2[confronto.perguntaIndice];
+    card.appendChild(elemento("p", "pergunta-texto", pergunta));
+    card.appendChild(criarCaixaResposta(resposta));
+
+    const botoes = elemento("div", "botoes-resultado duas-escolas");
+    const bA = elemento("button", "botao-resultado escola-a", nomeA + " acertou");
+    bA.type = "button";
+    bA.onclick = () => marcarVencedorFase2(rIdx, cIdx, confronto.a);
+    const bB = elemento("button", "botao-resultado escola-b", nomeB + " acertou");
+    bB.type = "button";
+    bB.onclick = () => marcarVencedorFase2(rIdx, cIdx, confronto.b);
+    botoes.append(bA, bB);
+    card.appendChild(botoes);
+
+    raiz.appendChild(card);
+  }
+
+  function renderFase2(raiz) {
+    if (!estado.fase2) return;
+    raiz.appendChild(elemento("h2", "fase-titulo", "Fase 2 — Chaveamento"));
+    raiz.appendChild(elemento("p", "fase-sub", "Cada confronto vale uma pergunta — quem acertar primeiro avança na chave."));
+
+    estado.fase2.rodadas.forEach((rodada, rIdx) => {
+      raiz.appendChild(elemento("h3", "rodada-titulo", rodada.nome));
+      rodada.confrontos.forEach((confronto, cIdx) => renderConfronto(raiz, rIdx, cIdx, confronto));
+    });
+
+    if (estado.fase2.campeaoId != null) {
+      raiz.appendChild(
+        elemento(
+          "div",
+          "campeao-card",
+          '<p class="titulo">Campeã do Torta na Cara</p><p class="nome">🏆 ' + ESCOLA_POR_ID[estado.fase2.campeaoId].nome + "</p>"
+        )
+      );
+    }
+  }
+
+  // Tabela de pontuação do Art. 43: quem não se classifica na Fase 1 leva 5 pontos
+  // fixos de participação; a partir daí, cada rodada perdida na chave define o valor
+  // (perder nas quartas = "demais", 10 pts; na semi = 20 pts; na final = vice, 25
+  // pts; vencer a final = campeã, 30 pts). Só fecha quando o chaveamento termina.
+  function calcularPontuacaoFinal() {
+    const pontos = Object.fromEntries(ESCOLAS.map((e) => [e.id, null]));
+    if (!estado.classificadas) return pontos;
+
+    ESCOLAS.forEach((e) => {
+      if (!estado.classificadas.includes(e.id)) pontos[e.id] = 5;
+    });
+
+    if (!estado.fase2) return pontos;
+
+    const [quartas, semi, final] = estado.fase2.rodadas;
+    quartas.confrontos.forEach((c) => {
+      if (!c.vencedor) return;
+      pontos[c.a === c.vencedor ? c.b : c.a] = 10;
+    });
+    semi.confrontos.forEach((c) => {
+      if (!c.vencedor) return;
+      pontos[c.a === c.vencedor ? c.b : c.a] = 20;
+    });
+    final.confrontos.forEach((c) => {
+      if (!c.vencedor) return;
+      pontos[c.a === c.vencedor ? c.b : c.a] = 25;
+      pontos[c.vencedor] = 30;
+    });
+
+    return pontos;
+  }
+
+  function renderRankingFinal(raiz) {
+    if (!estado.fase2 || estado.fase2.campeaoId == null) return;
+
+    raiz.appendChild(elemento("h2", "fase-titulo", "Ranking do Quiz"));
+    raiz.appendChild(elemento("p", "fase-sub", "Pontuação conforme a tabela de colocação do Art. 43 — revise antes de lançar."));
+
+    const pontosPorEscola = calcularPontuacaoFinal();
+    const ranking = ESCOLAS
+      .map((e) => ({ id: e.id, nome: e.nome, acertosFase1: estado.fase1.acertos[e.id], pontos: pontosPorEscola[e.id] }))
+      .sort((a, b) => (b.pontos ?? -1) - (a.pontos ?? -1) || a.id - b.id);
+
+    const tabela = elemento("div", "tabela-classificacao");
+    ranking.forEach((e, i) => {
+      const linha = elemento(
+        "div",
+        "linha-classificacao classificada",
+        '<span class="pos">' + (i + 1) + "º</span>" +
+          '<span class="nome">' + e.nome + '<span class="acertos-fase1">(' + e.acertosFase1 + "/5 na fase 1)</span></span>" +
+          '<span class="acertos">' + e.pontos + " pts</span>"
+      );
+      tabela.appendChild(linha);
+    });
+    raiz.appendChild(tabela);
+
+    const btn = elemento("button", "botao-lancar-nota", "🔒 Lançar nota no ranking geral");
+    btn.type = "button";
+    btn.disabled = true;
+    raiz.appendChild(btn);
+    raiz.appendChild(elemento("p", "lancar-nota-nota", "Em breve: essa ação envia a pontuação do quiz direto para o ranking oficial."));
+  }
+
+  function render() {
+    const raiz = document.getElementById("conteudo");
+    raiz.innerHTML = "";
+    renderFase1(raiz);
+    renderFase2(raiz);
+    renderRankingFinal(raiz);
+  }
+
+  render();
+</script>
