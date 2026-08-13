@@ -1011,14 +1011,8 @@
     const porEscola = {};
     schools.forEach((e) => (porEscola[e.id] = e));
 
-    const ordenadas = [...minhas].sort((a, b) => {
-      const pa = porProva[a.prova_id]?.ordem ?? 999;
-      const pb = porProva[b.prova_id]?.ordem ?? 999;
-      if (pa !== pb) return pa - pb;
-      const ea = porEscola[a.escola_id]?.nome || "";
-      const eb = porEscola[b.escola_id]?.nome || "";
-      return ea.localeCompare(eb, "pt-BR");
-    });
+    // Mais recente primeiro (último lançamento ou edição no topo).
+    const ordenadas = [...minhas].sort((a, b) => new Date(b.atualizado_em) - new Date(a.atualizado_em));
 
     ordenadas.forEach((m) => {
       const prova = porProva[m.prova_id];

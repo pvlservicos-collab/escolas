@@ -158,7 +158,7 @@ module.exports = async (req, res) => {
   if (resource === "provas") {
     if (req.method === "GET") {
       const { rows } = await pool.query(
-        "SELECT id, numero, ordem, nome, pontuacao_maxima, regras, ativo FROM provas ORDER BY ordem ASC"
+        "SELECT id, numero, ordem, nome, pontuacao_maxima, regras, ativo, encerrada FROM provas ORDER BY ordem ASC"
       );
       return res.status(200).json(rows);
     }
@@ -170,7 +170,7 @@ module.exports = async (req, res) => {
       const { rows } = await pool.query(
         `INSERT INTO provas (numero, ordem, nome, pontuacao_maxima, regras)
          VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, numero, ordem, nome, pontuacao_maxima, regras, ativo`,
+         RETURNING id, numero, ordem, nome, pontuacao_maxima, regras, ativo, encerrada`,
         [
           numero ? String(numero).trim() : String(ordem || ""),
           Number.isFinite(Number(ordem)) ? Number(ordem) : 999,
@@ -183,14 +183,14 @@ module.exports = async (req, res) => {
     }
     if (req.method === "PUT") {
       if (!Number.isInteger(id)) return bad(res, 400, "Id inválido.");
-      const { numero, ordem, nome, pontuacao_maxima, regras, ativo } = req.body || {};
+      const { numero, ordem, nome, pontuacao_maxima, regras, ativo, encerrada } = req.body || {};
       if (!nome || !String(nome).trim()) return bad(res, 400, "Nome é obrigatório.");
       const max = Number(pontuacao_maxima);
       if (!Number.isFinite(max) || max <= 0) return bad(res, 400, "Pontuação máxima inválida.");
       const { rows } = await pool.query(
-        `UPDATE provas SET numero = $1, ordem = $2, nome = $3, pontuacao_maxima = $4, regras = $5, ativo = $6
-         WHERE id = $7
-         RETURNING id, numero, ordem, nome, pontuacao_maxima, regras, ativo`,
+        `UPDATE provas SET numero = $1, ordem = $2, nome = $3, pontuacao_maxima = $4, regras = $5, ativo = $6, encerrada = $7
+         WHERE id = $8
+         RETURNING id, numero, ordem, nome, pontuacao_maxima, regras, ativo, encerrada`,
         [
           numero ? String(numero).trim() : String(ordem || ""),
           Number.isFinite(Number(ordem)) ? Number(ordem) : 999,
@@ -198,6 +198,7 @@ module.exports = async (req, res) => {
           max,
           regras ? String(regras) : "",
           ativo !== false,
+          Boolean(encerrada),
           id,
         ]
       );
@@ -273,7 +274,7 @@ module.exports = async (req, res) => {
          JOIN jurados j ON j.id = p.jurado_id
          JOIN schools e ON e.id = p.escola_id
          JOIN provas pv ON pv.id = p.prova_id
-         ORDER BY pv.ordem ASC, e.nome ASC, j.nome ASC`
+         ORDER BY p.atualizado_em DESC`
       );
       return res.status(200).json(rows);
     }

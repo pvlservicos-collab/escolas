@@ -218,7 +218,7 @@ module.exports = async (req, res) => {
     if (!alvo) return bad(res, 400, "Jurado alvo inválido.");
 
     const { rows: provas } = await pool.query(
-      "SELECT id, numero, ordem, nome, pontuacao_maxima FROM provas WHERE ativo = true ORDER BY ordem ASC"
+      "SELECT id, numero, ordem, nome, pontuacao_maxima FROM provas WHERE ativo = true AND encerrada = false ORDER BY ordem ASC"
     );
     const { rows: schools } = await pool.query(
       "SELECT id, nome, municipio, dia_apresentacao, ordem_apresentacao FROM schools WHERE ativo = true ORDER BY nome ASC"
@@ -274,10 +274,11 @@ module.exports = async (req, res) => {
     }
 
     const { rows: provaRows } = await pool.query(
-      "SELECT id, pontuacao_maxima FROM provas WHERE id = $1 AND ativo = true",
+      "SELECT id, pontuacao_maxima, encerrada FROM provas WHERE id = $1 AND ativo = true",
       [provaId]
     );
     if (!provaRows.length) return bad(res, 404, "Prova não encontrada.");
+    if (provaRows[0].encerrada) return bad(res, 403, "Esta prova já foi encerrada e não aceita mais lançamentos.");
     if (pontosNum > Number(provaRows[0].pontuacao_maxima)) {
       return bad(res, 400, `A pontuação não pode passar de ${provaRows[0].pontuacao_maxima} nesta prova.`);
     }

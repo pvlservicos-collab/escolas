@@ -41,6 +41,12 @@ CREATE TABLE IF NOT EXISTS provas (
   criado_em         TIMESTAMP NOT NULL DEFAULT now()
 );
 
+-- "Encerrada" (apuração daquela prova já fechou) é diferente de `ativo`: uma prova
+-- encerrada some da lista de seleção do jurado (não aceita mais lançamento/edição),
+-- mas continua contando normalmente no ranking público — `ativo = false` já remove a
+-- prova do ranking inteiro, o que não é o que se quer aqui.
+ALTER TABLE provas ADD COLUMN IF NOT EXISTS encerrada BOOLEAN NOT NULL DEFAULT false;
+
 CREATE TABLE IF NOT EXISTS jurados (
   id         SERIAL PRIMARY KEY,
   nome       TEXT NOT NULL,

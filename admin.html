@@ -435,7 +435,7 @@
     <!-- PROVAS -->
     <section class="painel" id="painel-provas" hidden>
       <h2 class="titulo">Provas da gincana</h2>
-      <p class="sub">Tabela técnica de pontuação (Art. 36 do Edital). Adicione, edite ou desative provas.</p>
+      <p class="sub">Tabela técnica de pontuação (Art. 36 do Edital). Adicione, edite, desative ou encerre provas. "Encerrar" tira a prova da lista de seleção do jurado (sem apagar as notas nem sumir do ranking); "desativar" remove a prova do ranking inteiro.</p>
 
       <div class="form-linha" id="provaForm">
         <div class="campo pequeno">
@@ -460,7 +460,7 @@
       <p class="aviso" id="pvAviso"></p>
 
       <table>
-        <thead><tr><th>Nº</th><th>Modalidade</th><th>Pontuação máxima</th><th>Ativa</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Nº</th><th>Modalidade</th><th>Pontuação máxima</th><th>Ativa</th><th>Encerrada</th><th>Ações</th></tr></thead>
         <tbody id="pvTbody"></tbody>
         <tfoot>
           <tr><td colspan="2"><strong>Total</strong></td><td class="num" id="pvTotal"><strong></strong></td><td colspan="2"></td></tr>
@@ -952,19 +952,20 @@
       if (p.ativo) total += Number(p.pontuacao_maxima);
       const tr = document.createElement("tr");
       if (!p.ativo) tr.className = "inativo";
-      tr.innerHTML = `<td>${escapeHtml(p.numero)}</td><td>${escapeHtml(p.nome)}</td><td class="num">${arredondar(p.pontuacao_maxima)}</td><td>${p.ativo ? "Sim" : "Não"}</td>`;
+      tr.innerHTML = `<td>${escapeHtml(p.numero)}</td><td>${escapeHtml(p.nome)}</td><td class="num">${arredondar(p.pontuacao_maxima)}</td><td>${p.ativo ? "Sim" : "Não"}</td><td>${p.encerrada ? "Sim" : "Não"}</td>`;
       const tdAcoes = document.createElement("td");
       tdAcoes.className = "acoes-cel";
       tdAcoes.append(
         botao("editar", () => carregarProvaNoForm(p)),
         botao(p.ativo ? "desativar" : "ativar", () => salvarProva(Object.assign({}, p, { ativo: !p.ativo }))),
+        botao(p.encerrada ? "reabrir" : "encerrar", () => salvarProva(Object.assign({}, p, { encerrada: !p.encerrada }))),
         botao("excluir", () => excluirProva(p.id), true)
       );
       tr.appendChild(tdAcoes);
       tbody.appendChild(tr);
     });
     document.getElementById("pvTotal").textContent = arredondar(total);
-    if (!provas.length) tbody.innerHTML = '<tr><td colspan="5" class="vazio">Nenhuma prova cadastrada.</td></tr>';
+    if (!provas.length) tbody.innerHTML = '<tr><td colspan="6" class="vazio">Nenhuma prova cadastrada.</td></tr>';
   }
 
   function carregarProvaNoForm(p) {
@@ -1002,6 +1003,7 @@
       pontuacao_maxima: Number(max),
       regras: editandoProva ? editandoProva.regras : "",
       ativo: editandoProva ? editandoProva.ativo : true,
+      encerrada: editandoProva ? editandoProva.encerrada : false,
     };
 
     await salvarProva(Object.assign({ id: editandoProva ? editandoProva.id : undefined }, payload));
