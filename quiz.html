@@ -252,48 +252,72 @@
   }
   .botao-mudar-resposta:hover { color: #fff; }
 
-  /* ---------- aviso de empate (desempate por tempo) ---------- */
-  .aviso-desempate {
+  /* ---------- quadrado de penalidade ---------- */
+  .penalidade-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1.5px dashed rgba(255, 255, 255, 0.16);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    color: var(--texto);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .penalidade-card.ativa { background: rgba(229, 72, 77, 0.14); border-color: var(--vermelho); border-style: solid; }
+  .penalidade-icone { font-size: 22px; flex-shrink: 0; }
+  .penalidade-textos { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .penalidade-textos strong { font-size: 14px; }
+  .penalidade-textos span { font-size: 12px; font-weight: 600; color: var(--apagado); }
+  .penalidade-marca {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--apagado);
+  }
+  .penalidade-card.ativa .penalidade-marca { background: var(--vermelho); color: #fff; }
+
+  /* ---------- confronto de desempate (inline na tabela, na posição empatada) ---------- */
+  .confronto-desempate {
     background: linear-gradient(160deg, rgba(255, 207, 77, 0.14), rgba(255, 207, 77, 0.04));
     border: 1.5px solid rgba(255, 207, 77, 0.4);
     border-radius: 16px;
     padding: 18px 20px;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
   }
-  .aviso-desempate h3 {
+  .confronto-desempate h3 {
     font-family: "Baloo 2", sans-serif;
     font-size: 15px;
     font-weight: 800;
     color: var(--dourado);
     margin: 0 0 8px;
   }
-  .aviso-desempate p { font-size: 13px; font-weight: 600; color: #e6dcc2; line-height: 1.5; margin: 0 0 12px; }
-  .lista-empate { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-  .item-empate {
+  .confronto-desempate p { font-size: 13px; font-weight: 600; color: #e6dcc2; line-height: 1.5; margin: 0 0 14px; }
+  .opcoes-desempate { display: flex; flex-direction: column; gap: 8px; }
+  .opcao-desempate {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    font-size: 13.5px;
-    font-weight: 700;
-    padding: 8px 12px;
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.2);
-  }
-  .item-empate .tempo { color: var(--dourado); font-variant-numeric: tabular-nums; }
-
-  .botao-confirmar-desempate {
-    display: block;
-    width: 100%;
     font-family: "Baloo 2", sans-serif;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 800;
-    padding: 15px;
+    padding: 13px 16px;
     border-radius: 12px;
     border: none;
     background: linear-gradient(150deg, #ffe08a, var(--dourado));
     color: #3a2c00;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(255, 207, 77, 0.3);
   }
+  .opcao-desempate:hover { filter: brightness(1.05); }
+  .tempo-opcao { font-variant-numeric: tabular-nums; opacity: 0.75; }
 
   /* ---------- ranking final do quiz ---------- */
   .linha-classificacao .acertos-fase1 { font-size: 12px; font-weight: 600; color: var(--apagado); margin-left: 6px; }
@@ -647,9 +671,9 @@
       filaFase2: embaralhar(BANCO_FASE2.map((_, i) => i)),
       fase1: {
         atual: 0, // índice do slide (escola) mostrado agora, 0 a 15
-        porEscola: {}, // preenchido sob demanda: { [escolaId]: { perguntas, respostas, inicio, fim } }
+        porEscola: {}, // preenchido sob demanda: { [escolaId]: { perguntas, respostas, inicio, fim, penalidade } }
         concluida: false,
-        desempateConfirmado: false, // host já revisou o empate na fronteira do top 8?
+        desempateResolvido: [], // ids na ordem que o host escolheu no confronto de tempo, mais rápida primeiro
       },
       classificadas: null,
       fase2: null,
@@ -694,7 +718,13 @@
     if (!estado.fase1.porEscola[escolaId]) {
       const perguntas = [];
       for (let i = 0; i < 5; i++) perguntas.push(proximaPerguntaFase1());
-      estado.fase1.porEscola[escolaId] = { perguntas, respostas: [null, null, null, null, null], inicio: Date.now(), fim: null };
+      estado.fase1.porEscola[escolaId] = {
+        perguntas,
+        respostas: [null, null, null, null, null],
+        inicio: Date.now(),
+        fim: null,
+        penalidade: false,
+      };
       salvarEstado();
     }
     return estado.fase1.porEscola[escolaId];
@@ -710,6 +740,12 @@
     return dados ? dados.respostas.filter((r) => r === true).length : 0;
   }
 
+  // Cada penalidade vale como uma pergunta errada na hora de classificar.
+  function pontuacaoEfetivaDaEscola(escolaId) {
+    const dados = estado.fase1.porEscola[escolaId];
+    return acertosDaEscola(escolaId) - (dados && dados.penalidade ? 1 : 0);
+  }
+
   function tempoDaEscolaMs(escolaId) {
     const dados = estado.fase1.porEscola[escolaId];
     return dados && dados.fim ? dados.fim - dados.inicio : null;
@@ -720,31 +756,47 @@
     return (ms / 1000).toFixed(1) + "s";
   }
 
-  // Ranking oficial da Fase 1: mais acertos primeiro; empatado, quem respondeu mais
-  // rápido (Art. 43). Isso já resolve a ordem sozinho — o aviso de empate só entra
-  // quando dois ou mais times têm acertos E tempo idênticos na fronteira do top 8.
+  // Ranking oficial da Fase 1: mais pontos primeiro (acertos - penalidades).
+  // Empate é decidido pelo host (não pelo cronômetro sozinho — ver
+  // grupoEmpatadoNaFronteira/escolherMaisRapida): usa a ordem que ele escolheu no
+  // confronto de desempate; sem decisão ainda, cai numa ordem estável por id.
   function rankingFase1() {
+    const resolvido = estado.fase1.desempateResolvido || [];
     return ESCOLAS.map((e) => ({
       id: e.id,
       nome: e.nome,
       acertos: acertosDaEscola(e.id),
+      penalidade: Boolean(estado.fase1.porEscola[e.id] && estado.fase1.porEscola[e.id].penalidade),
+      pontos: pontuacaoEfetivaDaEscola(e.id),
       tempo: tempoDaEscolaMs(e.id),
-    })).sort((a, b) => b.acertos - a.acertos || (a.tempo ?? Infinity) - (b.tempo ?? Infinity) || a.id - b.id);
+    })).sort((a, b) => {
+      if (b.pontos !== a.pontos) return b.pontos - a.pontos;
+      const ia = resolvido.indexOf(a.id);
+      const ib = resolvido.indexOf(b.id);
+      if (ia !== -1 && ib !== -1) return ia - ib;
+      return a.id - b.id;
+    });
   }
 
-  // Mesmo com o tempo já decidindo a ordem sozinho, sempre que duas ou mais
-  // escolas empatam em ACERTOS bem na fronteira do top 8 (uma dentro, outra fora),
-  // o host precisa revisar e confirmar antes do chaveamento sair — o cronômetro do
-  // navegador é só uma referência, não é oficial o bastante pra decidir sozinho.
+  // Sempre que duas ou mais escolas empatam em PONTOS bem na fronteira do top 8
+  // (uma dentro, outra fora), o host precisa decidir manualmente quem teve o tempo
+  // menor — o cronômetro do navegador é só uma referência mostrada no confronto,
+  // não decide sozinho.
   function grupoEmpatadoNaFronteira() {
     const ranking = rankingFase1();
     if (ranking.length < 9) return [];
-    const valorFronteira = ranking[7].acertos;
-    const melhores = ranking.filter((e) => e.acertos > valorFronteira).length;
-    const empatados = ranking.filter((e) => e.acertos === valorFronteira);
+    const valorFronteira = ranking[7].pontos;
+    const melhores = ranking.filter((e) => e.pontos > valorFronteira).length;
+    const empatados = ranking.filter((e) => e.pontos === valorFronteira);
     if (melhores + empatados.length <= 8) return []; // grupo empatado cabe inteiro no top 8
     if (melhores >= 8) return []; // grupo empatado fica inteiro fora do top 8
     return empatados;
+  }
+
+  function pendentesDesempate() {
+    const grupo = grupoEmpatadoNaFronteira();
+    const resolvido = estado.fase1.desempateResolvido || [];
+    return grupo.filter((e) => !resolvido.includes(e.id));
   }
 
   function navegarFase1(delta) {
@@ -779,13 +831,20 @@
     render();
   }
 
-  function confirmarDesempateFase1() {
-    estado.fase1.desempateConfirmado = true;
+  // Host clica em qual escola do grupo empatado teve o tempo menor. Quando sobra
+  // só uma escola pendente, ela é a mais lenta por eliminação — não precisa clicar.
+  function escolherMaisRapida(escolaId) {
+    if (!estado.fase1.desempateResolvido) estado.fase1.desempateResolvido = [];
+    if (!estado.fase1.desempateResolvido.includes(escolaId)) estado.fase1.desempateResolvido.push(escolaId);
+
+    const pendentes = pendentesDesempate();
+    if (pendentes.length === 1) estado.fase1.desempateResolvido.push(pendentes[0].id);
+
     salvarEstado();
     render();
   }
 
-  // Reabre uma pergunta já respondida. Como isso pode mudar os acertos da escola,
+  // Reabre uma pergunta já respondida. Como isso pode mudar os pontos da escola,
   // qualquer classificação/chaveamento já gerado a partir do estado antigo fica
   // desatualizado — descarta e deixa processarAutoChaveamento() gerar tudo de novo
   // quando (e se) a Fase 1 voltar a ficar 100% completa.
@@ -800,8 +859,21 @@
     if (!estado.fase1.concluida) {
       estado.classificadas = null;
       estado.fase2 = null;
-      estado.fase1.desempateConfirmado = false;
+      estado.fase1.desempateResolvido = [];
     }
+    salvarEstado();
+    render();
+  }
+
+  function alternarPenalidade(escolaId) {
+    if (estado.fase2 && !confirm("Mudar a penalidade vai reiniciar o chaveamento da Fase 2 (ele será gerado de novo do zero). Continuar?")) {
+      return;
+    }
+    const dados = perguntasDaEscola(escolaId);
+    dados.penalidade = !dados.penalidade;
+    estado.classificadas = null;
+    estado.fase2 = null;
+    estado.fase1.desempateResolvido = [];
     salvarEstado();
     render();
   }
@@ -836,10 +908,10 @@
   }
 
   // Chamada no topo de render(): gera a chave sozinho assim que a Fase 1 termina,
-  // a menos que haja empate na fronteira do top 8 ainda não confirmado pelo host.
+  // a menos que ainda reste alguém pendente no confronto de desempate.
   function processarAutoChaveamento() {
     if (!estado.fase1.concluida || estado.fase2) return;
-    if (grupoEmpatadoNaFronteira().length && !estado.fase1.desempateConfirmado) return;
+    if (pendentesDesempate().length) return;
     gerarChaveamento();
   }
 
@@ -969,46 +1041,66 @@
     });
     raiz.appendChild(grade);
 
+    // Quadrado de penalidade da escola do slide atual — conta como uma pergunta
+    // errada na hora de classificar e desempatar.
+    const penalidadeAtiva = Boolean(dados.penalidade);
+    const penalidadeCard = elemento(
+      "button",
+      "penalidade-card" + (penalidadeAtiva ? " ativa" : ""),
+      '<span class="penalidade-icone">⚠️</span>' +
+        '<span class="penalidade-textos"><strong>Penalidade</strong><span>Conta como uma pergunta errada no desempate</span></span>' +
+        '<span class="penalidade-marca">' + (penalidadeAtiva ? "Ativa" : "—") + "</span>"
+    );
+    penalidadeCard.type = "button";
+    penalidadeCard.onclick = () => alternarPenalidade(escola.id);
+    raiz.appendChild(penalidadeCard);
+
     if (estado.fase1.concluida) {
       raiz.appendChild(elemento("h2", "fase-titulo", "Classificação da Fase 1"));
 
-      const empatados = grupoEmpatadoNaFronteira();
-      if (empatados.length && !estado.fase1.desempateConfirmado) {
-        const aviso = elemento(
-          "div",
-          "aviso-desempate",
-          "<h3>⏱️ Empate na fronteira do Top 8</h3>" +
-            "<p>Estas escolas empataram em acertos na 8ª posição. O desempate é pelo tempo total de resposta (Art. 43) — confira os tempos abaixo antes de gerar o chaveamento.</p>"
-        );
-        const lista = elemento("div", "lista-empate");
-        empatados.forEach((e) => {
-          lista.appendChild(
-            elemento(
-              "div",
-              "item-empate",
-              "<span>" + e.nome + '</span><span class="tempo">' + formatarTempo(e.tempo) + "</span>"
-            )
-          );
-        });
-        aviso.appendChild(lista);
-        const btnConfirmar = elemento("button", "botao-confirmar-desempate", "Confirmar e gerar chaveamento →");
-        btnConfirmar.type = "button";
-        btnConfirmar.onclick = confirmarDesempateFase1;
-        aviso.appendChild(btnConfirmar);
-        raiz.appendChild(aviso);
-      }
-
       const ranking = rankingFase1();
       const jaClassificado = Boolean(estado.classificadas);
+      const grupo = grupoEmpatadoNaFronteira();
+      const pendentes = pendentesDesempate();
       const tabela = elemento("div", "tabela-classificacao");
+      let confrontoInserido = false;
+
       ranking.forEach((e, i) => {
+        const noGrupo = grupo.some((g) => g.id === e.id);
+
+        if (noGrupo && pendentes.length && !confrontoInserido) {
+          confrontoInserido = true;
+          const confronto = elemento(
+            "div",
+            "confronto-desempate",
+            "<h3>⏱️ Empate na fronteira do Top 8</h3>" +
+              "<p>Estas escolas empataram em pontos. Clique na que respondeu mais rápido (o tempo do cronômetro é só uma referência).</p>"
+          );
+          const opcoes = elemento("div", "opcoes-desempate");
+          pendentes.forEach((p) => {
+            const btn = elemento(
+              "button",
+              "opcao-desempate",
+              p.nome + '<span class="tempo-opcao">' + formatarTempo(p.tempo) + "</span>"
+            );
+            btn.type = "button";
+            btn.onclick = () => escolherMaisRapida(p.id);
+            opcoes.appendChild(btn);
+          });
+          confronto.appendChild(opcoes);
+          tabela.appendChild(confronto);
+        }
+
+        if (noGrupo && pendentes.length) return; // aguarda o confronto acima ser resolvido
+
         const classificada = jaClassificado ? estado.classificadas.includes(e.id) : i < 8;
+        const pontosTexto = e.penalidade ? e.acertos + "/5 · " + e.pontos + " pts (-1 penalidade)" : e.acertos + "/5 · " + e.pontos + " pts";
         const linha = elemento(
           "div",
           "linha-classificacao" + (classificada ? " classificada" : ""),
           '<span class="pos">' + (i + 1) + "º</span>" +
             '<span class="nome">' + e.nome + "</span>" +
-            '<span class="acertos">' + e.acertos + "/5 · " + formatarTempo(e.tempo) + "</span>" +
+            '<span class="acertos">' + pontosTexto + "</span>" +
             '<span class="selo">' + (classificada ? "Classificada" : "Eliminada") + "</span>"
         );
         tabela.appendChild(linha);
