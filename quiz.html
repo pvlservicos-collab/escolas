@@ -208,24 +208,24 @@
     margin: 0 0 14px;
   }
 
-  .botoes-quadrados { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 320px; margin: 0 auto; }
+  .botoes-quadrados { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 260px; margin: 0 auto; }
   .botao-quadrado {
-    aspect-ratio: 1 / 1;
-    border-radius: 14px;
+    aspect-ratio: 2 / 1;
+    border-radius: 10px;
     border: none;
     font-family: "Baloo 2", sans-serif;
-    font-size: 15px;
+    font-size: 12.5px;
     font-weight: 800;
     color: #fff;
     cursor: pointer;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 5px;
     transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
   }
-  .botao-quadrado .emoji-btn { font-size: 24px; }
+  .botao-quadrado .emoji-btn { font-size: 14px; }
   .botao-quadrado.errado-3d {
     background: linear-gradient(150deg, #ff7a7e, #d8383d);
     box-shadow: 0 6px 0 #8f2226, 0 12px 22px rgba(229, 72, 77, 0.35);
@@ -704,6 +704,36 @@
     .botao-ver-edital { top: 10px; right: 10px; font-size: 12px; padding: 8px 13px; }
   }
 
+  /* ---------- skeleton preview das próximas etapas ---------- */
+  .skeleton-secao {
+    position: relative;
+    opacity: 0.4;
+    pointer-events: none;
+    user-select: none;
+    padding-bottom: 6px;
+  }
+  .skeleton-secao::before {
+    content: "";
+    position: absolute;
+    inset: -10px -8px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 18px;
+    z-index: 0;
+  }
+  .skeleton-secao > * { position: relative; z-index: 1; }
+  .skeleton-linha {
+    height: 46px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.05));
+    background-size: 200% 100%;
+    animation: skeletonPulso 1.7s ease-in-out infinite;
+    margin-bottom: 8px;
+  }
+  @keyframes skeletonPulso {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
   /* ---------- confete/brilho ao acertar ---------- */
   .brilho-acerto {
     position: fixed;
@@ -806,7 +836,7 @@
   // Por padrão usa 16 escolas de teste (sem integração com o cadastro real). Quando
   // a config "Integrar quiz ao sistema" está ligada no admin, inicializarEscolas()
   // troca isso pela lista real antes do primeiro render — ver o fim do arquivo.
-  let ESCOLAS = Array.from({ length: 16 }, (_, i) => ({ id: i + 1, nome: "Escola " + (i + 1) }));
+  let ESCOLAS = Array.from({ length: 8 }, (_, i) => ({ id: i + 1, nome: "Escola " + (i + 1) }));
   let ESCOLA_POR_ID = Object.fromEntries(ESCOLAS.map((e) => [e.id, e]));
   let quizIntegrado = false;
   let provaQuizId = null; // id real da Prova 7 "Quiz Torta na Cara", só existe com a integração ligada
@@ -1094,18 +1124,25 @@
     });
   }
 
-  // Sempre que duas ou mais escolas empatam em PONTOS bem na fronteira do top 8
+  // Quantas escolas avançam pra Fase 2: metade do total (8 escolas de teste -> 4;
+  // 16 escolas reais -> 8, como no Art. 43).
+  function corteClassificacao() {
+    return Math.max(2, Math.floor(ESCOLAS.length / 2));
+  }
+
+  // Sempre que duas ou mais escolas empatam em PONTOS bem na fronteira do corte
   // (uma dentro, outra fora), o host precisa decidir manualmente quem teve o tempo
   // menor — o cronômetro do navegador é só uma referência mostrada no confronto,
   // não decide sozinho.
   function grupoEmpatadoNaFronteira() {
+    const corte = corteClassificacao();
     const ranking = rankingFase1();
-    if (ranking.length < 9) return [];
-    const valorFronteira = ranking[7].pontos;
+    if (ranking.length <= corte) return [];
+    const valorFronteira = ranking[corte - 1].pontos;
     const melhores = ranking.filter((e) => e.pontos > valorFronteira).length;
     const empatados = ranking.filter((e) => e.pontos === valorFronteira);
-    if (melhores + empatados.length <= 8) return []; // grupo empatado cabe inteiro no top 8
-    if (melhores >= 8) return []; // grupo empatado fica inteiro fora do top 8
+    if (melhores + empatados.length <= corte) return []; // grupo empatado cabe inteiro no corte
+    if (melhores >= corte) return []; // grupo empatado fica inteiro fora do corte
     return empatados;
   }
 
@@ -1212,30 +1249,52 @@
 
   /* ---------------- Chaveamento (Fase 2) ---------------- */
 
+  // Ordem de seed padrão de torneio (1ºx último, para os melhores só se
+  // encontrarem no fim): pra 4 dá [1,4,2,3], pra 8 dá [1,8,4,5,2,7,3,6], etc.
+  function ordemSeedPadrao(n) {
+    let seeds = [1, 2];
+    while (seeds.length < n) {
+      const tamanho = seeds.length * 2;
+      const nova = [];
+      seeds.forEach((s) => {
+        nova.push(s);
+        nova.push(tamanho + 1 - s);
+      });
+      seeds = nova;
+    }
+    return seeds;
+  }
+
+  function nomesRodadasPara(corte) {
+    return corte >= 8 ? ["Quartas de Final", "Semifinal", "Final"] : ["Semifinal", "Final"];
+  }
+
   // Puramente estado — não chama render() porque é disparada de dentro de
   // processarAutoChaveamento(), no começo do próprio render().
   function gerarChaveamento() {
-    const top8 = rankingFase1().slice(0, 8).map((e) => e.id);
-    estado.classificadas = top8;
+    const corte = corteClassificacao();
+    const classificados = rankingFase1().slice(0, corte).map((e) => e.id);
+    estado.classificadas = classificados;
 
-    // Seed padrão de chave (1º x 8º, 4º x 5º, 3º x 6º, 2º x 7º) para que os dois
-    // melhores colocados só possam se encontrar na final.
-    const seed = [top8[0], top8[7], top8[3], top8[4], top8[2], top8[5], top8[1], top8[6]];
+    const seed = ordemSeedPadrao(corte);
     const confrontoVazio = () => ({ a: null, b: null, perguntaIndice: null, vencedor: null });
 
-    const quartas = [0, 2, 4, 6].map((i) => Object.assign(confrontoVazio(), { a: seed[i], b: seed[i + 1] }));
-    const semi = [confrontoVazio(), confrontoVazio()];
-    const final = [confrontoVazio()];
+    const primeiraRodada = [];
+    for (let i = 0; i < seed.length; i += 2) {
+      primeiraRodada.push(
+        Object.assign(confrontoVazio(), { a: classificados[seed[i] - 1], b: classificados[seed[i + 1] - 1] })
+      );
+    }
 
-    estado.fase2 = {
-      rodadas: [
-        { nome: "Quartas de Final", confrontos: quartas },
-        { nome: "Semifinal", confrontos: semi },
-        { nome: "Final", confrontos: final },
-      ],
-      campeaoId: null,
-    };
+    const nomes = nomesRodadasPara(corte);
+    const rodadas = [{ nome: nomes[0], confrontos: primeiraRodada }];
+    let tamanho = primeiraRodada.length;
+    for (let r = 1; r < nomes.length; r++) {
+      tamanho = Math.ceil(tamanho / 2);
+      rodadas.push({ nome: nomes[r], confrontos: Array.from({ length: tamanho }, confrontoVazio) });
+    }
 
+    estado.fase2 = { rodadas, campeaoId: null };
     salvarEstado();
   }
 
@@ -1302,6 +1361,16 @@
     return elemento("p", "instrucao", "<span>👉</span><span>" + texto + "</span>");
   }
 
+  // Preview esmaecida (tipo skeleton loading) do que ainda não está disponível —
+  // pra dar uma ideia do que vem a seguir, desde a Fase 1.
+  function renderSkeletonBloco(raiz, titulo, subtitulo, nLinhas) {
+    const bloco = elemento("div", "skeleton-secao");
+    bloco.appendChild(elemento("h2", "fase-titulo", titulo));
+    bloco.appendChild(elemento("p", "fase-sub", subtitulo));
+    for (let i = 0; i < nLinhas; i++) bloco.appendChild(elemento("div", "skeleton-linha"));
+    raiz.appendChild(bloco);
+  }
+
   // Brilho verde + confete saindo do botão clicado, só decoração — não tem estado,
   // as partículas se removem sozinhas depois da animação.
   function comemorarAcerto(origemEl) {
@@ -1337,7 +1406,7 @@
 
   function renderFase1(raiz) {
     raiz.appendChild(elemento("h2", "fase-titulo", "Fase 1 — Seletiva"));
-    raiz.appendChild(elemento("p", "fase-sub", "5 perguntas por escola, todas de uma vez. As 8 melhores avançam para o chaveamento."));
+    raiz.appendChild(elemento("p", "fase-sub", "5 perguntas por escola, todas de uma vez. As " + corteClassificacao() + " melhores avançam para o chaveamento."));
     raiz.appendChild(
       criarInstrucao(
         "Nessa fase, <strong>role a página para baixo</strong> e responda as 5 perguntas em sequência para a escola aberta, marcando Acertou ou Errou em cada uma. Quando terminar as 5, <strong>clique na seta pro lado</strong> (ou numa bolinha abaixo) pra passar pra próxima escola."
@@ -1422,60 +1491,61 @@
     });
     raiz.appendChild(grade);
 
-    // Campo de penalidade: ativa o campo, marca a escola, aplica (-1 ponto). Vale
-    // pra qualquer escola, não só a do slide aberto — por isso é um campo à parte,
-    // não um botão dentro do card de cada escola.
-    const painelPenalidade = elemento("div", "penalidade-painel");
-    const btnAtivarPenalidade = elemento(
-      "button",
-      "penalidade-ativar" + (penalidadeAberta ? " aberta" : ""),
-      "⚠️ Aplicar penalidade (-1 ponto)"
-    );
-    btnAtivarPenalidade.type = "button";
-    btnAtivarPenalidade.onclick = () => { penalidadeAberta = !penalidadeAberta; render(); };
-    painelPenalidade.appendChild(btnAtivarPenalidade);
-
-    if (penalidadeAberta) {
-      const form = elemento("div", "penalidade-form");
-      const select = document.createElement("select");
-      ESCOLAS.forEach((e) => {
-        const opt = document.createElement("option");
-        opt.value = String(e.id);
-        const n = penalidadesDaEscola(e.id);
-        opt.textContent = e.nome + (n ? " (" + n + " penalidade" + (n > 1 ? "s" : "") + ")" : "");
-        select.appendChild(opt);
-      });
-      const btnAplicar = elemento("button", "penalidade-aplicar", "Aplicar penalidade");
-      btnAplicar.type = "button";
-      btnAplicar.onclick = () => aplicarPenalidade(Number(select.value));
-      form.append(select, btnAplicar);
-
-      const comPenalidade = ESCOLAS.filter((e) => penalidadesDaEscola(e.id) > 0);
-      if (comPenalidade.length) {
-        const lista = elemento("div", "penalidade-lista");
-        comPenalidade.forEach((e) => {
-          const n = penalidadesDaEscola(e.id);
-          const linha = elemento("div", "penalidade-linha-aplicada", e.nome + ": " + n + " penalidade" + (n > 1 ? "s" : ""));
-          const bRemover = elemento("button", "penalidade-remover", "−1");
-          bRemover.type = "button";
-          bRemover.onclick = () => removerPenalidade(e.id);
-          linha.appendChild(bRemover);
-          lista.appendChild(linha);
-        });
-        form.appendChild(lista);
-      }
-
-      painelPenalidade.appendChild(form);
-    }
-    raiz.appendChild(painelPenalidade);
-
     if (estado.fase1.concluida) {
       raiz.appendChild(elemento("h2", "fase-titulo", "Classificação da Fase 1"));
       raiz.appendChild(
         criarInstrucao(
-          "Essa tabela é gerada sozinha assim que as 16 escolas terminam. Se der empate bem na 8ª posição, resolva o confronto que aparece no lugar da linha, clicando em quem foi mais rápida — depois disso o chaveamento da Fase 2 sai <strong>automaticamente</strong>, sem precisar clicar em nada."
+          "Essa tabela é gerada sozinha assim que as " + ESCOLAS.length + " escolas terminam. Se der empate bem na " +
+            corteClassificacao() + "ª posição, resolva o confronto que aparece no lugar da linha, clicando em quem foi mais rápida — depois disso o chaveamento da Fase 2 sai <strong>automaticamente</strong>, sem precisar clicar em nada. Se precisar aplicar alguma penalidade, o campo está logo abaixo, antes da tabela."
         )
       );
+
+      // Campo de penalidade: ativa o campo, marca a escola, aplica (-1 ponto). Fica
+      // aqui — depois de terminar as perguntas, em cima do ranking — porque penalidade
+      // é algo que se decide revisando o resultado, não durante as perguntas.
+      const painelPenalidade = elemento("div", "penalidade-painel");
+      const btnAtivarPenalidade = elemento(
+        "button",
+        "penalidade-ativar" + (penalidadeAberta ? " aberta" : ""),
+        "⚠️ Aplicar penalidade (-1 ponto)"
+      );
+      btnAtivarPenalidade.type = "button";
+      btnAtivarPenalidade.onclick = () => { penalidadeAberta = !penalidadeAberta; render(); };
+      painelPenalidade.appendChild(btnAtivarPenalidade);
+
+      if (penalidadeAberta) {
+        const form = elemento("div", "penalidade-form");
+        const select = document.createElement("select");
+        ESCOLAS.forEach((e) => {
+          const opt = document.createElement("option");
+          opt.value = String(e.id);
+          const n = penalidadesDaEscola(e.id);
+          opt.textContent = e.nome + (n ? " (" + n + " penalidade" + (n > 1 ? "s" : "") + ")" : "");
+          select.appendChild(opt);
+        });
+        const btnAplicar = elemento("button", "penalidade-aplicar", "Aplicar penalidade");
+        btnAplicar.type = "button";
+        btnAplicar.onclick = () => aplicarPenalidade(Number(select.value));
+        form.append(select, btnAplicar);
+
+        const comPenalidade = ESCOLAS.filter((e) => penalidadesDaEscola(e.id) > 0);
+        if (comPenalidade.length) {
+          const lista = elemento("div", "penalidade-lista");
+          comPenalidade.forEach((e) => {
+            const n = penalidadesDaEscola(e.id);
+            const linha = elemento("div", "penalidade-linha-aplicada", e.nome + ": " + n + " penalidade" + (n > 1 ? "s" : ""));
+            const bRemover = elemento("button", "penalidade-remover", "−1");
+            bRemover.type = "button";
+            bRemover.onclick = () => removerPenalidade(e.id);
+            linha.appendChild(bRemover);
+            lista.appendChild(linha);
+          });
+          form.appendChild(lista);
+        }
+
+        painelPenalidade.appendChild(form);
+      }
+      raiz.appendChild(painelPenalidade);
 
       const ranking = rankingFase1();
       const jaClassificado = Boolean(estado.classificadas);
@@ -1512,7 +1582,7 @@
 
         if (noGrupo && pendentes.length) return; // aguarda o confronto acima ser resolvido
 
-        const classificada = jaClassificado ? estado.classificadas.includes(e.id) : i < 8;
+        const classificada = jaClassificado ? estado.classificadas.includes(e.id) : i < corteClassificacao();
         const pontosTexto =
           e.penalidades > 0
             ? e.acertos + "/5 · " + e.pontos + " pts (-" + e.penalidades + " penalidade" + (e.penalidades > 1 ? "s" : "") + ")"
@@ -1528,6 +1598,13 @@
         tabela.appendChild(linha);
       });
       raiz.appendChild(tabela);
+    } else {
+      renderSkeletonBloco(
+        raiz,
+        "Classificação da Fase 1",
+        "Aparece assim que todas as " + ESCOLAS.length + " escolas terminarem.",
+        Math.min(ESCOLAS.length, 6)
+      );
     }
   }
 
@@ -1588,19 +1665,29 @@
     raiz.appendChild(elemento("p", "fase-sub", "Cada confronto vale uma pergunta — quem acertar primeiro avança na chave."));
     raiz.appendChild(
       criarInstrucao(
-        "Role a página para baixo pelas rodadas (Quartas, Semifinal, Final). Em cada confronto, clique em <strong>\"Sortear pergunta\"</strong>, leia pras duas escolas e depois clique em <strong>qual delas acertou primeiro</strong> — a vencedora já avança sozinha pra próxima chave."
+        "Role a página para baixo pelas rodadas do chaveamento. Em cada confronto, clique em <strong>\"Sortear pergunta\"</strong>, leia pras duas escolas e depois clique em <strong>qual delas acertou primeiro</strong> — a vencedora já avança sozinha pra próxima chave."
       )
     );
 
-    const DESCRICAO_RODADA = {
-      "Quartas de Final": "4 confrontos — as 8 escolas classificadas na Fase 1 se enfrentam em pares. As 4 vencedoras avançam.",
-      "Semifinal": "2 confrontos — as 4 vencedoras das Quartas se enfrentam. As 2 vencedoras vão pra Final.",
-      "Final": "1 confronto — a grande decisão entre as 2 melhores. Quem vencer é a Campeã do Torta na Cara.",
-    };
-
+    const totalRodadas = estado.fase2.rodadas.length;
     estado.fase2.rodadas.forEach((rodada, rIdx) => {
       raiz.appendChild(elemento("h3", "rodada-titulo", rodada.nome));
-      if (DESCRICAO_RODADA[rodada.nome]) raiz.appendChild(elemento("p", "rodada-sub", DESCRICAO_RODADA[rodada.nome]));
+
+      const nConfrontos = rodada.confrontos.length;
+      let descricao;
+      if (rIdx === totalRodadas - 1) {
+        descricao = "1 confronto — a grande decisão entre as 2 melhores. Quem vencer é a Campeã do Torta na Cara.";
+      } else if (rIdx === 0) {
+        descricao =
+          nConfrontos + " confronto" + (nConfrontos > 1 ? "s" : "") + " — as " + nConfrontos * 2 +
+          " escolas classificadas na Fase 1 se enfrentam em pares. As " + nConfrontos + " vencedoras avançam.";
+      } else {
+        descricao =
+          nConfrontos + " confronto" + (nConfrontos > 1 ? "s" : "") + " — as " + nConfrontos * 2 +
+          " vencedoras da rodada anterior se enfrentam. As " + nConfrontos + " vencedoras avançam.";
+      }
+      raiz.appendChild(elemento("p", "rodada-sub", descricao));
+
       rodada.confrontos.forEach((confronto, cIdx) => renderConfronto(raiz, rIdx, cIdx, confronto));
     });
   }
@@ -1769,8 +1856,18 @@
     const raiz = document.getElementById("conteudo");
     raiz.innerHTML = "";
     renderFase1(raiz);
-    renderFase2(raiz);
-    renderRankingFinal(raiz);
+
+    if (estado.fase2) {
+      renderFase2(raiz);
+    } else {
+      renderSkeletonBloco(raiz, "Fase 2 — Chaveamento", "Aparece assim que a Fase 1 terminar (e o chaveamento for gerado sozinho).", 4);
+    }
+
+    if (estado.fase2 && estado.fase2.campeaoId != null) {
+      renderRankingFinal(raiz);
+    } else {
+      renderSkeletonBloco(raiz, "Ranking do Quiz", "Aparece assim que a Fase 2 terminar, com a campeã definida.", 5);
+    }
   }
 
   // Busca a config pública (sem login) antes do primeiro render: se "Integrar quiz
