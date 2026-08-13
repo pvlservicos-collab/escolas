@@ -1429,7 +1429,7 @@
     raiz.appendChild(elemento("p", "fase-sub", "5 perguntas por escola, todas de uma vez. As " + corteClassificacao() + " melhores avançam para o chaveamento."));
     raiz.appendChild(
       criarInstrucao(
-        "Nessa fase, <strong>role a página para baixo</strong> e responda as 5 perguntas em sequência para a escola aberta, marcando Acertou ou Errou em cada uma. Quando terminar as 5, <strong>clique na seta pro lado</strong> (ou numa bolinha abaixo) pra passar pra próxima escola."
+        "Responda as 5 perguntas da escola e clique na <strong>seta pro lado</strong> pra passar pra próxima."
       )
     );
 
@@ -1514,10 +1514,7 @@
     if (estado.fase1.concluida) {
       raiz.appendChild(elemento("h2", "fase-titulo", "Classificação da Fase 1"));
       raiz.appendChild(
-        criarInstrucao(
-          "Essa tabela é gerada sozinha assim que as " + ESCOLAS.length + " escolas terminam. Se der empate bem na " +
-            corteClassificacao() + "ª posição, resolva o confronto que aparece no lugar da linha, clicando em quem foi mais rápida — depois disso o chaveamento da Fase 2 sai <strong>automaticamente</strong>, sem precisar clicar em nada. Se precisar aplicar alguma penalidade, o campo está logo abaixo, antes da tabela."
-        )
+        criarInstrucao("Gerada sozinha ao terminar. Empate na fronteira? Resolva no lugar da linha. Penalidade fica logo abaixo.")
       );
 
       // Campo de penalidade: ativa o campo, marca a escola, aplica (-1 ponto). Fica
@@ -1681,9 +1678,7 @@
     raiz.appendChild(elemento("h2", "fase-titulo", "Fase 2 — Chaveamento"));
     raiz.appendChild(elemento("p", "fase-sub", "Cada confronto vale uma pergunta — quem acertar primeiro avança na chave."));
     raiz.appendChild(
-      criarInstrucao(
-        "Role a página para baixo pelas rodadas do chaveamento. Em cada confronto, clique em <strong>\"Sortear pergunta\"</strong>, leia pras duas escolas e depois clique em <strong>qual delas acertou primeiro</strong> — a vencedora já avança sozinha pra próxima chave."
-      )
+      criarInstrucao("Sorteie a pergunta e clique em <strong>qual escola acertou primeiro</strong> — a vencedora avança sozinha.")
     );
 
     const totalRodadas = estado.fase2.rodadas.length;
@@ -1749,8 +1744,8 @@
     raiz.appendChild(
       criarInstrucao(
         quizIntegrado
-          ? "Essa é a pontuação final do quiz pra cada escola, já seguindo a tabela de colocação do Art. 43. <strong>Revise linha por linha</strong> antes de clicar em lançar — essa ação grava as notas de verdade na Prova 7 do ranking oficial."
-          : "Essa é a pontuação final do quiz pra cada escola, já seguindo a tabela de colocação do Art. 43. <strong>Revise linha por linha</strong> antes de qualquer coisa — o botão de lançar nota ainda está travado, então por enquanto essa etapa é só conferência."
+          ? "<strong>Revise linha por linha</strong> antes de lançar — grava de verdade no ranking oficial."
+          : "<strong>Revise linha por linha</strong>. Botão de lançar ainda travado — por ora é só conferência."
       )
     );
 
