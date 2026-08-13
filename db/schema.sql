@@ -106,6 +106,12 @@ INSERT INTO configuracao (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
 -- Senha única compartilhada por todos os jurados comuns (não o mestre).
 ALTER TABLE configuracao ADD COLUMN IF NOT EXISTS senha_padrao_jurado TEXT;
 
+-- Liga/desliga a integração do /quiz (Prova 7 "Torta na Cara") com o sistema real:
+-- desligado (padrão), o quiz usa 16 escolas fictícias e o botão de lançar nota fica
+-- travado. Ligado, o quiz busca a lista real de escolas e libera o botão. É lido
+-- pela rota pública /api/scores?resource=meta, sem precisar de login.
+ALTER TABLE configuracao ADD COLUMN IF NOT EXISTS quiz_integrado BOOLEAN NOT NULL DEFAULT false;
+
 -- Penalidade aplicada pelo admin (distinta da penalidade só-observação do jurado,
 -- acima): desconta o valor direto do TOTAL geral da escola no ranking, sem alterar a
 -- pontuação de nenhuma prova especificamente. prova_id só registra em qual prova a

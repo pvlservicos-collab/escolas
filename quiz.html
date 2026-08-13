@@ -268,55 +268,106 @@
   }
   .botao-mudar-resposta:hover { color: #fff; }
 
-  /* ---------- quadrado de penalidade ---------- */
-  .penalidade-card {
+  /* ---------- campo de penalidade (ativar / marcar escola / aplicar) ---------- */
+  .penalidade-painel { margin-bottom: 16px; }
+  .penalidade-ativar {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
     text-align: left;
     background: rgba(255, 255, 255, 0.03);
     border: 1.5px dashed rgba(255, 255, 255, 0.16);
     border-radius: 14px;
     padding: 14px 16px;
-    margin-bottom: 16px;
     color: var(--texto);
     cursor: pointer;
     font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
   }
-  .penalidade-card.ativa { background: rgba(229, 72, 77, 0.14); border-color: var(--vermelho); border-style: solid; }
-  .penalidade-icone { font-size: 22px; flex-shrink: 0; }
-  .penalidade-textos { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-  .penalidade-textos strong { font-size: 14px; }
-  .penalidade-textos span { font-size: 12px; font-weight: 600; color: var(--apagado); }
-  .penalidade-marca {
-    flex-shrink: 0;
-    font-size: 11px;
+  .penalidade-ativar:hover { border-color: var(--vermelho); }
+  .penalidade-ativar.aberta { border-color: var(--vermelho); border-style: solid; background: rgba(229, 72, 77, 0.1); border-radius: 14px 14px 0 0; }
+
+  .penalidade-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    background: rgba(229, 72, 77, 0.06);
+    border: 1.5px solid var(--vermelho);
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+  }
+  .penalidade-form select {
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    background: var(--card-2);
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+  }
+  .penalidade-aplicar {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 14px;
     font-weight: 800;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--apagado);
+    padding: 13px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(150deg, #ff7a7e, #d8383d);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #8f2226;
   }
-  .penalidade-card.ativa .penalidade-marca { background: var(--vermelho); color: #fff; }
+  .penalidade-aplicar:active { transform: translateY(4px); box-shadow: 0 2px 0 #8f2226; }
+
+  .penalidade-lista { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .penalidade-linha-aplicada {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    color: #f3999b;
+  }
+  .penalidade-remover {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .penalidade-remover:hover { background: var(--vermelho); }
 
   /* ---------- confronto de desempate (inline na tabela, na posição empatada) ---------- */
   .confronto-desempate {
-    background: linear-gradient(160deg, rgba(255, 207, 77, 0.14), rgba(255, 207, 77, 0.04));
-    border: 1.5px solid rgba(255, 207, 77, 0.4);
+    background: linear-gradient(160deg, rgba(79, 124, 255, 0.22), rgba(79, 124, 255, 0.05));
+    border: 2px solid var(--azul);
     border-radius: 16px;
-    padding: 18px 20px;
+    padding: 20px 22px;
     margin-bottom: 8px;
+    box-shadow: 0 0 30px rgba(79, 124, 255, 0.25);
   }
   .confronto-desempate h3 {
     font-family: "Baloo 2", sans-serif;
-    font-size: 15px;
+    font-size: 22px;
     font-weight: 800;
-    color: var(--dourado);
-    margin: 0 0 8px;
+    color: #fff;
+    text-shadow: 0 2px 14px rgba(79, 124, 255, 0.7);
+    margin: 0 0 6px;
   }
-  .confronto-desempate p { font-size: 13px; font-weight: 600; color: #e6dcc2; line-height: 1.5; margin: 0 0 14px; }
+  .confronto-desempate p { font-size: 14.5px; font-weight: 700; color: #dbe3ff; line-height: 1.5; margin: 0 0 16px; }
   .opcoes-desempate { display: flex; flex-direction: column; gap: 8px; }
   .opcao-desempate {
     display: flex;
@@ -328,12 +379,14 @@
     padding: 13px 16px;
     border-radius: 12px;
     border: none;
-    background: linear-gradient(150deg, #ffe08a, var(--dourado));
-    color: #3a2c00;
+    background: linear-gradient(150deg, #7b9dff, var(--azul));
+    color: #fff;
     cursor: pointer;
+    box-shadow: 0 6px 0 #2c4fb8;
   }
-  .opcao-desempate:hover { filter: brightness(1.05); }
-  .tempo-opcao { font-variant-numeric: tabular-nums; opacity: 0.75; }
+  .opcao-desempate:hover { filter: brightness(1.08); }
+  .opcao-desempate:active { transform: translateY(4px); box-shadow: 0 2px 0 #2c4fb8; }
+  .tempo-opcao { font-variant-numeric: tabular-nums; opacity: 0.85; }
 
   /* ---------- ranking final do quiz ---------- */
   .linha-classificacao .acertos-fase1 { font-size: 12px; font-weight: 600; color: var(--apagado); margin-left: 6px; }
@@ -395,6 +448,7 @@
     letter-spacing: 0.05em;
     margin: 26px 0 12px;
   }
+  .rodada-sub { font-size: 12.5px; font-weight: 600; color: var(--apagado); margin: -8px 0 14px; }
 
   .confronto-card {
     background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
@@ -504,21 +558,17 @@
 
   /* ---------- botão + popup "Ver edital" ---------- */
   .botao-ver-edital {
-    position: fixed;
-    top: 16px;
-    right: 16px;
-    z-index: 200;
+    display: block;
+    margin: 0 auto 16px;
     font-family: "Baloo 2", sans-serif;
-    font-size: 13px;
+    font-size: 11.5px;
     font-weight: 800;
-    padding: 10px 16px;
+    padding: 7px 13px;
     border-radius: 999px;
     border: 1.5px solid rgba(255, 255, 255, 0.18);
     background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
-    backdrop-filter: blur(10px);
     color: #fff;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
   }
   .botao-ver-edital:hover { border-color: var(--azul); }
 
@@ -888,6 +938,7 @@
   }
 
   let estado = carregarEstado();
+  let penalidadeAberta = false; // só controla se o campo de penalidade tá expandido; não precisa persistir
 
   function salvarEstado() {
     localStorage.setItem(CHAVE_ESTADO, JSON.stringify(estado));
@@ -918,7 +969,7 @@
         respostas: [null, null, null, null, null],
         inicio: Date.now(),
         fim: null,
-        penalidade: false,
+        penalidades: 0,
       };
       salvarEstado();
     }
@@ -936,9 +987,13 @@
   }
 
   // Cada penalidade vale como uma pergunta errada na hora de classificar.
-  function pontuacaoEfetivaDaEscola(escolaId) {
+  function penalidadesDaEscola(escolaId) {
     const dados = estado.fase1.porEscola[escolaId];
-    return acertosDaEscola(escolaId) - (dados && dados.penalidade ? 1 : 0);
+    return dados && dados.penalidades ? dados.penalidades : 0;
+  }
+
+  function pontuacaoEfetivaDaEscola(escolaId) {
+    return acertosDaEscola(escolaId) - penalidadesDaEscola(escolaId);
   }
 
   function tempoDaEscolaMs(escolaId) {
@@ -961,7 +1016,7 @@
       id: e.id,
       nome: e.nome,
       acertos: acertosDaEscola(e.id),
-      penalidade: Boolean(estado.fase1.porEscola[e.id] && estado.fase1.porEscola[e.id].penalidade),
+      penalidades: penalidadesDaEscola(e.id),
       pontos: pontuacaoEfetivaDaEscola(e.id),
       tempo: tempoDaEscolaMs(e.id),
     })).sort((a, b) => {
@@ -1060,15 +1115,31 @@
     render();
   }
 
-  function alternarPenalidade(escolaId) {
-    if (estado.fase2 && !confirm("Mudar a penalidade vai reiniciar o chaveamento da Fase 2 (ele será gerado de novo do zero). Continuar?")) {
-      return;
-    }
-    const dados = perguntasDaEscola(escolaId);
-    dados.penalidade = !dados.penalidade;
+  function invalidarClassificacaoPosPenalidade() {
     estado.classificadas = null;
     estado.fase2 = null;
     estado.fase1.desempateResolvido = [];
+  }
+
+  function aplicarPenalidade(escolaId) {
+    if (estado.fase2 && !confirm("Aplicar uma penalidade vai reiniciar o chaveamento da Fase 2 (ele será gerado de novo do zero). Continuar?")) {
+      return;
+    }
+    const dados = perguntasDaEscola(escolaId);
+    dados.penalidades = (dados.penalidades || 0) + 1;
+    invalidarClassificacaoPosPenalidade();
+    salvarEstado();
+    render();
+  }
+
+  function removerPenalidade(escolaId) {
+    const dados = perguntasDaEscola(escolaId);
+    if (!dados.penalidades) return;
+    if (estado.fase2 && !confirm("Remover essa penalidade vai reiniciar o chaveamento da Fase 2 (ele será gerado de novo do zero). Continuar?")) {
+      return;
+    }
+    dados.penalidades -= 1;
+    invalidarClassificacaoPosPenalidade();
     salvarEstado();
     render();
   }
@@ -1285,19 +1356,52 @@
     });
     raiz.appendChild(grade);
 
-    // Quadrado de penalidade da escola do slide atual — conta como uma pergunta
-    // errada na hora de classificar e desempatar.
-    const penalidadeAtiva = Boolean(dados.penalidade);
-    const penalidadeCard = elemento(
+    // Campo de penalidade: ativa o campo, marca a escola, aplica (-1 ponto). Vale
+    // pra qualquer escola, não só a do slide aberto — por isso é um campo à parte,
+    // não um botão dentro do card de cada escola.
+    const painelPenalidade = elemento("div", "penalidade-painel");
+    const btnAtivarPenalidade = elemento(
       "button",
-      "penalidade-card" + (penalidadeAtiva ? " ativa" : ""),
-      '<span class="penalidade-icone">⚠️</span>' +
-        '<span class="penalidade-textos"><strong>Penalidade</strong><span>Conta como uma pergunta errada no desempate</span></span>' +
-        '<span class="penalidade-marca">' + (penalidadeAtiva ? "Ativa" : "—") + "</span>"
+      "penalidade-ativar" + (penalidadeAberta ? " aberta" : ""),
+      "⚠️ Aplicar penalidade (-1 ponto)"
     );
-    penalidadeCard.type = "button";
-    penalidadeCard.onclick = () => alternarPenalidade(escola.id);
-    raiz.appendChild(penalidadeCard);
+    btnAtivarPenalidade.type = "button";
+    btnAtivarPenalidade.onclick = () => { penalidadeAberta = !penalidadeAberta; render(); };
+    painelPenalidade.appendChild(btnAtivarPenalidade);
+
+    if (penalidadeAberta) {
+      const form = elemento("div", "penalidade-form");
+      const select = document.createElement("select");
+      ESCOLAS.forEach((e) => {
+        const opt = document.createElement("option");
+        opt.value = String(e.id);
+        const n = penalidadesDaEscola(e.id);
+        opt.textContent = e.nome + (n ? " (" + n + " penalidade" + (n > 1 ? "s" : "") + ")" : "");
+        select.appendChild(opt);
+      });
+      const btnAplicar = elemento("button", "penalidade-aplicar", "Aplicar penalidade");
+      btnAplicar.type = "button";
+      btnAplicar.onclick = () => aplicarPenalidade(Number(select.value));
+      form.append(select, btnAplicar);
+
+      const comPenalidade = ESCOLAS.filter((e) => penalidadesDaEscola(e.id) > 0);
+      if (comPenalidade.length) {
+        const lista = elemento("div", "penalidade-lista");
+        comPenalidade.forEach((e) => {
+          const n = penalidadesDaEscola(e.id);
+          const linha = elemento("div", "penalidade-linha-aplicada", e.nome + ": " + n + " penalidade" + (n > 1 ? "s" : ""));
+          const bRemover = elemento("button", "penalidade-remover", "−1");
+          bRemover.type = "button";
+          bRemover.onclick = () => removerPenalidade(e.id);
+          linha.appendChild(bRemover);
+          lista.appendChild(linha);
+        });
+        form.appendChild(lista);
+      }
+
+      painelPenalidade.appendChild(form);
+    }
+    raiz.appendChild(painelPenalidade);
 
     if (estado.fase1.concluida) {
       raiz.appendChild(elemento("h2", "fase-titulo", "Classificação da Fase 1"));
@@ -1322,8 +1426,8 @@
           const confronto = elemento(
             "div",
             "confronto-desempate",
-            "<h3>⏱️ Empate na fronteira do Top 8</h3>" +
-              "<p>Estas escolas empataram em pontos. Clique na que respondeu mais rápido (o tempo do cronômetro é só uma referência).</p>"
+            "<h3>⚠️ HOUVE UM EMPATE!</h3>" +
+              "<p>O desempate ocorrerá por menor tempo. Clique na escola que respondeu mais rápido (o tempo do cronômetro abaixo é só uma referência).</p>"
           );
           const opcoes = elemento("div", "opcoes-desempate");
           pendentes.forEach((p) => {
@@ -1343,7 +1447,10 @@
         if (noGrupo && pendentes.length) return; // aguarda o confronto acima ser resolvido
 
         const classificada = jaClassificado ? estado.classificadas.includes(e.id) : i < 8;
-        const pontosTexto = e.penalidade ? e.acertos + "/5 · " + e.pontos + " pts (-1 penalidade)" : e.acertos + "/5 · " + e.pontos + " pts";
+        const pontosTexto =
+          e.penalidades > 0
+            ? e.acertos + "/5 · " + e.pontos + " pts (-" + e.penalidades + " penalidade" + (e.penalidades > 1 ? "s" : "") + ")"
+            : e.acertos + "/5 · " + e.pontos + " pts";
         const linha = elemento(
           "div",
           "linha-classificacao" + (classificada ? " classificada" : ""),
@@ -1419,8 +1526,15 @@
       )
     );
 
+    const DESCRICAO_RODADA = {
+      "Quartas de Final": "4 confrontos — as 8 escolas classificadas na Fase 1 se enfrentam em pares. As 4 vencedoras avançam.",
+      "Semifinal": "2 confrontos — as 4 vencedoras das Quartas se enfrentam. As 2 vencedoras vão pra Final.",
+      "Final": "1 confronto — a grande decisão entre as 2 melhores. Quem vencer é a Campeã do Torta na Cara.",
+    };
+
     estado.fase2.rodadas.forEach((rodada, rIdx) => {
       raiz.appendChild(elemento("h3", "rodada-titulo", rodada.nome));
+      if (DESCRICAO_RODADA[rodada.nome]) raiz.appendChild(elemento("p", "rodada-sub", DESCRICAO_RODADA[rodada.nome]));
       rodada.confrontos.forEach((confronto, cIdx) => renderConfronto(raiz, rIdx, cIdx, confronto));
     });
   }
