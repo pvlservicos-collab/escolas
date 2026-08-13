@@ -1,0 +1,469 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perguntas — Gincana Estadual da Juventude 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --rosa: #df1889;
+    --azul: #24409c;
+    --azul-2: #16277a;
+    --gelo: #fafafa;
+    --texto: #1a1a1a;
+    --linha: #e7e7e7;
+    --apagado: #8a8a8a;
+  }
+
+  * { box-sizing: border-box; }
+
+  [hidden] { display: none !important; }
+
+  body {
+    margin: 0;
+    padding: 40px 18px 80px;
+    background-color: var(--rosa);
+    color: var(--texto);
+    font-family: "Nunito", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 1080px; margin: 0 auto; }
+
+  .voltar {
+    display: inline-block;
+    margin-bottom: 18px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 999px;
+    padding: 7px 16px;
+  }
+  .voltar:hover { background: rgba(255, 255, 255, 0.28); }
+
+  header { text-align: center; margin-bottom: 30px; }
+
+  .faixa {
+    display: inline-block;
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #fff;
+    background: var(--azul);
+    padding: 8px 18px;
+    border-radius: 7px;
+    transform: rotate(-2deg);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.18);
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    font-size: 30px;
+    line-height: 1.1;
+    color: #fff;
+    text-shadow: 3px 3px 0 var(--azul-2);
+    margin: 0 0 8px;
+  }
+
+  header p.sub {
+    margin: 0;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .fase-titulo {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+    margin: 36px 0 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.35);
+  }
+  .fase-titulo:first-of-type { margin-top: 6px; }
+
+  .categoria { margin-bottom: 26px; }
+
+  .categoria-titulo {
+    display: inline-block;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--texto);
+    background: var(--gelo);
+    border-radius: 999px;
+    padding: 10px 18px;
+    margin: 0 0 16px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
+  }
+
+  .grid-perguntas {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  @media (min-width: 720px) {
+    .grid-perguntas { grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
+  }
+
+  .card-pergunta {
+    background: var(--gelo);
+    border-radius: 14px;
+    padding: 18px 18px 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+  }
+
+  .texto-pergunta {
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.45;
+    color: var(--texto);
+    margin: 0 0 14px;
+  }
+
+  .resposta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .resposta-caixa {
+    flex: 1;
+    min-width: 0;
+    border-radius: 10px;
+    padding: 13px 14px;
+    background: #111;
+    transition: background 0.25s ease;
+  }
+
+  .resposta-caixa span {
+    display: block;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.26);
+    transition: color 0.25s ease;
+  }
+
+  .resposta-caixa.revelada { background: #eef1fb; }
+  .resposta-caixa.revelada span { color: var(--azul); }
+
+  .botao-olho-resposta {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: none;
+    background: #ececec;
+    color: var(--apagado);
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
+  }
+  .botao-olho-resposta:hover { background: #dfe6fa; color: var(--azul); }
+  .botao-olho-resposta:active { transform: scale(0.92); }
+
+  footer.creditos {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.85);
+  }
+</style>
+
+<div class="container">
+  <a class="voltar" href="/">← Voltar ao ranking</a>
+
+  <header>
+    <div class="faixa">Comissão Organizadora</div>
+    <h1>Perguntas da Gincana</h1>
+    <p class="sub">Fase 1 e Fase 2 (Chaveamento) — clique no olho para revelar cada resposta</p>
+  </header>
+
+  <div id="conteudo"></div>
+
+  <footer class="creditos">Gincana Estadual da Juventude 2026 · SEJUV/AP</footer>
+</div>
+
+<script>
+  const ICONE_OLHO_ABERTO =
+    '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const ICONE_OLHO_FECHADO =
+    '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+  const DADOS = [
+    {
+      fase: "Fase 1",
+      categorias: [
+        {
+          titulo: "🌍 Capitais Geográficas (Nacionais e Internacionais)",
+          perguntas: [
+            ["Qual é a capital do estado do Tocantins?", "Palmas"],
+            ["Qual é a capital do Piauí?", "Teresina"],
+            ["Qual é a capital de Roraima?", "Boa Vista"],
+            ["Qual é a capital de Rondônia?", "Porto Velho"],
+            ["Qual é a capital da Argentina?", "Buenos Aires"],
+            ["Qual é a capital de Santa Catarina?", "Florianópolis"],
+            ["Qual é a capital do Japão?", "Tóquio"],
+            ["Qual é a capital de Sergipe?", "Aracaju"],
+            ["Qual é a capital do Acre?", "Rio Branco"],
+            ["Qual é a capital da França?", "Paris"],
+            ["Qual é a capital de Mato Grosso do Sul?", "Campo Grande"],
+            ["Qual é a capital da Paraíba?", "João Pessoa"],
+            ["Qual é a capital da Espanha?", "Madri"],
+            ["Qual é a capital do Amapá?", "Macapá"],
+            ["Qual é a capital do Espírito Santo?", "Vitória"],
+            ["Qual é a capital do Maranhão?", "São Luís"],
+          ],
+        },
+        {
+          titulo: "📝 Plurais da Língua Portuguesa",
+          perguntas: [
+            ["Qual é o plural de \"cidadão\"?", "Cidadãos"],
+            ["Qual é o plural de \"troféu\"?", "Troféus (e não troféis)"],
+            ["Qual é o plural de \"girassol\"?", "Girassóis"],
+            ["Qual é o plural de \"degrau\"?", "Degraus"],
+            ["Qual é o plural de \"alemão\"?", "Alemães"],
+            ["Qual é o plural de \"capitão\"?", "Capitães"],
+            ["Qual é o plural de \"fóssil\"?", "Fósseis"],
+            ["Qual é o plural de \"hambúrguer\"?", "Hambúrgueres"],
+            ["Qual é o plural de \"réptil\"?", "Répteis"],
+            ["Qual é o plural de \"lápis\"?", "Lápis (a palavra é invariável, o que muda é o artigo: \"os lápis\")"],
+            ["Qual é o plural de \"escrivão\"?", "Escrivães"],
+            ["Qual é o plural de \"gravidez\"?", "Gravidezes"],
+            ["Qual é o plural de \"pastel\"?", "Pastéis"],
+            ["Qual é o plural de \"tórax\"?", "Tórax (invariável)"],
+            ["Qual é o plural de \"guarda-chuva\"?", "Guarda-chuvas"],
+            ["Qual é o plural de \"amor-perfeito\"?", "Amores-perfeitos"],
+            ["Qual é o plural de \"pão\"?", "Pães"],
+            ["Qual é o plural de \"mel\"?", "Méis (ou meles)"],
+            ["Qual é o plural de \"túnel\"?", "Túneis"],
+            ["Qual é o plural de \"vírus\"?", "Vírus (invariável)"],
+            ["Qual é o plural de \"caráter\"?", "Caracteres"],
+            ["Qual é o plural de \"limão\"?", "Limões"],
+            ["Qual é o plural de \"cônsul\"?", "Cônsules"],
+            ["Qual é o plural de \"óculos\"?", "Óculos (a palavra já é plural, diz-se \"os óculos\")"],
+            ["Qual é o plural de \"abdômen\"?", "Abdômenes (ou abdomens)"],
+          ],
+        },
+        {
+          titulo: "🐝 Coletivos",
+          perguntas: [
+            ["Qual é o coletivo de lobos?", "Alcateia"],
+            ["Qual é o coletivo de ilhas?", "Arquipélago"],
+            ["Qual é o coletivo de estrelas?", "Constelação"],
+            ["Qual é o coletivo de abelhas?", "Enxame"],
+            ["Qual é o coletivo de cães de caça?", "Matilha"],
+            ["Qual é o coletivo de peixes?", "Cardume"],
+            ["Qual é o coletivo de elefantes?", "Manada"],
+            ["Qual é o coletivo de aviões?", "Esquadrilha"],
+            ["Qual é o coletivo de navios ou ônibus?", "Frota"],
+            ["Qual é o coletivo de mapas?", "Atlas"],
+            ["Qual é o coletivo de atores?", "Elenco"],
+            ["Qual é o coletivo de plantas de uma região?", "Flora"],
+            ["Qual é o coletivo de animais de uma região?", "Fauna"],
+            ["Qual é o coletivo de obras de arte, quadros?", "Pinacoteca"],
+            ["Qual é o coletivo de chaves?", "Molho"],
+            ["Qual é o coletivo de porcos?", "Vara"],
+            ["Qual é o coletivo de gafanhotos?", "Nuvem"],
+            ["Qual é o coletivo de 500 folhas de papel?", "Resma"],
+            ["Qual é o coletivo de músicos tocando instrumentos?", "Banda (ou orquestra)"],
+            ["Qual é o coletivo de ladrões ou bandidos?", "Quadrilha (ou bando)"],
+            ["Qual é o coletivo de alhos ou cebolas?", "Réstea"],
+            ["Qual é o coletivo de pássaros?", "Bando"],
+            ["Qual é o coletivo de livros organizados?", "Biblioteca"],
+            ["Qual é o coletivo de uvas ou bananas?", "Cacho"],
+            ["Qual é o coletivo de ovelhas?", "Rebanho"],
+          ],
+        },
+        {
+          titulo: "📍 Gentílicos (Quem nasce em...)",
+          perguntas: [
+            ["Quem nasce na cidade do Rio de Janeiro é?", "Carioca"],
+            ["Quem nasce no estado do Rio de Janeiro é?", "Fluminense"],
+            ["Quem nasce no estado do Espírito Santo é?", "Capixaba (ou Espírito-santense)"],
+            ["Quem nasce no estado do Rio Grande do Norte é?", "Potiguar (ou Norte-rio-grandense)"],
+            ["Quem nasce no estado do Rio Grande do Sul é?", "Gaúcho (ou Sul-rio-grandense)"],
+            ["Quem nasce na cidade de Salvador é?", "Soteropolitano"],
+            ["Quem nasce na cidade de São Paulo é?", "Paulistano"],
+            ["Quem nasce no estado de São Paulo é?", "Paulista"],
+            ["Quem nasce em Brasília é?", "Brasiliense"],
+            ["Quem nasce na cidade de Florianópolis é?", "Florianopolitano (ou manezinho da ilha)"],
+            ["Quem nasce no Japão é?", "Japonês (ou nipônico)"],
+            ["Quem nasce na cidade de Manaus é?", "Manauara (ou manauense)"],
+            ["Quem nasce no estado de Mato Grosso é?", "Mato-grossense"],
+            ["Quem nasce na cidade de Goiânia é?", "Goianiense"],
+            ["Quem nasce no estado de Goiás é?", "Goiano"],
+            ["Quem nasce na cidade de Belém é?", "Belenense"],
+            ["Quem nasce em Moçambique é?", "Moçambicano"],
+            ["Quem nasce na Costa Rica é?", "Costarriquenho"],
+            ["Quem nasce em Israel é?", "Israelense"],
+            ["Quem nasce na Bélgica é?", "Belga"],
+            ["Quem nasce na Nova Zelândia é?", "Neozelandês"],
+            ["Quem nasce na Croácia é?", "Croata"],
+            ["Quem nasce nos Países Baixos (Holanda) é?", "Neerlandês (ou Holandês)"],
+            ["Quem nasce em El Salvador é?", "Salvadorenho"],
+            ["Quem nasce na cidade de Macapá é?", "Macapaense"],
+          ],
+        },
+      ],
+    },
+    {
+      fase: "Fase 2 — Chaveamento",
+      categorias: [
+        {
+          titulo: "🧠 Conhecimentos Gerais",
+          perguntas: [
+            ["Qual é o maior oceano do planeta Terra?", "Oceano Pacífico"],
+            ["Como se chama a linha imaginária que divide a Terra em Hemisfério Norte e Hemisfério Sul?", "Linha do Equador"],
+            ["Quantos continentes existem no modelo tradicional ensinado no Brasil?", "Seis (América, Europa, África, Ásia, Oceania e Antártida)"],
+            ["Qual é o metal precioso cujo símbolo químico é \"Au\"?", "Ouro"],
+            ["Qual é o idioma mais falado do mundo em número de falantes nativos?", "Mandarim"],
+            ["Quem pintou a famosa obra de arte \"Monalisa\"?", "Leonardo da Vinci"],
+            ["Em qual esporte o Brasil é o maior campeão mundial masculino, com cinco títulos?", "Futebol"],
+          ],
+        },
+        {
+          titulo: "🗺️ Geografia",
+          perguntas: [
+            ["Qual é o maior estado do Brasil em extensão territorial?", "Amazonas"],
+            ["Qual é o menor estado do Brasil em extensão territorial?", "Sergipe"],
+            ["Em qual continente fica localizado o Deserto do Saara?", "Continente Africano (África)"],
+            ["Qual rio corta a região Norte do Brasil e é considerado o maior do mundo em volume de água?", "Rio Amazonas"],
+            ["Qual é a cadeia de montanhas que atravessa a América do Sul de norte a sul?", "Cordilheira dos Andes"],
+            ["Qual é o bioma predominante na região Centro-Oeste do Brasil?", "Cerrado"],
+            ["Qual território faz fronteira com o Amapá ao Norte?", "Guiana Francesa (pertencente à França)"],
+          ],
+        },
+        {
+          titulo: "📜 História",
+          perguntas: [
+            ["Quem foi o primeiro presidente da República do Brasil?", "Marechal Deodoro da Fonseca"],
+            ["Qual evento, ocorrido em 1789, marcou o início da Idade Contemporânea e a queda da monarquia absolutista na Europa?", "Revolução Francesa"],
+            ["Quem assinou a Lei Áurea, em 1888, abolindo a escravidão no Brasil?", "Princesa Isabel"],
+            ["Em que país europeu teve início a Revolução Industrial no século XVIII?", "Inglaterra (ou Reino Unido)"],
+            ["Qual foi o país responsável por lançar as bombas atômicas sobre as cidades de Hiroshima e Nagasaki em 1945?", "Estados Unidos"],
+            ["Qual líder sul-africano ficou preso por 27 anos e depois se tornou presidente do país, lutando contra o Apartheid?", "Nelson Mandela"],
+            ["A capital do Brasil foi transferida do Rio de Janeiro para Brasília durante o governo de qual presidente?", "Juscelino Kubitschek (JK)"],
+          ],
+        },
+        {
+          titulo: "📚 Português",
+          perguntas: [
+            ["Na frase \"O choro é livre\", qual é o sujeito da oração?", "O choro"],
+            ["Quando dizemos \"Estou morrendo de fome\", usamos um exagero intencional. Qual é essa figura de linguagem?", "Hipérbole"],
+            ["Atribuir características humanas a seres inanimados, como em \"O vento sussurrava nas árvores\", é qual figura de linguagem?", "Personificação (ou Prosopopeia)"],
+            ["Como se chama a classe de palavras usada para dar nome aos seres, objetos, lugares e sentimentos?", "Substantivo"],
+            ["Na frase \"Ele é um leão em campo\", ocorre uso de qual figura de linguagem?", "Metáfora"],
+            ["Qual é o antônimo de \"efêmero\"?", "Duradouro (ou permanente / eterno)"],
+            ["Qual é a figura de linguagem usada para suavizar ideias?", "Eufemismo"],
+            ["Na frase \"Que inteligente! Errou a resposta\", qual figura de linguagem está em uso?", "Ironia"],
+          ],
+        },
+        {
+          titulo: "🎭 Expofeira e Cultura Regional (Amapá) e Nacional",
+          perguntas: [
+            ["Qual título recebe a mulher que é eleita representante da expofeira em cada edição?", "Rainha da expofeira"],
+            ["Qual número da edição da expofeira que está sendo realizada em 2026?", "55ª expofeira / ed. 55"],
+            ["Em qual semestre ocorre a realização da expofeira?", "2º semestre"],
+            ["Como é chamado o tradicional desfile de cavaleiros e amazonas nas ruas da cidade que costuma anunciar a abertura da Expofeira?", "Cavalgada"],
+            ["Como é chamada a competição de montaria em touro que ocorre anualmente na expofeira?", "Rodeio"],
+            ["Qual o nome do espaço em que é realizada a expofeira?", "Parque de exposições da fazendinha"],
+            ["Qual artista nacional se apresentou no primeiro dia da expofeira 2026?", "Léo Santana"],
+            ["Em qual bairro ou distrito de Macapá acontece tradicionalmente a Expofeira?", "Fazendinha"],
+            ["Como é chamado o espaço em que tem exposição especial do açaí?", "Açaiódromo"],
+            ["Qual o nome da área em que ficam localizados os brinquedos, como a roda gigante?", "Parque de diversões"],
+            ["Qual parte da programação da Expofeira atrai maior público?", "Shows"],
+            ["Como é chamado o espaço da expofeira em que se concentram restaurantes e lanchonetes?", "Praça de alimentação"],
+            ["Na expofeira, o dia cuja programação é voltada para pais, filhos e parentes aproveitarem juntos é...?", "O dia da família"],
+            ["Durante a expofeira, em qual animal é possível fazer um passeio de montaria?", "Cavalo"],
+            ["Para compor o \"look ideal\" para a expofeira, qual calçado é mais utilizado?", "Botas"],
+            ["A Rodovia Josmar Chaves, principal via de acesso para a Expofeira, também é conhecida por qual nome?", "Rod. Juscelino Kubitscheck"],
+            ["Qual ritmo musical e dança de roda é a maior expressão cultural do Amapá, reconhecido como Patrimônio Cultural Imaterial do Brasil?", "Marabaixo"],
+            ["Onde fica localizado o monumento Marco Zero do Equador no estado do Amapá?", "Macapá"],
+            ["Na culinária amapaense e paraense, qual prato típico quente é feito com tucupi, goma de mandioca, jambu e camarão seco?", "Tacacá"],
+            ["A Fortaleza de São José de Macapá foi construída pelos portugueses principalmente para proteger o território das invasões de qual país?", "França"],
+            ["A festa de São Tiago, que encena a batalha entre mouros e cristãos, acontece em qual município do Amapá?", "Mazagão (Mazagão Velho)"],
+          ],
+        },
+      ],
+    },
+  ];
+
+  function criarCard(pergunta, resposta) {
+    const card = document.createElement("div");
+    card.className = "card-pergunta";
+
+    const p = document.createElement("p");
+    p.className = "texto-pergunta";
+    p.textContent = pergunta;
+
+    const respostaWrap = document.createElement("div");
+    respostaWrap.className = "resposta";
+
+    const caixa = document.createElement("div");
+    caixa.className = "resposta-caixa";
+    const span = document.createElement("span");
+    span.textContent = resposta;
+    caixa.appendChild(span);
+
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = "botao-olho-resposta";
+    botao.innerHTML = ICONE_OLHO_FECHADO;
+    botao.title = "Revelar resposta";
+    botao.onclick = () => {
+      const revelada = caixa.classList.toggle("revelada");
+      botao.innerHTML = revelada ? ICONE_OLHO_ABERTO : ICONE_OLHO_FECHADO;
+      botao.title = revelada ? "Ocultar resposta" : "Revelar resposta";
+    };
+
+    respostaWrap.append(caixa, botao);
+    card.append(p, respostaWrap);
+    return card;
+  }
+
+  function montarPagina() {
+    const raiz = document.getElementById("conteudo");
+    DADOS.forEach((faseObj) => {
+      const h2 = document.createElement("h2");
+      h2.className = "fase-titulo";
+      h2.textContent = faseObj.fase;
+      raiz.appendChild(h2);
+
+      faseObj.categorias.forEach((cat) => {
+        const catDiv = document.createElement("div");
+        catDiv.className = "categoria";
+
+        const h3 = document.createElement("h3");
+        h3.className = "categoria-titulo";
+        h3.textContent = cat.titulo;
+        catDiv.appendChild(h3);
+
+        const grid = document.createElement("div");
+        grid.className = "grid-perguntas";
+        cat.perguntas.forEach(([pergunta, resposta]) => grid.appendChild(criarCard(pergunta, resposta)));
+        catDiv.appendChild(grid);
+
+        raiz.appendChild(catDiv);
+      });
+    });
+  }
+
+  montarPagina();
+</script>
